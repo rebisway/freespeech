@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar glyph of a notification: the logo's flag (slanted pole with its ball, waving banner with two tails), drawn thin; the system draws it in one colour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+          android:pathData="M4.4,1.9a1.6,1.6 0,1 0,0.01 0z"/>
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="1.5" android:strokeLineCap="round" android:fillColor="#00000000"
+          android:pathData="M4.7,3.6L6.8,21.6"/>
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="1.2" android:strokeLineJoin="round" android:fillColor="#00000000"
+          android:pathData="M5.6,4C8,2.7 10.6,2.4 12.8,3.6C15,4.8 17.6,7 22.4,6.7C20.6,7.9 19.9,9.1 20.9,11.4C21.7,11.7 22.3,12 22.8,12.5C19,13.7 15.6,12.8 12.4,11.5C10.3,12.4 8.7,13.4 7.4,14.3Z"/>
+</vector>

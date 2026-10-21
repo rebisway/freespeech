@@ -1,0 +1,37 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             x:Class="FreeSpeech.Desktop.Views.PhrasesSaveView"
+             x:DataType="vm:PhrasesSaveViewModel">
+	<StackPanel Spacing="12">
+		<TextBlock Text="{Binding WarningText}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" FontSize="13" />
+		<Border IsVisible="{Binding Shown}" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+			<!-- A read-only box, not a label: its text can be selected and copied. -->
+			<TextBox Text="{Binding PhrasesText}" IsReadOnly="True" TextWrapping="Wrap" Background="Transparent" BorderThickness="0" />
+		</Border>
+		<Button Content="{Binding ShowLabel}" Command="{Binding ToggleShowCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12" />
+		<Button Content="{Binding CopyLabel}" Command="{Binding CopyCommand}" IsVisible="{Binding Shown}" HorizontalAlignment="Left" />
+		<Button Command="{Binding PrintCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+			<StackPanel><TextBlock Text="{Binding PrintTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding PrintHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+		</Button>
+		<Button Command="{Binding ToggleFileCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+			<StackPanel><TextBlock Text="{Binding FileTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding FileHint}" Classes="muted" FontSize="12" /></StackPanel>
+		</Button>
+		<StackPanel Spacing="10" IsVisible="{Binding FileFormOpen}">
+			<TextBox Text="{Binding Password}" PasswordChar="{Binding PasswordChar}" PlaceholderText="{Binding PasswordLabel}" />
+			<TextBox Text="{Binding PasswordAgain}" PasswordChar="{Binding PasswordChar}" PlaceholderText="{Binding PasswordAgainLabel}" />
+			<CheckBox IsChecked="{Binding ShowPassword}" Content="{Binding ShowPasswordLabel}" />
+			<TextBlock Text="{Binding FileWarning}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+			<Button Content="{Binding MakeFileLabel}" Command="{Binding CreateFileCommand}" IsEnabled="{Binding !Busy}" HorizontalAlignment="Left" />
+		</StackPanel>
+		<Button Content="{Binding NotedLabel}" Command="{Binding NotedCommand}" Classes="flat" HorizontalAlignment="Left" />
+		<TextBlock Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		<Button Content="{Binding ContinueLabel}" Command="{Binding ContinueCommand}" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,10" Margin="0,10,0,0" />
+	</StackPanel>
+</UserControl>

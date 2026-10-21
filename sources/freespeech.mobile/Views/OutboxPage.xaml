@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.OutboxPage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr outbox_title}" /></Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" Margin="18,12" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="{loc:Tr outbox_empty}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="30" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:OutboxItem">
+                    <Grid ColumnDefinitions="*,Auto" Padding="14,8" ColumnSpacing="12">
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding To}" FontFamily="OpenSansSemibold" FontSize="16" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Preview}" FontSize="14" MaxLines="2" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Detail}" TextColor="{StaticResource Gray200}" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" IsVisible="{Binding CanToggle}" Text="{Binding ActionLabel}" VerticalOptions="Center" Padding="12,0"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OutboxViewModel}}, Path=ToggleCommand}" CommandParameter="{Binding .}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

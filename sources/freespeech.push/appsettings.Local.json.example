@@ -1,0 +1,17 @@
+{
+  "Push": {
+    "Secret": "a-long-random-string-shared-with-the-relay-servers",
+    "MinIntervalSeconds": 15,
+    "Fake": false
+  },
+  "Fcm": {
+    "ServiceAccountFile": "secrets/firebase-service-account.json"
+  },
+  "Apns": {
+    "KeyFile": "secrets/AuthKey_XXXXXXXXXX.p8",
+    "KeyId": "XXXXXXXXXX",
+    "TeamId": "YYYYYYYYYY",
+    "BundleId": "org.freespeech.mobile",
+    "Production": false
+  }
+}

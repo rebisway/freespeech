@@ -1,0 +1,41 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.ArchiveView"
+             x:DataType="vm:ArchiveViewModel">
+	<DockPanel>
+		<TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" Margin="24,8" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		<Grid>
+			<TextBlock Text="{Binding EmptyText}" Classes="hint" HorizontalAlignment="Center" Margin="0,24" IsVisible="{Binding IsEmpty}" />
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding Items}" MaxWidth="640">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:ArchivedItem">
+							<Grid ColumnDefinitions="*,Auto" Margin="0">
+								<Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="14,10" CornerRadius="0"
+								        Command="{Binding $parent[ItemsControl].((vm:ArchiveViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}">
+									<Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+										<c:Avatar Title="{Binding Name}" Photo="{Binding Photo}" IsGroup="{Binding IsGroup}" />
+										<StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+											<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
+											<TextBlock Text="{Binding Preview}" Classes="hint" FontSize="12" TextTrimming="CharacterEllipsis" />
+										</StackPanel>
+									</Grid>
+								</Button>
+								<Button Grid.Column="1" Classes="iconflat" Margin="0,0,10,0" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ArchiveViewModel)DataContext).DeleteTip}"
+								        Command="{Binding $parent[ItemsControl].((vm:ArchiveViewModel)DataContext).DeleteCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.delete}" /></Button>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Grid>
+	</DockPanel>
+</UserControl>

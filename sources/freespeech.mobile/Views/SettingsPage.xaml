@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.SettingsPage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr nav_settings}" /></Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="18" Spacing="12">
+            <Label Text="{loc:Tr set_profile}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" />
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="12">
+                <ctl:AvatarView Size="72" Title="{Binding Nickname}" Photo="{Binding MyPhoto}" />
+                <ImageButton Grid.Column="1" Source="ic_photo.png" StyleClass="Icon" Command="{Binding PickPhotoCommand}" SemanticProperties.Description="{loc:Tr a11y_photo}" />
+                <ImageButton Grid.Column="2" Source="ic_close.png" StyleClass="Icon" Command="{Binding RemovePhotoCommand}" SemanticProperties.Description="{loc:Tr a11y_remove}" />
+            </Grid>
+            <Entry Text="{Binding Nickname}" Placeholder="{loc:Tr set_nickname_hint}" />
+            <Editor Text="{Binding About}" Placeholder="{loc:Tr set_about_hint}" AutoSize="TextChanges" MinimumHeightRequest="70" MaxLength="300" />
+            <ImageButton Source="ic_check.png" StyleClass="Icon" HorizontalOptions="Start" Command="{Binding SaveProfileCommand}" SemanticProperties.Description="{loc:Tr a11y_save}" />
+
+            <Label Text="{loc:Tr set_language}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Picker ItemsSource="{Binding Languages}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedLanguage}" />
+            <!-- Add a language from a file, get the English texts to translate, remove an added language. -->
+            <HorizontalStackLayout Spacing="12">
+                <ImageButton Source="ic_add.png" StyleClass="Icon" Command="{Binding ImportLanguageCommand}" SemanticProperties.Description="{loc:Tr set_lang_import}" />
+                <ImageButton Source="ic_send.png" StyleClass="Icon" Command="{Binding ShareTemplateCommand}" SemanticProperties.Description="{loc:Tr set_lang_template}" />
+                <ImageButton Source="ic_close.png" StyleClass="Icon" IsVisible="{Binding CanRemoveLanguage}" Command="{Binding RemoveLanguageCommand}" SemanticProperties.Description="{loc:Tr set_lang_remove}" />
+            </HorizontalStackLayout>
+
+            <Label Text="{loc:Tr set_theme}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Picker ItemsSource="{Binding Themes}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedTheme}" />
+
+            <Label Text="{loc:Tr set_autodl}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Label Text="{loc:Tr set_autodl_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+            <Entry Text="{Binding AutoDownloadMb}" Keyboard="Numeric" WidthRequest="120" HorizontalOptions="Start" />
+
+            <Label Text="{loc:Tr set_confirmsend}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Label Text="{loc:Tr set_confirmsend_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+            <Entry Text="{Binding ConfirmSendMb}" Keyboard="Numeric" WidthRequest="120" HorizontalOptions="Start" />
+
+            <Label Text="{loc:Tr set_transfer}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Label Text="{loc:Tr set_transfer_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+            <Picker ItemsSource="{Binding TransferChoices}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedTransfer}" />
+
+            <Label Text="{loc:Tr set_receipts}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_receipts_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding SendReadReceipts}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+
+            <Label Text="{loc:Tr set_typing}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_typing_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding TypingIndicator}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+
+            <Label Text="{loc:Tr set_privacy}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout>
+                    <Label Text="{loc:Tr set_kbd}" FontSize="15" />
+                    <Label Text="{loc:Tr set_kbd_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                </VerticalStackLayout>
+                <Switch Grid.Column="1" IsToggled="{Binding DiscreetKeyboard}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout>
+                    <Label Text="{loc:Tr set_secure}" FontSize="15" />
+                    <Label Text="{loc:Tr set_secure_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                </VerticalStackLayout>
+                <Switch Grid.Column="1" IsToggled="{Binding ProtectedScreen}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout>
+                    <Label Text="{loc:Tr set_lockscreen}" FontSize="15" />
+                    <Label Text="{loc:Tr set_lockscreen_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                </VerticalStackLayout>
+                <Switch Grid.Column="1" IsToggled="{Binding HideLockScreenContent}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+
+            <Label Text="{loc:Tr set_notifications}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_notifications_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding Notifications}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <!-- The phone refuses our notifications (permission, or switched off in its settings): say so, and lead there. -->
+            <Label Text="{loc:Tr set_notifications_blocked}" IsVisible="{Binding NotificationsBlocked}" TextColor="{StaticResource Danger}" FontSize="13">
+                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenNotificationSettingsCommand}" /></Label.GestureRecognizers>
+            </Label>
+            <ImageButton Source="ic_settings.png" StyleClass="Icon" HorizontalOptions="Start" Command="{Binding OpenNotificationSettingsCommand}" SemanticProperties.Description="{loc:Tr set_notifications_open}" />
+
+            <Label Text="{loc:Tr set_wake}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_wake_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding BackgroundWake}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <Label Text="{loc:Tr set_reliable_open}" TextColor="{StaticResource Primary}" FontSize="13" TextDecorations="Underline">
+                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenBackgroundSetupCommand}" /></Label.GestureRecognizers>
+            </Label>
+
+            <!-- Optional PIN, off by default: asked when the app comes back after a delay of non-use. -->
+            <Label Text="{loc:Tr lock_section}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr lock_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding LockEnabled}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <VerticalStackLayout IsVisible="{Binding LockEnabled}" Spacing="8">
+                <Label Text="{loc:Tr lock_delay}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Picker ItemsSource="{Binding LockDelays}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedLockDelay}" />
+                <Label Text="{loc:Tr lock_wipe}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Picker ItemsSource="{Binding WipeOptions}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedWipe}" />
+                <ImageButton Source="ic_key.png" StyleClass="Icon" HorizontalOptions="Start" Command="{Binding ChangePinCommand}" SemanticProperties.Description="{loc:Tr lock_change}" />
+            </VerticalStackLayout>
+
+            <Label Text="{loc:Tr wipe_section}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr wipe_section_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <ImageButton Grid.Column="1" Source="ic_settings.png" StyleClass="Icon" Command="{Binding OpenWipeCommand}" SemanticProperties.Description="{loc:Tr wipe_title}" />
+            </Grid>
+
+            <!-- After a theft: move to a new identity, and how to follow the migration of a contact. -->
+            <Label Text="{loc:Tr mig_section}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr mig_section_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <ImageButton Grid.Column="1" Source="ic_key.png" StyleClass="Icon" Command="{Binding OpenMigrateCommand}" SemanticProperties.Description="{loc:Tr mig_title}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_migrate_exclude_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding AutoExcludeMigrated}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_migrate_auto_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding AutoAcceptMigration}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+
+            <!-- Diagnostic journal for a bug report: off by default, kept on the phone, shared by hand. -->
+            <Label Text="{loc:Tr set_diag}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{loc:Tr set_diag_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding DiagLogEnabled}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+            <Button Text="{loc:Tr set_diag_share}" Command="{Binding ShareDiagLogCommand}" IsVisible="{Binding DiagLogEnabled}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout>
+                    <Label Text="{loc:Tr set_outbox}" FontSize="15" />
+                    <Label Text="{loc:Tr set_outbox_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                </VerticalStackLayout>
+                <Switch Grid.Column="1" IsToggled="{Binding ShowOutbox}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </Grid>
+
+            <!-- Checks a key file against this identity, without restoring anything. -->
+            <Label Text="{loc:Tr set_keyfile_section}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <Label Text="{loc:Tr set_keyfile_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Entry Text="{Binding KeyFilePassword}" IsPassword="True" Placeholder="{loc:Tr set_keyfile_password_hint}" />
+                <ImageButton Grid.Column="1" Source="ic_key.png" StyleClass="Icon" Command="{Binding VerifyKeyFileCommand}" SemanticProperties.Description="{loc:Tr set_keyfile_pick}" />
+            </Grid>
+            <ActivityIndicator IsRunning="{Binding KeyFileBusy}" IsVisible="{Binding KeyFileBusy}" />
+
+            <Label Text="{loc:Tr set_servers}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,12,0,0" />
+            <CollectionView ItemsSource="{Binding Servers}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,2">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="{Binding Url}" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Status}" FontSize="12" TextColor="{StaticResource Gray200}" />
+                                <!-- A private server (the server says so) turned me away: ask its administrator, or use an invitation. -->
+                                <HorizontalStackLayout Spacing="8" IsVisible="{Binding CanRequestAccess}">
+                                    <Button Text="{loc:Tr set_request_access}" HorizontalOptions="Start" FontSize="12" Padding="12,0" HeightRequest="32" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=RequestAccessCommand}" CommandParameter="{Binding .}" AutomationId="request_access" />
+                                    <Button Text="{loc:Tr set_use_invitation}" HorizontalOptions="Start" FontSize="12" Padding="12,0" HeightRequest="32" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=UseInvitationCommand}" CommandParameter="{Binding .}" AutomationId="use_invitation" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                            <ImageButton Grid.Column="1" Source="ic_close.png" StyleClass="Icon" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=RemoveServerCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_remove}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Text="{Binding NewServer}" Placeholder="{loc:Tr set_server_hint}" Keyboard="Url" />
+                <ImageButton Grid.Column="1" Source="ic_add.png" StyleClass="Icon" Command="{Binding AddServerCommand}" SemanticProperties.Description="{loc:Tr a11y_add}" />
+            </Grid>
+
+
+            <Label Text="{Binding VersionText}" TextColor="{StaticResource Gray300}" FontSize="12" HorizontalTextAlignment="Center" Margin="0,18,0,0" />
+            <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

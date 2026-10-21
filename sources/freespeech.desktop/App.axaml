@@ -1,0 +1,23 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FreeSpeech.Desktop.App"
+             RequestedThemeVariant="Dark">
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://FreeSpeech/Styles/Icons.axaml" />
+				<ResourceInclude Source="avares://FreeSpeech/Styles/ServerIcons.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+	<Application.Styles>
+		<FluentTheme />
+		<StyleInclude Source="avares://FreeSpeech/Styles/Theme.axaml" />
+	</Application.Styles>
+</Application>

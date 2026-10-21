@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:svc="clr-namespace:FreeSpeech.Mobile.Services" x:Class="FreeSpeech.Mobile.Controls.BrandTitleView" HorizontalOptions="Fill">
+    <!-- The menu button is the system's, on the left. Then the page's name, and on the right the servers' state, the brand and its logo. -->
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Padding="0,0,16,0" VerticalOptions="Center" HorizontalOptions="Fill">
+        <Label x:Name="HeadingLabel" FontSize="18" FontFamily="OpenSansSemibold" TextColor="{StaticResource White}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+        <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+            <Label Text="FreeSpeech" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+            <!-- The flag, with a small badge at its bottom right that tells where I stand on my servers (private or public, connected,
+                 waiting for approval, offline). A tap says it in words, server by server. -->
+            <Grid x:Name="FlagWithBadge" WidthRequest="34" HeightRequest="34" VerticalOptions="Center">
+                <Image Source="{x:Static svc:ThemeService.FlagLogo}" WidthRequest="30" HeightRequest="30" HorizontalOptions="Start" VerticalOptions="Start" />
+                <Image x:Name="StateBadge" WidthRequest="15" HeightRequest="15" HorizontalOptions="End" VerticalOptions="End" IsVisible="False" />
+            </Grid>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentView>

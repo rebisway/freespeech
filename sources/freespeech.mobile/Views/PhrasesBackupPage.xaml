@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.PhrasesBackupPage" Shell.FlyoutBehavior="Disabled">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,30" Spacing="14">
+            <Label Text="{loc:Tr ph_title}" FontSize="22" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" />
+            <Label Text="{loc:Tr ph_text}" TextColor="{StaticResource Gray200}" />
+            <Label Text="{loc:Tr ph_warning}" TextColor="{StaticResource Danger}" FontFamily="OpenSansSemibold" />
+
+            <VerticalStackLayout Spacing="12">
+                <Border IsVisible="{Binding Shown}" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeShape="RoundRectangle 12" Padding="14">
+                    <!-- A read-only editor, not a label: its text can be selected and copied. -->
+                    <Editor Text="{Binding PhrasesText}" IsReadOnly="True" AutoSize="TextChanges" FontSize="14" BackgroundColor="Transparent" />
+                </Border>
+                <ctl:ActionRow Icon="ic_open.png" Title="{Binding ShowLabel}" Command="{Binding ToggleShowCommand}" />
+                <Button Text="{loc:Tr phrases_copy}" Command="{Binding CopyCommand}" IsVisible="{Binding Shown}" HorizontalOptions="Start" />
+                <ctl:ActionRow Icon="ic_print.png" Title="{loc:Tr ph_print}" Hint="{loc:Tr ph_print_hint}" Command="{Binding PrintCommand}" />
+                <ctl:ActionRow Icon="ic_key.png" Title="{loc:Tr ph_file}" Hint="{loc:Tr ph_file_hint}" Command="{Binding ToggleFileCommand}" />
+
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding FileFormOpen}">
+                    <Entry Text="{Binding Password}" IsPassword="{Binding HidePassword}" Placeholder="{loc:Tr ph_password}" />
+                    <Entry Text="{Binding PasswordAgain}" IsPassword="{Binding HidePassword}" Placeholder="{loc:Tr ph_password2}" />
+                    <HorizontalStackLayout Spacing="8">
+                        <CheckBox IsChecked="{Binding ShowPassword}" VerticalOptions="Center" />
+                        <Label Text="{loc:Tr ph_show_password}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Label Text="{loc:Tr ph_file_warn}" TextColor="{StaticResource Gray300}" FontSize="12" />
+                    <Button Text="{loc:Tr ph_file_make}" Command="{Binding CreateFileCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" HorizontalOptions="Start" />
+                </VerticalStackLayout>
+                <Button Text="{loc:Tr phrases_saved}" Command="{Binding NotedCommand}" BackgroundColor="Transparent" TextColor="{StaticResource Gray200}" HorizontalOptions="Start" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Button Text="{loc:Tr ph_continue}" Command="{Binding ContinueCommand}" Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

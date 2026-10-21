@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FreeSpeech.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.12" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FreeSpeech.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,45 @@
+<svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="A generates an OTC and sends it to B out of band; B encrypts its contact card with a key derived from the OTC and sends it via the server; A decrypts and confirms back, still encrypted with the OTC">
+  <rect x="0" y="0" width="860" height="280" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  </style>
+  <text x="120" y="30" class="actor" text-anchor="middle">A</text>
+  <text x="420" y="30" class="actor" text-anchor="middle">Server (never decrypts)</text>
+  <text x="720" y="30" class="actor" text-anchor="middle">B</text>
+  <line x1="120" y1="45" x2="120" y2="255" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="420" y1="45" x2="420" y2="255" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="720" y1="45" x2="720" y2="255" stroke="#1c1a17" opacity="0.25"/>
+
+  <path d="M120 70 L716 70" fill="none" stroke="#1c1a17" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arrowInk)"/>
+  <text x="420" y="62" class="lbl" text-anchor="middle">OTC (16 chars) — in-person QR / Bluetooth, out of band, never touches the server</text>
+
+  <rect x="60" y="90" width="120" height="26" rx="4" fill="#dff0ef"/>
+  <text x="120" y="107" class="lbl-strong" text-anchor="middle">key = HKDF(otc)</text>
+  <rect x="660" y="90" width="120" height="26" rx="4" fill="#dff0ef"/>
+  <text x="720" y="107" class="lbl-strong" text-anchor="middle">key = HKDF(otc)</text>
+
+  <path d="M720 130 L426 130" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="570" y="122" class="lbl" text-anchor="middle">crypto=0: ContactCard(B) encrypted ChaCha20-Poly1305(key)</text>
+  <path d="M414 130 L126 130" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+
+  <text x="120" y="155" class="lbl" text-anchor="middle">decrypts, checks OTC + age</text>
+
+  <path d="M120 175 L414 175" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="270" y="167" class="lbl" text-anchor="middle">crypto=0: ContactCard(A) encrypted with the same key</text>
+  <path d="M426 175 L716 175" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+
+  <rect x="60" y="200" width="120" height="26" rx="4" fill="#dff0ef"/>
+  <text x="120" y="217" class="lbl-strong" text-anchor="middle">contact confirmed</text>
+  <rect x="660" y="200" width="120" height="26" rx="4" fill="#dff0ef"/>
+  <text x="720" y="217" class="lbl-strong" text-anchor="middle">contact confirmed</text>
+
+  <text x="420" y="245" class="lbl" text-anchor="middle" opacity="0.75">OTC discarded after use — invalidated globally, regardless of which device consumed it</text>
+
+  <defs>
+    <marker id="arrowInk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#1c1a17"/></marker>
+    <marker id="arrowAcc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+  </defs>
+  <text x="20" y="272" font-family="'IBM Plex Sans',sans-serif" font-size="12" fill="#6b665d">Validity: 10 min in qr mode, 1 month in manual mode.</text>
+</svg>

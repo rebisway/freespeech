@@ -1,0 +1,19 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FreeSpeech.Mobile"
+             xmlns:styles="clr-namespace:FreeSpeech.Mobile.Resources.Styles"
+             x:Class="FreeSpeech.Mobile.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <styles:Palette />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <local:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <local:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+            <local:InitialsConverter x:Key="InitialsConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

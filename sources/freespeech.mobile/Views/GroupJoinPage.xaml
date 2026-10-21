@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.GroupJoinPage" Title="{loc:Tr group_join_title}" Shell.FlyoutBehavior="Disabled">
+    <VerticalStackLayout Padding="24,20" Spacing="14">
+        <!-- The group and who invites. -->
+        <Label Text="{Binding GroupName}" FontFamily="OpenSansSemibold" FontSize="20" HorizontalTextAlignment="Center" />
+        <Label Text="{Binding InvitedBy}" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" />
+
+        <!-- How I appear in it: a picture (tap to change) and a name. -->
+        <Label Text="{loc:Tr group_my_name}" TextColor="{StaticResource Gray200}" FontSize="12" Margin="0,10,0,0" />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <ctl:AvatarView Title="{Binding MyName}" Photo="{Binding MyPhoto}" Size="64" VerticalOptions="Center">
+                <ctl:AvatarView.GestureRecognizers><TapGestureRecognizer Command="{Binding ChoosePhotoCommand}" /></ctl:AvatarView.GestureRecognizers>
+            </ctl:AvatarView>
+            <Entry Grid.Column="1" Text="{Binding MyName}" MaxLength="64" VerticalOptions="Center" />
+        </Grid>
+        <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+
+        <HorizontalStackLayout HorizontalOptions="End" Spacing="14" Margin="0,10,0,0">
+            <ImageButton Source="ic_close.png" StyleClass="Icon" Command="{Binding CancelCommand}" SemanticProperties.Description="{loc:Tr cancel}" />
+            <ImageButton Source="ic_check.png" StyleClass="Icon" Command="{Binding AcceptCommand}" SemanticProperties.Description="{loc:Tr a11y_accept}" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>

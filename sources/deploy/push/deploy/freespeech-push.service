@@ -1,0 +1,33 @@
+# FreeSpeech push gateway - systemd unit (copy to /etc/systemd/system/freespeech-push.service)
+# ONE place for the secrets: /var/www/freespeech_push/appsettings.Local.json (Admin:Secret, Fcm:ServiceAccountFile, Apns:*), and the
+# credential files it names in /var/www/freespeech_push/secrets/, readable by www-data only (chmod 600 / 700). Never in this file,
+# never in the repository, never in a publication. "dotnet FreeSpeech.Push.dll check" says what is missing.
+[Unit]
+Description=FreeSpeech push gateway
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/freespeech_push
+ExecStart=/usr/bin/dotnet /var/www/freespeech_push/FreeSpeech.Push.dll
+
+Restart=always
+RestartSec=10
+User=www-data
+
+# /var/lib/freespeech-push, created and owned by www-data: the relay keys (relays.json) and the limits (settings.json) live there.
+StateDirectory=freespeech-push
+Environment=Push__StatePath=/var/lib/freespeech-push
+
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5291
+Environment=DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=HOME=/var/www/freespeech_push
+
+# Light hardening (no private mounts that could get in the way of the .NET runtime).
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

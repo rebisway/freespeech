@@ -1,0 +1,17 @@
+<Project>
+
+	<!-- Server addresses compiled into the apps (the mobile app and the desktop client read them from the assembly metadata, see
+	     BuildDefaults.cs). The values below are placeholders. A real build sets its own in freespeech.defaults.props, next to this
+	     file: that file is not versioned and not published (start from freespeech.defaults.props.example). -->
+	<PropertyGroup>
+		<FsDefaultServer>https://relay.exemple.org</FsDefaultServer>
+		<!-- Directories a new identity asks for relays: url|public key (base64, shown by GET /peer/identity of the directory), separated by semicolons. Empty: none. -->
+		<FsDirectories></FsDirectories>
+		<FsFallbackServers>https://relay.exemple.org;https://relay2.exemple.org</FsFallbackServers>
+	</PropertyGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)version.props" />
+
+	<Import Project="$(MSBuildThisFileDirectory)freespeech.defaults.props" Condition="Exists('$(MSBuildThisFileDirectory)freespeech.defaults.props')" />
+
+</Project>

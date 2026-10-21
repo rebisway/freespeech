@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+*.user
+publish/
+appsettings.Local.json
+google-services.json
+*.keystore
+*.jks
+scripts/phrases.txt
+freespeech.defaults.props
+*.log

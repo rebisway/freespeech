@@ -1,0 +1,27 @@
+# FreeSpeech push gateway - nginx site (copy to /etc/nginx/sites-available/freespeech-push, link into sites-enabled,
+# then: sudo certbot --nginx -d push1.exemple.org). HTTP only on purpose: certbot adds the TLS block.
+#
+# The gateway is called only by the relay servers (one request per wake-up), so it can be limited hard.
+limit_req_zone $binary_remote_addr zone=freespeech_push:1m rate=5r/s;
+
+server {
+    listen 80;
+    server_name push1.exemple.org;
+
+    client_max_body_size 8k;
+
+    # The admin API (command "admin ...") is local only: not published, whatever the secret. The gateway also refuses calls whose
+    # forwarded address is not local; this block is the first of the two locks.
+    location /admin { return 404; }
+
+    location / {
+        limit_req zone=freespeech_push burst=20 nodelay;
+
+        proxy_pass http://127.0.0.1:5291;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

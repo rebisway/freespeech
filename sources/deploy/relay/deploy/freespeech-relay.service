@@ -1,0 +1,44 @@
+# FreeSpeech relay server - systemd unit (copy to /etc/systemd/system/freespeech-relay.service)
+[Unit]
+Description=FreeSpeech relay server
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/freespeech_relay
+ExecStart=/usr/bin/dotnet /var/www/freespeech_relay/FreeSpeech.Relay.dll
+
+Restart=always
+RestartSec=10
+User=www-data
+
+# /var/lib/freespeech, created and owned by www-data: the server state (siblings.json, access.json, peers.json, peer-identity.json) lives there, outside the published folder.
+StateDirectory=freespeech
+
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5290
+Environment=DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=HOME=/var/www/freespeech_relay
+# ONE place for the secrets: /var/www/freespeech_relay/appsettings.Local.json (Admin:Secret),
+# chmod 600, never in this file, never in the repository, never in a publication. "dotnet FreeSpeech.Relay.dll check" says what is missing.
+Environment=Server__SiblingsFilePath=/var/lib/freespeech/siblings.json
+# AGPL: the users of this server may ask where its source code is (GET /api/info). Set the address of the repository (or of your modified
+# version) here.
+#Environment=Server__SourceUrl=https://git.rebisway.com/rebisway/freespeech
+
+# Who may register (allowed, banned, invitations): changed with "admin allow|ban|invite|access ..." without a restart, saved here.
+Environment=Server__AccessFilePath=/var/lib/freespeech/access.json
+# Starting mode of a server that has no access file yet: "open" (everybody not banned) or "allowlist" (a private server for invited people only).
+#Environment=Server__ClientAccess=allowlist
+
+# Privacy: at Information level the server logs who is connected and who writes to whom. In production only warnings and errors of
+# the FreeSpeech code are kept (the .NET host's own start-up lines stay).
+Environment=Logging__LogLevel__FreeSpeech=Warning
+
+# Push wake-ups (protocol section 9) and sibling relays are enrolled with the admin command, not here:
+#   dotnet FreeSpeech.Relay.dll admin add push https://push1.exemple.org      (the gateway's administrator accepts)
+#   dotnet FreeSpeech.Relay.dll admin add relay https://other-relay.example.org (both relays public)
+# The peers (peer-identity.json, peers.json) are saved next to access.json in /var/lib/freespeech.
+
+[Install]
+WantedBy=multi-user.target

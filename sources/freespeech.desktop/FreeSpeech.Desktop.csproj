@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- The desktop client (Windows, macOS, Linux). Its own interface, designed for a window with a keyboard and a mouse; it shares only
+	     the client library with the mobile app. Not part of FreeSpeech.slnx: see FreeSpeech.Desktop.slnx. -->
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ApplicationIcon>Assets\freespeech.ico</ApplicationIcon>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>FreeSpeech.Desktop</RootNamespace>
+		<AssemblyName>FreeSpeech</AssemblyName>
+		<AssemblyTitle>FreeSpeech</AssemblyTitle>
+		<Product>FreeSpeech</Product>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+			<Version>$(FsDesktopVersion)</Version>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<!-- The printed sheet of recovery phrases: its QR code is drawn here and read back from a picture of it. -->
+		<PackageReference Include="QRCoder" Version="1.8.0" />
+		<!-- The profile picture: cut out, reduced and saved as a small JPEG (Avalonia draws with it, so it is already there). -->
+		<PackageReference Include="SkiaSharp" Version="3.119.4" />
+		<PackageReference Include="ZXing.Net" Version="0.16.11" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\freespeech.client\FreeSpeech.Client.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+		<!-- The flag of the title bar and of the side menu: the mobile app's picture. -->
+		<AvaloniaResource Include="..\freespeech.mobile\Resources\Images\logo_flag.png" Link="Assets\logo_flag.png" />
+		<AvaloniaResource Include="..\freespeech.mobile\Resources\Images\logo_flag_light.png" Link="Assets\logo_flag_light.png" />
+		<!-- The texts: the same language files as the mobile app (one JSON per language). -->
+		<EmbeddedResource Include="..\freespeech.mobile\Localization\Lang\*.json" LogicalName="Lang.%(Filename)%(Extension)" Link="Lang\%(Filename)%(Extension)" />
+		<!-- The public-domain books the recovery phrases are drawn from: the same files as the mobile app. -->
+		<EmbeddedResource Include="..\freespeech.mobile\Resources\Raw\books\*.txt.gz" LogicalName="Book.%(Filename)%(Extension)" Link="Books\%(Filename)%(Extension)" WithCulture="false" />
+		<!-- The desktop's own texts (keys starting with d_). -->
+		<EmbeddedResource Include="Texts\*.json" LogicalName="Desk.%(Filename)%(Extension)" WithCulture="false" />
+	</ItemGroup>
+
+	<!-- Default relay chosen at build time (sources/Directory.Build.props, overridden by the unversioned freespeech.defaults.props), read by BuildDefaults.cs. -->
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>DefaultServer</_Parameter1><_Parameter2>$(FsDefaultServer)</_Parameter2></AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>Directories</_Parameter1><_Parameter2>$(FsDirectories)</_Parameter2></AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>FallbackServers</_Parameter1><_Parameter2>$(FsFallbackServers)</_Parameter2></AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>VersionDate</_Parameter1><_Parameter2>$(FsDesktopVersionDate)</_Parameter2></AssemblyAttribute>
+	</ItemGroup>
+
+</Project>

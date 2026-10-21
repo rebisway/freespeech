@@ -1,0 +1,33 @@
+# FreeSpeech directory - systemd unit (copy to /etc/systemd/system/freespeech-directory.service)
+# ONE place for the secret: /var/www/freespeech_directory/appsettings.Local.json (Admin:Secret, Peer:PublicUrl), readable by www-data only
+# (chmod 600). Never in this file, never in the repository, never in a publication. "dotnet FreeSpeech.Directory.dll check" says what is missing.
+[Unit]
+Description=FreeSpeech directory
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/freespeech_directory
+ExecStart=/usr/bin/dotnet /var/www/freespeech_directory/FreeSpeech.Directory.dll
+
+Restart=always
+RestartSec=10
+User=www-data
+
+# /var/lib/freespeech-directory, created and owned by www-data: the directory's key (peer-identity.json: clients pin its public key,
+# keep a copy) and the relays it knows (peers.json) live there.
+StateDirectory=freespeech-directory
+Environment=Directory__StatePath=/var/lib/freespeech-directory
+
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5294
+Environment=DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=HOME=/var/www/freespeech_directory
+
+# Light hardening (no private mounts that could get in the way of the .NET runtime).
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

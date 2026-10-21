@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="FreeSpeech.Mobile.Controls.AvatarView" WidthRequest="44" HeightRequest="44" HorizontalOptions="Center" VerticalOptions="Center">
+    <!-- A contact is a round badge with its picture or its initials; a group is a round badge too, with its picture or the "people" glyph; a group with a picture carries a small "people" mark in a corner, so the two still read differently at a glance. -->
+    <Grid>
+        <Border x:Name="PersonBadge" BackgroundColor="{StaticResource Gray600}" StrokeShape="RoundRectangle 22" Stroke="{StaticResource Gray500}">
+            <Grid>
+                <Label x:Name="Initials" TextColor="{StaticResource Primary}" FontFamily="OpenSansSemibold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Image x:Name="PersonPhoto" Aspect="AspectFill" IsVisible="False" />
+            </Grid>
+        </Border>
+        <Border x:Name="GroupBadge" IsVisible="False" BackgroundColor="{StaticResource BubbleMine}" StrokeShape="RoundRectangle 22" Stroke="{StaticResource Primary}">
+            <Grid>
+                <Image x:Name="GroupGlyph" Source="ic_people.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Image x:Name="GroupPhoto" Aspect="AspectFill" IsVisible="False" />
+            </Grid>
+        </Border>
+        <!-- The mark overlaps the circle's edge a little, like a reaction on a bubble. -->
+        <Border x:Name="GroupMark" IsVisible="False" HorizontalOptions="End" VerticalOptions="End" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 8" WidthRequest="16" HeightRequest="16">
+            <Image Source="ic_people.png" WidthRequest="10" HeightRequest="10" HorizontalOptions="Center" VerticalOptions="Center" x:Name="GroupMarkGlyph" />
+        </Border>
+    </Grid>
+</ContentView>

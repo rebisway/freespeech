@@ -1,0 +1,75 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:v="using:FreeSpeech.Desktop.Views"
+             x:Class="FreeSpeech.Desktop.Views.OnboardingView"
+             x:DataType="vm:MainViewModel">
+	<ScrollViewer>
+		<StackPanel Margin="28,32" Spacing="12" MaxWidth="460" HorizontalAlignment="Stretch">
+			<TextBlock Text="{Binding OnboardingTitle}" Classes="title" Foreground="{DynamicResource PrimaryBrush}" />
+			<TextBlock Text="{Binding OnboardingText}" Classes="muted" TextWrapping="Wrap" />
+
+			<!-- Step 1: two plain choices, nothing to type. -->
+			<StackPanel Spacing="10" IsVisible="{Binding IsChoose}">
+				<Button Command="{Binding StartFirstCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+					<StackPanel><TextBlock Text="{Binding FirstRowTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding FirstRowHint}" Classes="muted" FontSize="12" /></StackPanel>
+				</Button>
+				<Button Command="{Binding StartRestoreCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+					<StackPanel><TextBlock Text="{Binding RestoreRowTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding RestoreRowHint}" Classes="muted" FontSize="12" /></StackPanel>
+				</Button>
+			</StackPanel>
+
+			<!-- First connection: just a name. -->
+			<TextBox Text="{Binding Nickname}" PlaceholderText="{Binding NicknameLabel}" IsVisible="{Binding IsFirst}" />
+
+			<!-- Restore: the three phrases, then (optional) the backup file that gives back contacts and messages. -->
+			<StackPanel Spacing="12" IsVisible="{Binding ShowPhraseFields}">
+				<TextBox Text="{Binding Phrase1}" PlaceholderText="{Binding Phrase1Label}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" />
+				<TextBox Text="{Binding Phrase2}" PlaceholderText="{Binding Phrase2Label}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" />
+				<TextBox Text="{Binding Phrase3}" PlaceholderText="{Binding Phrase3Label}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" />
+				<Button Content="{Binding PasteThreeLabel}" Command="{Binding PastePhrasesCommand}" HorizontalAlignment="Left" />
+
+				<!-- Other ways to bring the phrases back: a protected key file, or the printed sheet's QR code. -->
+				<Button Command="{Binding PickKeyFileCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+					<StackPanel><TextBlock Text="{Binding KeyFileRowTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding KeyFileRowHint}" Classes="muted" FontSize="12" /></StackPanel>
+				</Button>
+				<StackPanel Spacing="8" IsVisible="{Binding HasKeyFile}">
+					<TextBlock Text="{Binding KeyFileLabel}" Foreground="{DynamicResource PrimaryBrush}" FontSize="14" />
+					<TextBox Text="{Binding KeyPassword}" PasswordChar="{Binding KeyPasswordChar}" PlaceholderText="{Binding KeyPasswordLabel}" />
+					<CheckBox IsChecked="{Binding ShowKeyPassword}" Content="{Binding ShowPasswordLabel}" />
+					<Button Content="{Binding KeyOpenLabel}" Command="{Binding OpenKeyFileCommand}" HorizontalAlignment="Left" />
+				</StackPanel>
+				<Button Command="{Binding ScanSheetCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+					<StackPanel><TextBlock Text="{Binding SheetRowTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding SheetRowHint}" Classes="muted" FontSize="12" /></StackPanel>
+				</Button>
+			</StackPanel>
+			<Button Command="{Binding PickBackupCommand}" IsVisible="{Binding IsRestore}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="16,12">
+				<StackPanel><TextBlock Text="{Binding BackupRowTitle}" FontWeight="SemiBold" /><TextBlock Text="{Binding BackupRowHint}" Classes="muted" FontSize="12" /></StackPanel>
+			</Button>
+			<TextBlock Text="{Binding RestoreLabel}" IsVisible="{Binding HasRestoreFile}" Foreground="{DynamicResource PrimaryBrush}" FontSize="14" />
+
+			<StackPanel Spacing="6" IsVisible="{Binding ShowServer}">
+				<TextBlock Text="{Binding ServerLabel}" Classes="muted" FontSize="12" />
+				<TextBox Text="{Binding Server}" PlaceholderText="https://..." />
+			</StackPanel>
+
+			<!-- The save screen of a new identity: shown, copied, printed, or in a protected file. -->
+			<ContentControl Content="{Binding PhrasesSave}">
+				<ContentControl.DataTemplates>
+					<DataTemplate DataType="vm:PhrasesSaveViewModel"><v:PhrasesSaveView /></DataTemplate>
+				</ContentControl.DataTemplates>
+			</ContentControl>
+
+			<TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<Button Content="{Binding StartLabel}" Command="{Binding SubmitCommand}" IsVisible="{Binding ShowSubmit}" IsEnabled="{Binding !Busy}" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,10" />
+			<Button Content="{Binding AdvancedText}" Command="{Binding ToggleAdvancedCommand}" IsVisible="{Binding ShowAdvancedToggle}" Classes="flat" HorizontalAlignment="Center" FontSize="13" />
+			<Button Content="{Binding BackLabel}" Command="{Binding BackToChoiceCommand}" IsVisible="{Binding ShowAdvancedToggle}" Classes="flat" HorizontalAlignment="Center" FontSize="13" />
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

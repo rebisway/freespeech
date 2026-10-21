@@ -1,0 +1,176 @@
+<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.ChatView"
+             x:DataType="vm:ChatViewModel">
+	<DockPanel>
+		<!-- The bar shows who this is: picture (or initials, or the group glyph) then the name, and the actions of the conversation. -->
+		<Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="10,8">
+			<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+				<StackPanel Orientation="Horizontal" Spacing="10">
+					<Button Classes="iconflat" Command="{Binding BackCommand}" IsVisible="{Binding ShowBack}"><PathIcon Data="{StaticResource Icon.back}" /></Button>
+					<c:Avatar Title="{Binding Title}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" Size="32" VerticalAlignment="Center" />
+				</StackPanel>
+				<StackPanel Grid.Column="1" VerticalAlignment="Center">
+					<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+							<!-- Grey check: a contact I have not verified yet; gold check: a contact whose safety number I compared. Clicking it opens the number. -->
+							<Button Classes="flat" Padding="2,0" MinHeight="0" IsVisible="{Binding ContactUnverified}" Content="✓" FontSize="15" VerticalAlignment="Center" Command="{Binding OpenContactSafetyCommand}" />
+							<Button Classes="flat" Padding="2,0" MinHeight="0" IsVisible="{Binding ContactVerified}" Content="✓" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Command="{Binding OpenContactSafetyCommand}" />
+						</StackPanel>
+					<TextBlock Text="{Binding TypingText}" IsVisible="{Binding IsTyping}" Foreground="{DynamicResource PrimaryBrush}" FontSize="12" />
+						<!-- A group where I use another name or picture: who I am there. -->
+						<StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding ShowMyIdentity}">
+							<c:Avatar Title="{Binding MyGroupName}" Photo="{Binding MyGroupPhoto}" Size="16" VerticalAlignment="Center" />
+							<TextBlock Text="{Binding MyIdentityText}" Classes="hint" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+						</StackPanel>
+				</StackPanel>
+				<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+					<Button Classes="iconflat" Command="{Binding ToggleSearchCommand}" ToolTip.Tip="{Binding SearchHint}"><PathIcon Data="{StaticResource Icon.search}" /></Button>
+					<!-- Silent mode: no popup (the unread counter stays). -->
+					<Button Classes="iconflat" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="{Binding MuteTip}"><PathIcon Data="{Binding MuteIcon}" /></Button>
+					<!-- Groups only: members, roles and what my role lets me change. -->
+					<Button Classes="iconflat" IsVisible="{Binding IsGroup}" Command="{Binding OpenGroupInfoCommand}" ToolTip.Tip="{Binding GroupInfoTip}"><PathIcon Data="{StaticResource Icon.settings}" /></Button>
+					<!-- A contact: a name only I see, and the safety number to compare. -->
+					<Button Classes="iconflat" IsVisible="{Binding IsDirect}" Command="{Binding ContactMenuCommand}" ToolTip.Tip="{Binding ContactMenuTip}"><PathIcon Data="{StaticResource Icon.settings}" /></Button>
+				</StackPanel>
+			</Grid>
+		</Border>
+
+		<!-- The pinned message of the group (a click goes to it, and on to the next one when there are several). -->
+		<Button DockPanel.Dock="Top" Classes="flat" IsVisible="{Binding ShowPinned}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" CornerRadius="0" Padding="12,8" Command="{Binding GoToPinnedCommand}">
+			<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+				<PathIcon Data="{StaticResource Icon.pin}" Foreground="{DynamicResource PrimaryBrush}" Width="14" Height="14" />
+				<TextBlock Grid.Column="1" Text="{Binding PinnedPreview}" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" MaxLines="{Binding PinnedMaxLines}" FontSize="13" />
+				<TextBlock Grid.Column="2" Text="{Binding PinnedCount}" Foreground="{DynamicResource PrimaryBrush}" FontSize="12" />
+			</Grid>
+		</Button>
+
+		<!-- The composer, with what waits to be sent and the answer being written. -->
+		<Border DockPanel.Dock="Bottom" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Padding="10,8">
+			<StackPanel Spacing="6">
+				<TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				<TextBlock Text="{Binding ReadOnlyText}" Classes="hint" IsVisible="{Binding IsReadOnly}" />
+				<Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasReply}">
+					<Border Background="{DynamicResource RaisedBrush}" CornerRadius="8" Padding="10,6"><TextBlock Text="{Binding ReplyBanner}" FontSize="12" TextTrimming="CharacterEllipsis" /></Border>
+					<Button Grid.Column="1" Classes="iconflat" Command="{Binding CancelReplyCommand}"><PathIcon Data="{StaticResource Icon.close}" /></Button>
+				</Grid>
+				<ItemsControl ItemsSource="{Binding Pending}" IsVisible="{Binding HasPending}">
+					<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:PendingFile">
+							<Border Background="{DynamicResource RaisedBrush}" CornerRadius="8" Padding="6" Margin="0,0,6,6">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<Image Source="{Binding Thumb}" Width="48" Height="48" Stretch="UniformToFill" IsVisible="{Binding IsImage}" />
+									<TextBlock Text="{Binding Name}" IsVisible="{Binding IsOther}" VerticalAlignment="Center" MaxWidth="180" TextTrimming="CharacterEllipsis" />
+									<Button Classes="iconflat" Width="28" Height="28" Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).RemovePendingCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.close}" Width="14" Height="14" /></Button>
+								</StackPanel>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+				<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding CanWrite}">
+					<Button Classes="iconflat" VerticalAlignment="Bottom" Command="{Binding AttachCommand}" ToolTip.Tip="{Binding AttachTip}"><PathIcon Data="{StaticResource Icon.attach}" /></Button>
+					<TextBox x:Name="Composer" Grid.Column="1" Text="{Binding Draft}" PlaceholderText="{Binding HintText}" FontSize="13" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="140" />
+					<Button Grid.Column="2" Classes="icon" Width="32" Height="32" CornerRadius="16" VerticalAlignment="Bottom" Background="Transparent" Command="{Binding SendCommand}" ToolTip.Tip="{Binding SendTip}">
+						<PathIcon Data="{StaticResource Icon.send}" Foreground="{DynamicResource PrimaryBrush}" />
+					</Button>
+				</Grid>
+			</StackPanel>
+		</Border>
+
+		<Grid>
+			<ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+				<ItemsControl ItemsSource="{Binding Items}" Margin="12,8">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:ChatItem">
+							<Grid>
+								<!-- "N unread messages": a line, not a bubble. -->
+								<TextBlock Text="{Binding Text}" IsVisible="{Binding IsSeparator}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" Margin="0,6" />
+								<Grid RowDefinitions="Auto,Auto" IsVisible="{Binding IsBubble}" HorizontalAlignment="{Binding Align}" MaxWidth="440" Margin="0,2,0,2">
+									<Border Classes="bubble" Classes.mine="{Binding IsMine}" Classes.theirs="{Binding !IsMine}" Classes.found="{Binding Found}" Opacity="{Binding Opacity}" Padding="{Binding BubblePadding}" PointerReleased="OnBubbleReleased">
+										<StackPanel Spacing="3">
+											<StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding ShowAuthor}">
+												<c:Avatar Title="{Binding Author}" Photo="{Binding AuthorPhoto}" Size="18" VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Author}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+											</StackPanel>
+											<Border IsVisible="{Binding HasReply}" Background="#33000000" CornerRadius="6" Padding="8,4">
+												<StackPanel Orientation="Horizontal" Spacing="8">
+													<Image Source="{Binding ReplyThumb}" Width="34" Height="34" Stretch="UniformToFill" IsVisible="{Binding HasReplyThumb}" />
+													<TextBlock Text="{Binding ReplyPreview}" FontSize="12" Foreground="{DynamicResource MutedBrush}" MaxLines="2" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+													<!-- A contact of mine: grey check; one whose safety number I compared: gold check. Clicking it opens the number. -->
+													<Button Classes="flat" Padding="2,0" MinHeight="0" IsVisible="{Binding AuthorIsContact}" Content="✓" FontSize="13" VerticalAlignment="Center" Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).OpenSafetyCommand}" CommandParameter="{Binding}" />
+													<Button Classes="flat" Padding="2,0" MinHeight="0" IsVisible="{Binding AuthorIsVerified}" Content="✓" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).OpenSafetyCommand}" CommandParameter="{Binding}" />
+												</StackPanel>
+											</Border>
+											<!-- A picture: its thumbnail; a click opens it in the system's viewer. -->
+											<Border IsVisible="{Binding HasImage}" CornerRadius="10" ClipToBounds="True" HorizontalAlignment="Left">
+												<Image Source="{Binding Image}" MaxWidth="320" MaxHeight="320" Stretch="Uniform" Cursor="Hand" />
+											</Border>
+											<!-- A downloaded video or voice message: a play line, opened in the system's player. -->
+											<TextBlock Text="{Binding MediaLabel}" IsVisible="{Binding IsVideo}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand" />
+											<TextBlock Text="{Binding MediaLabel}" IsVisible="{Binding IsAudio}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand" />
+											<c:MarkupText ContextFlyout="{x:Null}" Raw="{Binding Display}" IsVisible="{Binding ShowText}" TextWrapping="Wrap" FontSize="{Binding TextSize}" FontStyle="{Binding TextStyle}" />
+											<StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasFileStatus}" Cursor="Hand">
+												<Ellipse Width="9" Height="9" Fill="{Binding FileDot}" VerticalAlignment="Center" />
+												<TextBlock Text="{Binding FileStatus}" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+											</StackPanel>
+											<!-- Time, then for my messages one tick (sent) or two gold ticks (read by the contact). -->
+											<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+												<TextBlock Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontStyle="Italic" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Time}" FontSize="9" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" Classes="ticks" Classes.read="{Binding ReadByPeer}" FontSize="10" VerticalAlignment="Center" />
+											</StackPanel>
+										</StackPanel>
+									</Border>
+									<TextBlock Text="{Binding ReactionsText}" IsVisible="{Binding HasReactions}" FontSize="12" Grid.Row="1" HorizontalAlignment="Left" Margin="8,2,0,0" />
+								</Grid>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+
+			<!-- Search in this conversation: a field and the messages found (newest first); a click goes to the message. -->
+			<Grid IsVisible="{Binding IsSearchOpen}" Background="{DynamicResource SurfaceBrush}" RowDefinitions="Auto,*">
+				<TextBox x:Name="SearchBox" Text="{Binding SearchText}" PlaceholderText="{Binding SearchHint}" Margin="10,8" />
+				<TextBlock Grid.Row="1" Text="{Binding SearchNoneText}" IsVisible="{Binding NoResults}" Classes="hint" HorizontalAlignment="Center" Margin="30" />
+				<ListBox Grid.Row="1" ItemsSource="{Binding Results}" Background="Transparent" SelectionChanged="OnResultSelected">
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="vm:SearchResult">
+							<StackPanel Margin="14,8" Spacing="2">
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<TextBlock Text="{Binding Author}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" />
+									<TextBlock Text="{Binding TimeText}" Classes="muted" FontSize="12" />
+								</StackPanel>
+								<TextBlock Text="{Binding Snippet}" TextWrapping="Wrap" FontSize="12" />
+							</StackPanel>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+
+			<!-- The reaction bar: opened by "React" in the menu of a message someone else wrote. -->
+			<Border IsVisible="{Binding IsReactionBarOpen}" Background="#66000000">
+				<Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="32" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center">
+					<ItemsControl ItemsSource="{Binding ReactionEmojis}">
+						<ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="x:String">
+								<Button Content="{Binding}" FontSize="24" Classes="flat" Padding="8,4"
+								        Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).PickReactionCommand}" CommandParameter="{Binding}" />
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</Border>
+			</Border>
+		</Grid>
+	</DockPanel>
+</UserControl>

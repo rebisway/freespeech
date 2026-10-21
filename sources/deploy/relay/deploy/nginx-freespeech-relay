@@ -1,0 +1,59 @@
+# FreeSpeech relay server - nginx site (copy to /etc/nginx/sites-available/freespeech, link into sites-enabled).
+# HTTP only on purpose: "certbot --nginx -d relay1.exemple.org" adds the TLS block and the http -> https redirect itself.
+
+# WebSocket upgrade: "upgrade" when the client asks for it, "close" otherwise. Named for this site so it cannot clash with another file.
+map $http_upgrade $freespeech_connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+# Abuse limits per client address (zones live at http level, like the map above). Generous on purpose: a mobile operator can
+# put many phones behind one address. They stop a single machine from opening thousands of sockets or hammering the API.
+limit_conn_zone $binary_remote_addr zone=freespeech_conn:10m;
+limit_req_zone  $binary_remote_addr zone=freespeech_req:10m rate=20r/s;
+
+server {
+    listen 80;
+    server_name relay1.exemple.org;
+
+    # No access log for this site: it would record, for every phone, an address and the time of each connection.
+    # Errors are still logged (error_log).
+    access_log off;
+
+    limit_conn freespeech_conn 100;
+    limit_req  zone=freespeech_req burst=60 nodelay;
+
+    # The admin API is not reachable from the internet at all. Administer from the VM itself, through an SSH tunnel:
+    #   ssh -L 5290:127.0.0.1:5290 ubuntu@<vm>   then   curl -H "X-Admin-Secret: ..." http://127.0.0.1:5290/api/admin/status
+    location /api/admin { return 404; }
+
+    # Messages are small; files travel in chunks through the same sockets.
+    client_max_body_size 1m;
+
+    location / {
+        proxy_pass http://127.0.0.1:5290;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # The realtime relay: long-lived WebSockets. nginx's default 60 s read timeout would cut every idle connection.
+    location /ws/relay {
+        proxy_pass http://127.0.0.1:5290;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $freespeech_connection_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        proxy_buffering off;
+    }
+}

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:svc="clr-namespace:FreeSpeech.Mobile.Services" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" x:Class="FreeSpeech.Mobile.Views.StartPage" Shell.NavBarIsVisible="False" Shell.FlyoutBehavior="Disabled">
+    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="18">
+        <Image Source="{x:Static svc:ThemeService.Logo}" WidthRequest="96" HeightRequest="96" HorizontalOptions="Center" />
+        <Label Text="FreeSpeech" FontSize="34" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" HorizontalOptions="Center" />
+        <ActivityIndicator x:Name="Spinner" IsRunning="True" />
+        <Label x:Name="Message" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" />
+        <ImageButton x:Name="Retry" Source="ic_refresh.png" StyleClass="Icon" HorizontalOptions="Center" IsVisible="False" Clicked="OnRetry" SemanticProperties.Description="{loc:Tr a11y_refresh}" />
+    </VerticalStackLayout>
+</ContentPage>

@@ -1,0 +1,56 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+        x:Class="FreeSpeech.Desktop.Views.PopupWindow"
+        x:DataType="vm:PopupViewModel"
+        Width="360" SizeToContent="Height" CanResize="False" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
+        WindowDecorations="None" Background="Transparent" TransparencyLevelHint="Transparent"
+        Icon="avares://FreeSpeech/Assets/freespeech.ico" Title="FreeSpeech">
+	<ItemsControl ItemsSource="{Binding Cards}" Margin="6">
+		<ItemsControl.ItemTemplate>
+			<DataTemplate x:DataType="vm:PopupCard">
+				<Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardEdgeBrush}" BorderThickness="1.5" CornerRadius="14" Padding="12" Margin="0,0,0,8"
+				        PointerEntered="OnCardEntered" PointerExited="OnCardExited">
+					<StackPanel Spacing="8">
+						<Grid ColumnDefinitions="Auto,*,Auto">
+							<Border Classes="avatar" Margin="0,0,10,0" Width="36" Height="36" CornerRadius="18">
+								<TextBlock Text="{Binding Initial}" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" />
+							</Border>
+							<Button Grid.Column="1" Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="0"
+							        Command="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}">
+								<StackPanel>
+									<TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+									<TextBlock Text="{Binding Text}" Classes="muted" FontSize="13" MaxLines="3" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" IsVisible="{Binding !HasThumb}" />
+									<Border IsVisible="{Binding HasThumb}" CornerRadius="8" ClipToBounds="True" HorizontalAlignment="Left" Margin="0,4,0,0">
+										<Image Source="{Binding Thumb}" Stretch="Uniform" MaxHeight="160" />
+									</Border>
+								</StackPanel>
+							</Button>
+							<Button Grid.Column="2" Classes="iconflat" Width="24" Height="24" VerticalAlignment="Top" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).CloseTip}"
+							        Command="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).DismissCommand}" CommandParameter="{Binding}">
+								<PathIcon Data="{StaticResource Icon.close}" Width="11" Height="11" />
+							</Button>
+						</Grid>
+						<Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+							<TextBox Text="{Binding Draft}" PlaceholderText="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).ReplyHint}" KeyDown="OnReplyKeyDown" GotFocus="OnReplyFocused" />
+							<Button Grid.Column="1" Classes="icon" Width="30" Height="30" CornerRadius="15" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).OpenTip}"
+								        Command="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}">
+									<PathIcon Data="{StaticResource Icon.open}" Width="16" Height="16" />
+								</Button>
+								<Button Grid.Column="2" Classes="icon" Width="30" Height="30" CornerRadius="15" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).SendTip}"
+							        Command="{Binding $parent[ItemsControl].((vm:PopupViewModel)DataContext).ReplyCommand}" CommandParameter="{Binding}">
+								<PathIcon Data="{StaticResource Icon.send}" Width="16" Height="16" />
+							</Button>
+						</Grid>
+					</StackPanel>
+				</Border>
+			</DataTemplate>
+		</ItemsControl.ItemTemplate>
+	</ItemsControl>
+</Window>

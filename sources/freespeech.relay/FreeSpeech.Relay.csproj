@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>$(FsRelayVersion)</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Release date, shown next to the version (admin version, notification mails). -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>VersionDate</_Parameter1><_Parameter2>$(FsRelayVersionDate)</_Parameter2></AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <!-- Ed25519 verification of the registration proof (same library as the client). -->
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared operations toolkit: runtime log levels, log ring, per-identity trace, admin command-line plumbing. -->
+    <ProjectReference Include="..\freespeech.ops\FreeSpeech.Ops.csproj" />
+  </ItemGroup>
+
+</Project>

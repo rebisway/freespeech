@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- allowBackup=false: SecureStorage (Keystore-wrapped) must not be restored onto another device. -->
+	<application android:allowBackup="false" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"
+	             android:networkSecurityConfig="@xml/network_security_config"></application>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.CAMERA" />
+	<!-- The camera app writes the picture where MediaPicker asks it to: needed up to Android 12 (the system gives it to apps above). -->
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<!-- One Yes/No box that leaves the app out of battery optimisation, so the push wake-up can start it. -->
+	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+	<!-- A push wake-up that has to serve a long transfer keeps the process alive with a foreground service. -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-feature android:name="android.hardware.microphone" android:required="false" />
+	<uses-feature android:name="android.hardware.camera" android:required="false" />
+	<!-- MediaPicker starts the camera app through these intents (package visibility, Android 11+). -->
+	<queries>
+		<intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent>
+		<intent><action android:name="android.media.action.VIDEO_CAPTURE" /></intent>
+	</queries>
+</manifest>

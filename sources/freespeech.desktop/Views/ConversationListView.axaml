@@ -1,0 +1,63 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.ConversationListView"
+             x:DataType="vm:MainViewModel">
+	<DockPanel Background="{DynamicResource SurfaceBrush}">
+		<TextBox DockPanel.Dock="Top" Margin="12,10,12,8" Text="{Binding Search}" PlaceholderText="{Binding SearchLabel}" />
+		<!-- The latest system notice (request, invitation, proposal, identity change): a click opens Approve, the cross closes it. -->
+		<Border DockPanel.Dock="Top" IsVisible="{Binding HasBanner}" Background="{DynamicResource RaisedBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="10" Margin="12,0,12,6">
+			<Grid ColumnDefinitions="*,Auto">
+				<Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,7" Command="{Binding OpenBannerCommand}">
+					<StackPanel>
+						<TextBlock Text="{Binding BannerTitle}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}" TextTrimming="CharacterEllipsis" />
+						<TextBlock Text="{Binding BannerText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+					</StackPanel>
+				</Button>
+				<Button Grid.Column="1" Classes="iconflat" Command="{Binding DismissBannerCommand}" Margin="0,0,4,0"><PathIcon Data="{StaticResource Icon.close}" Width="12" Height="12" /></Button>
+			</Grid>
+		</Border>
+		<!-- What waits for my answer (request, invitation, proposal), like a message at the top of the list: a click goes to Approve, as on the mobile app's bar. -->
+		<ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Approvals}" IsVisible="{Binding HasApprovals}" Margin="12,0,12,6">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate x:DataType="vm:ApprovalItem">
+					<Button Classes="card" Margin="0,0,0,6" Padding="10,8" Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).OpenApproveCommand}">
+						<Grid ColumnDefinitions="Auto,*">
+							<c:Avatar Grid.Column="0" Margin="0,0,10,0" Title="{Binding Title}" Photo="{Binding Photo}" IsGroup="{Binding IsGroup}" />
+							<StackPanel Grid.Column="1" VerticalAlignment="Center">
+								<TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" TextTrimming="CharacterEllipsis" />
+								<TextBlock Text="{Binding Subtitle}" Classes="muted" FontSize="12" IsVisible="{Binding HasSubtitle}" TextTrimming="CharacterEllipsis" />
+							</StackPanel>
+						</Grid>
+					</Button>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+		<ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" Background="Transparent">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="vm:ConversationRow">
+					<Grid ColumnDefinitions="Auto,*,Auto" Margin="14,8">
+						<c:Avatar Grid.Column="0" Margin="0,0,12,0" Title="{Binding Title}" Photo="{Binding Photo}" IsGroup="{Binding IsGroup}" />
+						<StackPanel Grid.Column="1" VerticalAlignment="Center">
+							<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
+							<TextBlock Text="{Binding Preview}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+						</StackPanel>
+						<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="4">
+							<TextBlock Text="{Binding Time}" Classes="muted" FontSize="11" HorizontalAlignment="Right" />
+							<Border Classes="badge" IsVisible="{Binding HasUnread}" HorizontalAlignment="Right">
+								<TextBlock Text="{Binding UnreadText}" Foreground="{DynamicResource OnPrimaryBrush}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+							</Border>
+						</StackPanel>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</DockPanel>
+</UserControl>

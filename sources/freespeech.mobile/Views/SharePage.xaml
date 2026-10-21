@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.SharePage" Title="{loc:Tr share_title}" Shell.FlyoutBehavior="Disabled">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- What is being shared, then who gets it. -->
+        <VerticalStackLayout Grid.Row="0" Padding="18,12,18,6" Spacing="4">
+            <Label Text="{Binding Summary}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+            <CollectionView ItemsSource="{Binding Items}" SelectionMode="None" MaximumHeightRequest="110">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Label}" FontSize="13" TextColor="{StaticResource Gray200}" LineBreakMode="TailTruncation" MaxLines="1" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Label Text="{loc:Tr share_pick}" FontSize="13" Margin="0,6,0,0" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Targets}" SelectionMode="Multiple" SelectedItems="{Binding Selected}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*" Padding="14,8" ColumnSpacing="12">
+                        <ctl:AvatarView Title="{Binding Title}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" />
+                        <Label Grid.Column="1" Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="16" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="2" Padding="18,6,18,14" Spacing="6">
+            <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+            <HorizontalStackLayout Spacing="14" HorizontalOptions="End">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+                <ImageButton Source="ic_close.png" StyleClass="Icon" Command="{Binding CancelCommand}" SemanticProperties.Description="{loc:Tr cancel}" />
+                <ImageButton Source="ic_send.png" StyleClass="Icon" Command="{Binding SendCommand}" SemanticProperties.Description="{loc:Tr a11y_send}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.ArchivePage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr archive_title}" /></Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" Margin="18,12" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="{loc:Tr archive_empty}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="30" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*,Auto" Padding="14,6" ColumnSpacing="12">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ArchiveViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <ctl:AvatarView Title="{Binding Name}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="16" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Preview}" TextColor="{StaticResource Gray200}" FontSize="13" MaxLines="1" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                        <ImageButton Grid.Column="2" Source="ic_delete.png" StyleClass="Icon" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ArchiveViewModel}}, Path=DeleteCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_delete}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

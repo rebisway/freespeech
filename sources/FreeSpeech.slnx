@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/freespeech.client/">
+    <Project Path="freespeech.client/FreeSpeech.Client.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.console/">
+    <Project Path="freespeech.console/FreeSpeech.Console.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.directory/">
+    <Project Path="freespeech.directory/FreeSpeech.Directory.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.ops/">
+    <Project Path="freespeech.ops/FreeSpeech.Ops.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.push/">
+    <Project Path="freespeech.push/FreeSpeech.Push.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.relay/">
+    <Project Path="freespeech.relay/FreeSpeech.Relay.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.tests/">
+    <Project Path="freespeech.tests/FreeSpeech.Tests.csproj" />
+  </Folder>
+</Solution>
+
+

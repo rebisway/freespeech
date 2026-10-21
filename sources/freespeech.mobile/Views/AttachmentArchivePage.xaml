@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.AttachmentArchivePage" Shell.FlyoutBehavior="Disabled">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr arch_title}" /></Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="18" Spacing="14">
+            <Label Text="{loc:Tr arch_text}" TextColor="{StaticResource Gray200}" FontSize="13" />
+
+            <!-- The usual choice: files of messages older than N months (a year by default). -->
+            <Label Text="{loc:Tr arch_older}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+            <HorizontalStackLayout Spacing="10">
+                <Entry Text="{Binding Months}" Keyboard="Numeric" WidthRequest="90" />
+                <Label Text="{loc:Tr arch_months}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Label Text="{loc:Tr arch_older_hint}" TextColor="{StaticResource Gray200}" FontSize="12" />
+
+            <Button Text="{loc:Tr arch_more}" Command="{Binding ToggleOptionsCommand}" HorizontalOptions="Start" />
+            <VerticalStackLayout IsVisible="{Binding MoreOptions}" Spacing="10">
+                <Label Text="{loc:Tr arch_dates}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <Label Text="{loc:Tr arch_dates_hint}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
+                    <Switch Grid.Column="1" IsToggled="{Binding UseDates}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
+                </Grid>
+                <HorizontalStackLayout Spacing="10" IsVisible="{Binding UseDates}">
+                    <Label Text="{loc:Tr arch_from}" VerticalOptions="Center" />
+                    <DatePicker Date="{Binding FromDate}" />
+                    <Label Text="{loc:Tr arch_to}" VerticalOptions="Center" />
+                    <DatePicker Date="{Binding ToDate}" />
+                </HorizontalStackLayout>
+
+                <Label Text="{loc:Tr arch_conversation}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+                <Picker ItemsSource="{Binding Conversations}" SelectedIndex="{Binding ConversationIndex}" />
+
+                <Label Text="{loc:Tr arch_kind}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+                <Picker ItemsSource="{Binding Kinds}" SelectedIndex="{Binding KindIndex}" />
+
+                <Label Text="{loc:Tr arch_minsize}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+                <HorizontalStackLayout Spacing="10">
+                    <Entry Text="{Binding MinSizeMb}" Keyboard="Numeric" WidthRequest="90" />
+                    <Label Text="{loc:Tr arch_mb}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <Border StrokeShape="RoundRectangle 10" Stroke="{StaticResource Primary}" StrokeThickness="1" Padding="12">
+                <Label Text="{Binding Preview}" FontFamily="OpenSansSemibold" />
+            </Border>
+
+            <ImageButton Source="ic_archive.png" StyleClass="Icon" HorizontalOptions="Start" Command="{Binding ArchiveCommand}" IsEnabled="{Binding CanArchive}" SemanticProperties.Description="{loc:Tr arch_go}" />
+            <Label Text="{loc:Tr arch_note}" TextColor="{StaticResource Gray200}" FontSize="12" />
+
+            <BoxView HeightRequest="1" Color="{StaticResource Gray200}" Opacity="0.4" />
+            <Label Text="{loc:Tr arch_load_title}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}" />
+            <Label Text="{loc:Tr arch_load_text}" TextColor="{StaticResource Gray200}" FontSize="13" />
+            <ImageButton Source="ic_restore.png" StyleClass="Icon" HorizontalOptions="Start" Command="{Binding LoadArchiveCommand}" SemanticProperties.Description="{loc:Tr arch_load}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

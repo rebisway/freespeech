@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.GroupsPage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr nav_groups}" /></Shell.TitleView>
+
+    <Grid>
+        <CollectionView ItemsSource="{Binding Groups}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="{loc:Tr groups_empty}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="30" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*" Padding="14,10" ColumnSpacing="12">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupsViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <ctl:AvatarView Title="{Binding Name}" IsGroup="True" Photo="{Binding Photo}" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="16" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Description}" IsVisible="{Binding HasDescription}" FontSize="12" TextColor="{StaticResource Gray200}" MaxLines="2" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Floating "new group" button. -->
+        <ImageButton Source="ic_add_dark.png" BackgroundColor="{StaticResource Primary}" CornerRadius="28" WidthRequest="56" HeightRequest="56" Padding="15" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,18,18" Command="{Binding NewCommand}" SemanticProperties.Description="{loc:Tr a11y_new_group}">
+            <ImageButton.Shadow><Shadow Brush="Black" Opacity="0.4" Radius="8" Offset="0,3" /></ImageButton.Shadow>
+        </ImageButton>
+    </Grid>
+</ContentPage>
+

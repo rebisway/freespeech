@@ -1,0 +1,30 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             x:Class="FreeSpeech.Desktop.Views.NewGroupView"
+             x:DataType="vm:NewGroupViewModel">
+	<ScrollViewer>
+		<StackPanel Margin="24,20" Spacing="12" MaxWidth="560" HorizontalAlignment="Stretch">
+			<TextBox Text="{Binding Name}" PlaceholderText="{Binding NameHint}" MaxLength="64" />
+			<TextBlock Text="{Binding MembersTitle}" Classes="section" Margin="0,10,0,0" />
+			<TextBlock Text="{Binding NoContactsText}" Classes="hint" IsVisible="{Binding HasNoCandidates}" />
+			<TextBox Text="{Binding Filter}" PlaceholderText="{Binding SearchHint}" IsVisible="{Binding HasCandidates}" />
+			<TextBlock Text="{Binding SelectedText}" Classes="hint" IsVisible="{Binding HasCandidates}" />
+			<ItemsControl ItemsSource="{Binding Shown}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vm:Candidate">
+						<CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Nickname}" Margin="0,2" />
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+			<TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+			<Button Content="{Binding CreateLabel}" Command="{Binding CreateCommand}" IsEnabled="{Binding !Busy}" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,10" />
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

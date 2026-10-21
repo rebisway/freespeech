@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.ContactsPage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr nav_contacts}" /></Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,*">
+    <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" Margin="18,12" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+    <CollectionView Grid.Row="1" ItemsSource="{Binding Contacts}" SelectionMode="None">
+        <CollectionView.EmptyView>
+            <Label Text="{loc:Tr contacts_empty}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="30" />
+        </CollectionView.EmptyView>
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Grid ColumnDefinitions="56,*,Auto,Auto,Auto" Padding="14,10" ColumnSpacing="4">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
+                    </Grid.GestureRecognizers>
+                    <ctl:AvatarView Title="{Binding Nickname}" Photo="{Binding Photo}" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                        <Label Text="{Binding DisplayName}" FontFamily="OpenSansSemibold" FontSize="16" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" FontSize="12" TextColor="{StaticResource Gray300}" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding Description}" IsVisible="{Binding HasDescription}" FontSize="12" TextColor="{StaticResource Gray200}" MaxLines="2" LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                    <ImageButton Grid.Column="2" Source="ic_edit.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RenameCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr contact_rename_title}" />
+                    <ImageButton Grid.Column="3" Source="ic_shield.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=VerifyCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr safety_title}" />
+                    <ImageButton Grid.Column="4" Source="ic_delete.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RemoveCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_delete}" />
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+    </Grid>
+</ContentPage>

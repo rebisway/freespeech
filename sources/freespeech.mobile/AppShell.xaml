@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<Shell
+    x:Class="FreeSpeech.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:FreeSpeech.Mobile.Views"
+    xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization"
+    xmlns:svc="clr-namespace:FreeSpeech.Mobile.Services"
+    Shell.FlyoutBehavior="Flyout"
+    FlyoutBackgroundColor="{StaticResource Gray900}"
+    Shell.TabBarIsVisible="False"
+    Shell.NavBarHasShadow="False"
+    Shell.BackgroundColor="{StaticResource Gray900}"
+    Shell.ForegroundColor="{StaticResource Primary}"
+    Shell.TitleColor="{StaticResource White}"
+    Title="FreeSpeech">
+
+    <Shell.FlyoutHeader>
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="20,44,20,16" BackgroundColor="{StaticResource Gray950}">
+            <Image Source="{x:Static svc:ThemeService.FlagLogo}" WidthRequest="40" HeightRequest="40" />
+            <Label Grid.Column="1" Text="FreeSpeech" FontSize="20" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- One row per menu entry: its icon, its label, a lighter background when it is the page shown. -->
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid ColumnDefinitions="56,*" HeightRequest="52" Padding="0,0,16,0">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters><Setter Property="BackgroundColor" Value="Transparent" /></VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters><Setter Property="BackgroundColor" Value="{StaticResource Gray600}" /></VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+                <Image Source="{Binding FlyoutIcon}" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="{Binding Title}" TextColor="{StaticResource White}" FontSize="15" VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <!-- Not in the menu: the start-up and onboarding screens. -->
+    <ShellContent Route="start" ContentTemplate="{DataTemplate views:StartPage}" FlyoutItemIsVisible="False" />
+    <ShellContent Route="onboarding" ContentTemplate="{DataTemplate views:OnboardingPage}" FlyoutItemIsVisible="False" />
+
+    <ShellContent Route="conversations" Title="{loc:Tr nav_chats}" Icon="ic_chat.png" ContentTemplate="{DataTemplate views:ConversationsPage}" />
+    <ShellContent Route="contacts" Title="{loc:Tr nav_contacts}" Icon="ic_person.png" ContentTemplate="{DataTemplate views:ContactsPage}" />
+    <ShellContent Route="groups" Title="{loc:Tr nav_groups}" Icon="ic_people.png" ContentTemplate="{DataTemplate views:GroupsPage}" />
+    <ShellContent Route="invite" Title="{loc:Tr nav_invite}" Icon="ic_person_add.png" ContentTemplate="{DataTemplate views:InvitePage}" />
+    <ShellContent Route="approve" Title="{Binding ApproveTitle, Source={x:Static svc:AppBadges.Instance}}" Icon="ic_approve.png" ContentTemplate="{DataTemplate views:ApprovePage}" />
+    <ShellContent Route="archive" Title="{Binding ArchiveTitle, Source={x:Static svc:AppBadges.Instance}}" Icon="ic_archive.png" ContentTemplate="{DataTemplate views:ArchivePage}" />
+    <ShellContent Route="outbox" Title="{Binding OutboxTitle, Source={x:Static svc:AppBadges.Instance}}" Icon="ic_send.png" FlyoutItemIsVisible="{Binding ShowOutbox, Source={x:Static svc:AppBadges.Instance}}" ContentTemplate="{DataTemplate views:OutboxPage}" />
+    <ShellContent Route="backup" Title="{loc:Tr nav_backup}" Icon="ic_backup.png" ContentTemplate="{DataTemplate views:BackupPage}" />
+    <ShellContent Route="settings" Title="{loc:Tr nav_settings}" Icon="ic_settings.png" ContentTemplate="{DataTemplate views:SettingsPage}" />
+
+</Shell>
+

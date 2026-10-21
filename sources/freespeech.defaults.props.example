@@ -1,0 +1,15 @@
+<Project>
+
+	<!-- Copy this file to freespeech.defaults.props (same folder, not versioned) and set the addresses your builds should start with:
+	       FsDefaultServer  the relay a new install connects to (the user can change it in Settings > Servers)
+	       FsFallbackServers  the relays a new identity draws from (one, at random) when no directory answers; semicolon-separated
+	       FsDirectories    the directories a new identity asks for relays: url|public key (base64, shown by the directory's GET /peer/identity),
+	                        separated by semicolons; an entry without a key is ignored. The first relays they offer replace FsDefaultServer
+	     Without that file, the placeholders of Directory.Build.props are used. -->
+	<PropertyGroup>
+		<FsDefaultServer>https://relay.exemple.org</FsDefaultServer>
+		<FsDirectories>https://directory1.exemple.org|KEY1;https://directory2.exemple.org|KEY2</FsDirectories>
+		<FsFallbackServers>https://relay.exemple.org;https://relay2.exemple.org</FsFallbackServers>
+	</PropertyGroup>
+
+</Project>

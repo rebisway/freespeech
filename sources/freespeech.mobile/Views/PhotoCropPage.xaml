@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" x:Class="FreeSpeech.Mobile.Views.PhotoCropPage" Title="{loc:Tr crop_title}" Shell.FlyoutBehavior="Disabled">
+    <Grid RowDefinitions="*,Auto,Auto,Auto,Auto" Padding="18" RowSpacing="10">
+        <!-- The frame: the picture moves under it (drag to pan, pinch or slider to zoom); what is inside the circle becomes the profile photo. -->
+        <Grid x:Name="Area" HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Black" IsClippedToBounds="True">
+            <Grid.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="OnPan" />
+                <PinchGestureRecognizer PinchUpdated="OnPinch" />
+            </Grid.GestureRecognizers>
+            <Image x:Name="Preview" Aspect="Fill" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Border x:Name="Guide" InputTransparent="True" BackgroundColor="Transparent" Stroke="{StaticResource Primary}" StrokeThickness="2" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+        <Slider x:Name="ZoomSlider" Grid.Row="1" Minimum="1" Maximum="4" Value="1" MinimumTrackColor="{StaticResource Primary}" ThumbColor="{StaticResource Primary}" ValueChanged="OnZoomChanged" />
+        <!-- The frame itself: drag it down to take a smaller part of the picture. -->
+        <VerticalStackLayout Grid.Row="2" Spacing="0">
+            <Label Text="{loc:Tr crop_size}" TextColor="{StaticResource Gray200}" FontSize="12" />
+            <Slider x:Name="CropSlider" Minimum="0.3" Maximum="1" Value="1" MinimumTrackColor="{StaticResource Primary}" ThumbColor="{StaticResource Primary}" ValueChanged="OnCropSizeChanged" />
+        </VerticalStackLayout>
+        <Label Grid.Row="3" Text="{loc:Tr crop_hint}" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" />
+        <ImageButton Grid.Row="4" Source="ic_check.png" StyleClass="Icon" HorizontalOptions="Center" Clicked="OnConfirm" SemanticProperties.Description="{loc:Tr a11y_save}" />
+    </Grid>
+</ContentPage>

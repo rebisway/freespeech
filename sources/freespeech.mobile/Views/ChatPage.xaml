@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.ChatPage" Title="{Binding Title}" Shell.FlyoutBehavior="Disabled">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="TextTemplate" x:DataType="vm:ChatItem">
+            <Grid Padding="10,2">
+                <SwipeView Threshold="70" BackgroundColor="Transparent">
+                    <SwipeView.LeftItems>
+                        <SwipeItems Mode="Execute" SwipeBehaviorOnInvoked="Close">
+                            <SwipeItem IconImageSource="ic_reply.png" BackgroundColor="Transparent"
+                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ReplyCommand}" CommandParameter="{Binding .}" />
+                        </SwipeItems>
+                    </SwipeView.LeftItems>                    <Border HorizontalOptions="{Binding Align}" MaximumWidthRequest="310" BackgroundColor="{Binding Bubble}" Stroke="{Binding BubbleStroke}" StrokeThickness="{Binding BubbleStrokeThickness}" StrokeShape="RoundRectangle 14" Padding="11,7">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ActionsCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="{Binding Display}" TextColor="{Binding TextColor}" FontAttributes="{Binding TextStyle}" FontSize="{Binding TextSize}" />
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="5">
+                                <Label Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontAttributes="Italic" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Time}" FontSize="10" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" FontSize="11" TextColor="{Binding TickColor}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </SwipeView>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="MarkdownTemplate" x:DataType="vm:ChatItem">
+            <Grid Padding="10,2">
+                <SwipeView Threshold="70" BackgroundColor="Transparent">
+                    <SwipeView.LeftItems>
+                        <SwipeItems Mode="Execute" SwipeBehaviorOnInvoked="Close">
+                            <SwipeItem IconImageSource="ic_reply.png" BackgroundColor="Transparent"
+                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ReplyCommand}" CommandParameter="{Binding .}" />
+                        </SwipeItems>
+                    </SwipeView.LeftItems>                    <Border HorizontalOptions="{Binding Align}" MaximumWidthRequest="310" BackgroundColor="{Binding Bubble}" Stroke="{Binding BubbleStroke}" StrokeThickness="{Binding BubbleStrokeThickness}" StrokeShape="RoundRectangle 14" Padding="11,7">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ActionsCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <Label FormattedText="{Binding Formatted}" TextColor="{Binding TextColor}" />
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="5">
+                                <Label Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontAttributes="Italic" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Time}" FontSize="10" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" FontSize="11" TextColor="{Binding TickColor}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </SwipeView>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="ImageTemplate" x:DataType="vm:ChatItem">
+            <Grid Padding="10,2">
+                <SwipeView Threshold="70" BackgroundColor="Transparent">
+                    <SwipeView.LeftItems>
+                        <SwipeItems Mode="Execute" SwipeBehaviorOnInvoked="Close">
+                            <SwipeItem IconImageSource="ic_reply.png" BackgroundColor="Transparent"
+                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ReplyCommand}" CommandParameter="{Binding .}" />
+                        </SwipeItems>
+                    </SwipeView.LeftItems>                    <Border HorizontalOptions="{Binding Align}" MaximumWidthRequest="310" BackgroundColor="{Binding Bubble}" Stroke="{Binding BubbleStroke}" StrokeThickness="{Binding BubbleStrokeThickness}" StrokeShape="RoundRectangle 14" Padding="11,11,11,7">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ActionsCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <!-- Pictures have rounded corners like the bubble that holds them (the Border clips what is inside). -->
+                            <Border StrokeShape="RoundRectangle 10" Stroke="Transparent" StrokeThickness="0" Padding="0" HorizontalOptions="Start">
+                                <Image Source="{Binding ImageSource}" WidthRequest="{Binding ImageWidth}" HeightRequest="{Binding ImageHeight}" Aspect="AspectFit" HorizontalOptions="Start">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenImageCommand}" CommandParameter="{Binding .}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </Border>
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="5">
+                                <Label Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontAttributes="Italic" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Time}" FontSize="10" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" FontSize="11" TextColor="{Binding TickColor}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </SwipeView>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="VoiceTemplate" x:DataType="vm:ChatItem">
+            <Grid Padding="10,2">
+                <SwipeView Threshold="70" BackgroundColor="Transparent">
+                    <SwipeView.LeftItems>
+                        <SwipeItems Mode="Execute" SwipeBehaviorOnInvoked="Close">
+                            <SwipeItem IconImageSource="ic_reply.png" BackgroundColor="Transparent"
+                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ReplyCommand}" CommandParameter="{Binding .}" />
+                        </SwipeItems>
+                    </SwipeView.LeftItems>                    <Border HorizontalOptions="{Binding Align}" MaximumWidthRequest="310" BackgroundColor="{Binding Bubble}" Stroke="{Binding BubbleStroke}" StrokeThickness="{Binding BubbleStrokeThickness}" StrokeShape="RoundRectangle 14" Padding="11,7">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ActionsCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="3">
+                            <HorizontalStackLayout Spacing="10">
+                                <ImageButton Source="{Binding AudioGlyph}" StyleClass="Icon" WidthRequest="40" HeightRequest="40" Padding="9" VerticalOptions="Center"
+                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=PlayAudioCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_play}" />
+                                <Label Text="{Binding AudioLabel}" VerticalOptions="Center" TextColor="{Binding TextColor}" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="5">
+                                <Label Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontAttributes="Italic" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Time}" FontSize="10" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" FontSize="11" TextColor="{Binding TickColor}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </SwipeView>
+            </Grid>
+        </DataTemplate>
+    <DataTemplate x:Key="FullTemplate" x:DataType="vm:ChatItem">
+                        <Grid Padding="10,2">
+                            <!-- "N unread messages": a line, not a bubble. -->
+                            <Label Text="{Binding Text}" IsVisible="{Binding IsSeparator}" FontSize="12" TextColor="{StaticResource Primary}" HorizontalOptions="Center" Margin="0,6" />
+                            <!-- The wrapper is not clipped: the reaction chip overlaps the bubble's bottom-right corner. -->
+                            <!-- Swipe a bubble to the right to reply to it. -->
+                            <SwipeView IsVisible="{Binding IsBubble}" Threshold="70" BackgroundColor="Transparent">
+                                <SwipeView.LeftItems>
+                                    <SwipeItems Mode="Execute" SwipeBehaviorOnInvoked="Close">
+                                        <SwipeItem IconImageSource="ic_reply.png" BackgroundColor="Transparent"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ReplyCommand}" CommandParameter="{Binding .}" />
+                                    </SwipeItems>
+                                </SwipeView.LeftItems>
+                            <Grid HorizontalOptions="{Binding Align}" MaximumWidthRequest="310" RowDefinitions="Auto,Auto">
+                            <Border BackgroundColor="{Binding Bubble}" Stroke="{Binding BubbleStroke}" StrokeThickness="{Binding BubbleStrokeThickness}" StrokeShape="RoundRectangle 14" Padding="{Binding BubblePadding}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=ActionsCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout Spacing="3">
+                                    <HorizontalStackLayout Spacing="5" IsVisible="{Binding ShowAuthor}"><ctl:AvatarView Title="{Binding Author}" Photo="{Binding AuthorPhoto}" Size="18" VerticalOptions="Center" /><Label Text="{Binding Author}" FontSize="12" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                        <!-- A contact of mine: grey check; one whose safety number I compared: gold check. Touching it opens the number. -->
+                                        <Label Text="✓" IsVisible="{Binding AuthorIsContact}" FontSize="13" TextColor="{StaticResource Gray200}" VerticalOptions="Center"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenSafetyCommand}" CommandParameter="{Binding .}" /></Label.GestureRecognizers></Label>
+                                        <Label Text="✓" IsVisible="{Binding AuthorIsVerified}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenSafetyCommand}" CommandParameter="{Binding .}" /></Label.GestureRecognizers></Label></HorizontalStackLayout>
+                                    <Border IsVisible="{Binding HasReply}" BackgroundColor="#33000000" Stroke="{StaticResource Primary}" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="8,4">
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Border IsVisible="{Binding HasReplyThumb}" StrokeShape="RoundRectangle 4" Stroke="Transparent" StrokeThickness="0" Padding="0" VerticalOptions="Center">
+                                                <Image Source="{Binding ReplyThumb}" WidthRequest="34" HeightRequest="34" Aspect="AspectFill" />
+                                            </Border>
+                                            <Label Text="{Binding ReplyPreview}" FontSize="12" TextColor="{Binding MetaColor}" MaxLines="2" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                    <!-- Pictures have rounded corners like the bubble that holds them (the Border clips what is inside). -->
+                                    <Border IsVisible="{Binding ShowSingleImage}" StrokeShape="RoundRectangle 10" Stroke="Transparent" StrokeThickness="0" Padding="0" HorizontalOptions="Start">
+                                        <Image Source="{Binding ImageSource}" WidthRequest="{Binding ImageWidth}" HeightRequest="{Binding ImageHeight}" Aspect="AspectFit" HorizontalOptions="Start">
+                                            <Image.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenImageCommand}" CommandParameter="{Binding .}" />
+                                            </Image.GestureRecognizers>
+                                        </Image>
+                                    </Border>
+                                    <!-- Album: three or more pictures in a row from one sender. At most four tiles; "+N" on the last one when there are more. A tap opens the viewer on that picture. -->
+                                    <Border IsVisible="{Binding IsAlbum}" StrokeShape="RoundRectangle 10" Stroke="Transparent" StrokeThickness="0" Padding="0" HorizontalOptions="Start">
+                                        <Image Source="{Binding AlbumImage}" WidthRequest="{Binding AlbumWidth}" HeightRequest="{Binding AlbumHeight}" Aspect="Fill">
+                                            <Image.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnAlbumTapped" />
+                                            </Image.GestureRecognizers>
+                                        </Image>
+                                    </Border>                                <!-- Video: its first frame with a play button; the plain play line when no frame can be read. -->
+                                    <Border IsVisible="{Binding HasVideoThumb}" StrokeShape="RoundRectangle 10" Stroke="Transparent" StrokeThickness="0" Padding="0" HorizontalOptions="Start">
+                                    <Grid HorizontalOptions="Start" WidthRequest="{Binding ThumbWidth}" HeightRequest="{Binding ThumbHeight}">
+                                        <Image Source="{Binding VideoThumbSource}" Aspect="AspectFill" />
+                                        <Border IsVisible="{Binding CanPlay}" WidthRequest="48" HeightRequest="48" StrokeShape="RoundRectangle 24" BackgroundColor="#99000000" Stroke="Transparent" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="ic_play.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Border>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenVideoCommand}" CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                    </Border>
+                                    <Label Text="{Binding VideoLabel}" IsVisible="{Binding ShowVideoLine}" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" MaximumWidthRequest="260" LineBreakMode="TailTruncation">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenVideoCommand}" CommandParameter="{Binding .}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <!-- Voice message: a play button and its length. -->
+                                    <HorizontalStackLayout IsVisible="{Binding IsAudio}" Spacing="10">
+                                        <ImageButton Source="{Binding AudioGlyph}" StyleClass="Icon" WidthRequest="40" HeightRequest="40" Padding="9" VerticalOptions="Center"
+                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=PlayAudioCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_play}" />
+                                        <Label Text="{Binding AudioLabel}" VerticalOptions="Center" TextColor="{Binding TextColor}" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding Display}" IsVisible="{Binding ShowPlainText}" TextColor="{Binding TextColor}" FontAttributes="{Binding TextStyle}" FontSize="{Binding TextSize}" />
+                                    <!-- A message whose first line is "md": titles, lists, quotes, bold, italic, links. -->
+                                    <Label FormattedText="{Binding Formatted}" IsVisible="{Binding ShowMarkup}" TextColor="{Binding TextColor}" />
+                                    <HorizontalStackLayout IsVisible="{Binding HasFileStatus}" Spacing="6">
+                                        <BoxView WidthRequest="9" HeightRequest="9" CornerRadius="5" Color="{Binding FileDotColor}" VerticalOptions="Center" />
+                                        <Label Text="{Binding FileStatus}" FontSize="12" TextColor="{Binding StatusColor}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <!-- Time, then for my messages one tick (sent) or two gold ticks (read by the contact). -->
+                                    <HorizontalStackLayout HorizontalOptions="End" Spacing="5">
+                                        <Label Text="{Binding EditedLabel}" IsVisible="{Binding ShowEdited}" FontSize="10" FontAttributes="Italic" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                        <Image Source="ic_archive.png" IsVisible="{Binding IsArchived}" WidthRequest="13" HeightRequest="13" VerticalOptions="Center" SemanticProperties.Description="{loc:Tr a11y_archived}" />
+                                        <Label Text="{Binding Time}" FontSize="10" TextColor="{Binding MetaColor}" VerticalOptions="Center" />
+                                        <Label Text="{Binding Ticks}" IsVisible="{Binding ShowTicks}" FontSize="11" TextColor="{Binding TickColor}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                            <Label Grid.Row="1" Text="" HeightRequest="12" IsVisible="{Binding HasReactions}" />
+                            <Border IsVisible="{Binding HasReactions}" HorizontalOptions="Start" VerticalOptions="End" TranslationY="11" Margin="8,0,0,0" Padding="0"
+                                    BackgroundColor="Transparent" Stroke="Transparent" StrokeThickness="0">
+                                <Label Text="{Binding ReactionsText}" FontSize="14" />
+                            </Border>
+                            </Grid>
+                            </SwipeView>
+                        </Grid>
+                    </DataTemplate>
+        <ctl:ChatItemSelector x:Key="ChatSelector" Text="{StaticResource TextTemplate}" Markdown="{StaticResource MarkdownTemplate}" Image="{StaticResource ImageTemplate}" Voice="{StaticResource VoiceTemplate}" Full="{StaticResource FullTemplate}" />
+    </ContentPage.Resources>
+    <!-- The bar shows who this is: picture (or initials, or the group glyph) then the name. -->
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <ctl:AvatarView Title="{Binding Title}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" Size="38" VerticalOptions="Center" />
+                <VerticalStackLayout VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource White}" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                        <!-- Grey check: a contact I have not verified yet; gold check: a contact whose safety number I compared. Touching it opens the number. -->
+                        <Label Text="✓" IsVisible="{Binding ContactUnverified}" FontSize="18" TextColor="{StaticResource Gray200}" VerticalOptions="Center" Padding="4"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenContactSafetyCommand}" /></Label.GestureRecognizers></Label>
+                        <Label Text="✓" IsVisible="{Binding ContactVerified}" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource Primary}" VerticalOptions="Center" Padding="4"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenContactSafetyCommand}" /></Label.GestureRecognizers></Label>
+                    </HorizontalStackLayout>
+                    <!-- A group where I use another name or picture: who I am there. -->
+                    <HorizontalStackLayout Spacing="5" IsVisible="{Binding ShowMyIdentity}">
+                        <ctl:AvatarView Title="{Binding MyGroupName}" Photo="{Binding MyGroupPhoto}" Size="16" VerticalOptions="Center" />
+                        <Label Text="{Binding MyIdentityText}" FontSize="12" TextColor="{StaticResource Gray200}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+            <!-- One menu button on the right (more room for the name): search, silent mode and the group or contact screen are its entries. -->
+            <ImageButton Grid.Column="1" Source="ic_more_vert.png" StyleClass="IconFlat" VerticalOptions="Center" Command="{Binding ToggleHeaderMenuCommand}" SemanticProperties.Description="{loc:Tr a11y_menu}" />
+        </Grid>
+    </Shell.TitleView>
+    <Grid RowDefinitions="*,Auto,Auto,Auto,Auto">
+        <!-- The pinned message of the group sits above the list, which takes the rest of the room. Shown whole the first time, then on one line (a touch goes to it, and on to the next one when there are several). -->
+        <Grid Grid.Row="0" RowDefinitions="Auto,*">
+        <ctl:LazyHost Grid.Row="0" IsOpen="{Binding ShowPinned}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Border IsVisible="{Binding ShowPinned}" MinimumHeightRequest="42" Padding="12,8" BackgroundColor="{StaticResource Gray900}" StrokeThickness="0">
+                <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding GoToPinnedCommand}" /></Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                    <Image Source="ic_pin.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Start" Margin="0,1,0,0" />
+                    <Label Grid.Column="1" Text="{Binding PinnedPreview}" LineBreakMode="TailTruncation" MaxLines="{Binding PinnedMaxLines}" FontSize="14" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="{Binding PinnedCount}" TextColor="{StaticResource Primary}" FontSize="12" VerticalOptions="Start" />
+                </Grid>
+            </Border>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+        <CollectionView x:Name="MessagesView" Grid.Row="1" ItemsSource="{Binding Items}" SelectionMode="None" Scrolled="OnScrolled" Margin="0,0,0,4">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="2" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <StaticResource Key="ChatSelector" />
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        </Grid>
+
+        <!-- Search in this conversation: a field and the messages found (newest first); a tap goes to the message. -->
+        <!-- Far from the bottom (reading far back, or opened on many new messages): a double chevron brings back to the newest message. -->
+        <ImageButton Grid.Row="0" Source="ic_chevrons_down.png" StyleClass="Icon" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,14,14" IsVisible="{Binding ShowToBottom}" Command="{Binding GoToBottomCommand}" SemanticProperties.Description="{loc:Tr a11y_to_bottom}" />
+        <ctl:LazyHost Grid.Row="0" IsOpen="{Binding IsSearchOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsSearchOpen}" BackgroundColor="{StaticResource Gray900}" RowDefinitions="Auto,*">
+                <SearchBar Text="{Binding SearchText}" Placeholder="{loc:Tr search_hint}" Margin="6,2" />
+                <Label Grid.Row="1" Text="{loc:Tr search_none}" IsVisible="{Binding NoResults}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Start" Margin="30" />
+                <CollectionView Grid.Row="1" ItemsSource="{Binding Results}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <VerticalStackLayout Padding="16,9" Spacing="2">
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=OpenResultCommand}" CommandParameter="{Binding .}" />
+                                </VerticalStackLayout.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding TimeText}" TextColor="{StaticResource Gray300}" FontSize="12" />
+                                    <Label Text="{Binding Author}" TextColor="{StaticResource Primary}" FontSize="12" />
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Snippet}" FontSize="14" MaxLines="3" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <!-- "X is typing…": a small line at the bottom of the discussion, above the composer; it fades when the signals stop. -->
+        <ctl:LazyHost Grid.Row="0" IsOpen="{Binding IsTyping}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Border IsVisible="{Binding IsTyping}" HorizontalOptions="Start" VerticalOptions="End" Margin="12,0,0,8" Padding="12,5"
+                    BackgroundColor="{StaticResource Gray600}" Stroke="Transparent" StrokeShape="RoundRectangle 14" InputTransparent="True">
+                <Label Text="{Binding TypingText}" FontSize="13" FontAttributes="Italic" TextColor="{StaticResource Primary}" MaxLines="1" LineBreakMode="TailTruncation" />
+            </Border>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <ctl:LazyHost Grid.Row="1" IsOpen="{Binding IsHasReplyBanner}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Border IsVisible="{Binding IsHasReplyBanner}" BackgroundColor="{StaticResource Gray600}" Stroke="{StaticResource Primary}" StrokeShape="RoundRectangle 8" Margin="8,0" Padding="10,4">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Border IsVisible="{Binding HasReplyBannerThumb}" StrokeShape="RoundRectangle 4" Stroke="Transparent" StrokeThickness="0" Padding="0" VerticalOptions="Center">
+                        <Image Source="{Binding ReplyBannerThumb}" WidthRequest="34" HeightRequest="34" Aspect="AspectFill" />
+                    </Border>
+                    <Label Grid.Column="1" Text="{Binding ReplyBanner}" FontSize="13" MaxLines="1" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                    <ImageButton Grid.Column="2" Source="ic_close.png" StyleClass="IconFlat" Command="{Binding CancelReplyCommand}" SemanticProperties.Description="{loc:Tr a11y_close}" />
+                </Grid>
+            </Border>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <Label Grid.Row="2" Text="{Binding StagingStatus}" IsVisible="{Binding HasStagingStatus}" FontSize="13" TextColor="{StaticResource Secondary}" Padding="14,6" BackgroundColor="{StaticResource Gray900}" />
+        <!-- Picked files wait here until the send button: each can still be removed. -->
+        <ctl:LazyHost Grid.Row="2" IsOpen="{Binding HasPending}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <CollectionView ItemsSource="{Binding Pending}" IsVisible="{Binding HasPending}" SelectionMode="None" HeightRequest="86" BackgroundColor="{StaticResource Gray900}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid WidthRequest="78" HeightRequest="78" Margin="8,4,0,4">
+                            <Border BackgroundColor="{StaticResource Gray600}" StrokeShape="RoundRectangle 10" Stroke="Transparent">
+                                <Grid>
+                                    <Image Source="{Binding Path}" IsVisible="{Binding IsImage}" Aspect="AspectFill" />
+                                    <Label Text="{Binding Name}" IsVisible="{Binding IsOther}" FontSize="11" Margin="6" MaxLines="3" LineBreakMode="TailTruncation" VerticalOptions="Center" HorizontalTextAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <ImageButton Source="ic_close.png" WidthRequest="26" HeightRequest="26" Padding="5" HorizontalOptions="End" VerticalOptions="Start" Margin="0,3,3,0" BackgroundColor="#99000000" CornerRadius="13"
+                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=RemovePendingCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_close}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <!-- A group I left: read only. -->
+        <Label Grid.Row="4" Text="{loc:Tr chat_left_notice}" IsVisible="{Binding IsReadOnly}" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" Padding="12,14" BackgroundColor="{StaticResource Gray900}" />
+
+        <!-- The attach button opens a row of icons. -->
+        <ctl:LazyHost Grid.Row="3" IsOpen="{Binding IsAttachOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Border IsVisible="{Binding IsAttachOpen}" BackgroundColor="{StaticResource Gray900}" Stroke="Transparent" StrokeShape="RoundRectangle 0" Padding="14,8">
+                <HorizontalStackLayout Spacing="22" HorizontalOptions="Start">
+                    <ImageButton Source="ic_file.png" StyleClass="Icon" Command="{Binding AttachFileCommand}" SemanticProperties.Description="{loc:Tr attach_file}" />
+                    <ImageButton Source="ic_camera.png" StyleClass="Icon" Command="{Binding AttachCaptureCommand}" CommandParameter="photo" SemanticProperties.Description="{loc:Tr attach_photo}" />
+                    <ImageButton Source="ic_video.png" StyleClass="Icon" Command="{Binding AttachCaptureCommand}" CommandParameter="video" SemanticProperties.Description="{loc:Tr attach_video}" />
+                    <ImageButton Source="ic_mic.png" StyleClass="Icon" Command="{Binding AttachAudioCommand}" SemanticProperties.Description="{loc:Tr attach_audio}" />
+                </HorizontalStackLayout>
+            </Border>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <!-- Voice message: recording (timer + stop), then review (listen, drop or send). -->
+        <ctl:LazyHost Grid.Row="4" IsOpen="{Binding IsRecorderOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsRecorderOpen}" ColumnDefinitions="Auto,*,Auto,Auto" Padding="8,6" ColumnSpacing="10" BackgroundColor="{StaticResource Gray900}">
+                <ImageButton Source="ic_delete.png" StyleClass="Icon" Command="{Binding DiscardRecordingCommand}" SemanticProperties.Description="{loc:Tr a11y_discard}" />
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Label Text="●" TextColor="#E53935" FontSize="18" IsVisible="{Binding IsRecording}" VerticalOptions="Center" />
+                    <Label Text="{Binding RecTime}" FontSize="18" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <ImageButton Grid.Column="2" Source="ic_stop.png" StyleClass="Icon" IsVisible="{Binding IsRecording}" Command="{Binding StopRecordingCommand}" SemanticProperties.Description="{loc:Tr a11y_stop}" />
+                <ImageButton Grid.Column="2" Source="{Binding PreviewGlyph}" StyleClass="Icon" IsVisible="{Binding IsReviewing}" Command="{Binding PreviewRecordingCommand}" SemanticProperties.Description="{loc:Tr a11y_play}" />
+                <ImageButton Grid.Column="3" Source="ic_send.png" StyleClass="IconFlat" IsVisible="{Binding IsReviewing}" Command="{Binding SendRecordingCommand}" SemanticProperties.Description="{loc:Tr a11y_send}" />
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <Grid Grid.Row="4" IsVisible="{Binding ShowComposer}" ColumnDefinitions="Auto,*,Auto" Padding="8,6" ColumnSpacing="6" BackgroundColor="{StaticResource Gray900}">
+            <ImageButton Source="ic_attach.png" StyleClass="Icon" VerticalOptions="End" Command="{Binding AttachCommand}" SemanticProperties.Description="{loc:Tr a11y_attach}" />
+            <Editor x:Name="Composer" StyleId="Composer" Grid.Column="1" Text="{Binding Draft}" Placeholder="{loc:Tr chat_hint}" Keyboard="Chat" AutoSize="TextChanges" MaximumHeightRequest="120" />
+            <ImageButton Grid.Column="2" Source="ic_send.png" StyleClass="IconFlat" VerticalOptions="End" Command="{Binding SendCommand}" Clicked="OnSendClicked" SemanticProperties.Description="{loc:Tr a11y_send}" />
+        </Grid>
+
+        <!-- Popup of actions on a message: a dimmed backdrop (tap to close) and a card of icon + label rows. -->
+        <ctl:LazyHost Grid.RowSpan="5" IsOpen="{Binding IsMenuOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsMenuOpen}" BackgroundColor="#99000000">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CloseMenuCommand}" />
+                </Grid.GestureRecognizers>
+                <Border HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="280" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="6,8">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding MenuItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MenuOption">
+                                <HorizontalStackLayout Spacing="16" Padding="14,11">
+                                    <HorizontalStackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=PickMenuCommand}" CommandParameter="{Binding .}" />
+                                    </HorizontalStackLayout.GestureRecognizers>
+                                    <Image Source="{Binding Icon}" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" />
+                                    <Label Text="{Binding Label}" VerticalOptions="Center" TextColor="{StaticResource Gray100}" />
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+        <!-- Edit a message: just the text, a tick in the bottom right corner to confirm; a tap outside cancels. -->
+        <ctl:LazyHost x:Name="EditHost" Grid.RowSpan="5" IsOpen="{Binding IsEditOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsEditOpen}" BackgroundColor="#99000000">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelEditCommand}" />
+                </Grid.GestureRecognizers>
+                <Border VerticalOptions="Start" Margin="14,70,14,0" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer />   <!-- a tap on the card is not a tap outside -->
+                    </Border.GestureRecognizers>
+                    <Grid>
+                        <Editor x:Name="EditField" StyleId="EditField" Text="{Binding EditText}" Keyboard="Chat" AutoSize="TextChanges" MinimumHeightRequest="90" MaximumHeightRequest="220" Margin="12,10,12,50" />
+                        <ImageButton Source="ic_check.png" WidthRequest="40" HeightRequest="40" Padding="8" CornerRadius="20" BackgroundColor="{StaticResource Gray600}" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,8,8"
+                                     Command="{Binding ConfirmEditCommand}" SemanticProperties.Description="{loc:Tr a11y_send}" />
+                    </Grid>
+                </Border>
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+        <!-- Reaction bar: one row of emojis (it scrolls sideways), opened by a long press. A tap outside closes it. -->
+        <ctl:LazyHost Grid.RowSpan="5" IsOpen="{Binding IsReactionBarOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsReactionBarOpen}" BackgroundColor="#99000000">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CloseReactionBarCommand}" />
+                </Grid.GestureRecognizers>
+                <Border HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="344" HeightRequest="64" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 32" Padding="10,0">
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="2" BindableLayout.ItemsSource="{Binding ReactionEmojis}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" FontSize="30" Padding="8,6" VerticalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChatViewModel}}, Path=PickReactionCommand}" CommandParameter="{Binding .}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </Border>
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+
+        <!-- The menu of the bar: a tap outside closes it. -->
+        <ctl:LazyHost Grid.RowSpan="5" IsOpen="{Binding IsHeaderMenuOpen}">
+            <ctl:LazyHost.Template>
+                <DataTemplate>
+            <Grid IsVisible="{Binding IsHeaderMenuOpen}" BackgroundColor="Transparent">
+                <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding ToggleHeaderMenuCommand}" /></Grid.GestureRecognizers>
+                <Border HorizontalOptions="End" VerticalOptions="Start" Margin="0,4,10,0" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" Padding="6,4" StrokeShape="RoundRectangle 12">
+                    <Border.GestureRecognizers><TapGestureRecognizer /></Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="40,*" Padding="6,2" ColumnSpacing="8"><Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding HeaderMenuSearchCommand}" /></Grid.GestureRecognizers>
+                            <Image Source="ic_search.png" WidthRequest="24" HeightRequest="24" /><Label Grid.Column="1" Text="{loc:Tr search_hint}" VerticalOptions="Center" HeightRequest="44" VerticalTextAlignment="Center" /></Grid>
+                        <Grid ColumnDefinitions="40,*" Padding="6,2" ColumnSpacing="8"><Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding HeaderMenuMuteCommand}" /></Grid.GestureRecognizers>
+                            <Image Source="{Binding MuteGlyph}" WidthRequest="24" HeightRequest="24" /><Label Grid.Column="1" Text="{loc:Tr a11y_mute}" VerticalOptions="Center" HeightRequest="44" VerticalTextAlignment="Center" /></Grid>
+                        <Grid ColumnDefinitions="40,*" Padding="6,2" ColumnSpacing="8"><Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding HeaderMenuInfoCommand}" /></Grid.GestureRecognizers>
+                            <Image Source="ic_settings.png" WidthRequest="24" HeightRequest="24" /><Label Grid.Column="1" Text="{Binding HeaderMenuInfoLabel}" VerticalOptions="Center" HeightRequest="44" VerticalTextAlignment="Center" /></Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+                </DataTemplate>
+            </ctl:LazyHost.Template>
+        </ctl:LazyHost>
+    </Grid>
+</ContentPage>

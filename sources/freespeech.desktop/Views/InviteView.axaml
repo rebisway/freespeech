@@ -1,0 +1,32 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.InviteView"
+             x:DataType="vm:InviteViewModel">
+	<ScrollViewer>
+		<StackPanel Margin="24,20" Spacing="12" MaxWidth="560" HorizontalAlignment="Stretch">
+			<TextBlock Text="{Binding SendTitle}" Classes="section" />
+			<TextBlock Text="{Binding SendHint}" Classes="hint" Margin="0,-6,0,0" />
+			<c:ActionRow Icon="{StaticResource Icon.qr}" Title="{Binding QrTitle}" Hint="{Binding Together}" Command="{Binding ToggleQrCommand}" />
+			<Border Background="White" Padding="8" CornerRadius="8" HorizontalAlignment="Center" IsVisible="{Binding HasQr}">
+				<Image Source="{Binding QrImage}" Width="260" Height="260" />
+			</Border>
+			<c:ActionRow Icon="{StaticResource Icon.share}" Title="{Binding ShareTitle}" Hint="{Binding Apart}" Command="{Binding ShareCommand}" />
+			<c:ActionRow Icon="{StaticResource Icon.copy}" Title="{Binding CopyTitle}" Hint="{Binding CopyHint}" Command="{Binding CopyCommand}" />
+
+			<TextBlock Text="{Binding ReceiveTitle}" Classes="section" Margin="0,26,0,0" />
+			<TextBlock Text="{Binding ReceiveHint}" Classes="hint" Margin="0,-6,0,0" />
+			<c:ActionRow Icon="{StaticResource Icon.scan}" Title="{Binding ScanTitle}" Hint="{Binding Together}" Command="{Binding ScanCommand}" />
+			<c:ActionRow Icon="{StaticResource Icon.paste}" Title="{Binding PasteTitle}" Hint="{Binding PasteHint}" Command="{Binding PasteCommand}" />
+
+			<TextBlock Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

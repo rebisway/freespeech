@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Folder Name="/freespeech.client/">
+    <Project Path="freespeech.client/FreeSpeech.Client.csproj" />
+  </Folder>
+  <Folder Name="/freespeech.desktop/">
+    <Project Path="freespeech.desktop/FreeSpeech.Desktop.csproj" />
+  </Folder>
+</Solution>

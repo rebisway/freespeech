@@ -1,0 +1,41 @@
+<svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Un modérateur exclut C : un GroupState signé (epoch 5, composition, key_check) rotate la clé atomiquement ; chaque membre restant reçoit la clé chiffrée pour lui, C reçoit l'état sans enveloppe">
+  <rect x="0" y="0" width="860" height="280" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .col{font-size:10.5px;fill:#1c1a17;font-family:'IBM Plex Mono',monospace}
+    .key{font-size:10.5px;fill:#a8501f;font-family:'IBM Plex Mono',monospace;font-weight:600}
+  </style>  <text x="80" y="28" class="actor">Modérateur</text>
+  <text x="330" y="28" class="actor" text-anchor="middle">Membre B</text>
+  <text x="560" y="28" class="actor" text-anchor="middle">Membre D</text>
+  <text x="770" y="28" class="actor" text-anchor="middle" fill="#a8501f">C - exclu</text>
+
+  <rect x="10" y="40" width="250" height="58" rx="6" fill="#dff0ef"/>
+  <text x="20" y="58" class="lbl-strong">GroupState epoch 4 -> 5 (signé)</text>
+  <text x="20" y="74" class="lbl">composition + key_check, sans la clé</text>
+  <text x="20" y="88" class="lbl">rotation atomique avec l'exclusion</text>
+
+  <path d="M262 62 L290 62" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#aT)"/>
+  <text x="330" y="56" class="lbl" text-anchor="middle">key_envelope: enc(key5, B</text>
+  <path d="M262 76 L520 76" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#aT)"/>
+  <text x="440" y="70" class="lbl" text-anchor="middle">key_envelope: enc(key5, D</text>
+
+  <path d="M262 90 L730 90" fill="none" stroke="#a8501f" stroke-width="1.4" marker-end="url(#aR)"/>
+  <text x="700" y="110" class="lbl" text-anchor="middle" fill="#a8501f">l'état seulement</text>
+  <text x="770" y="135" font-size="18" fill="#a8501f" text-anchor="middle">x</text>
+  <text x="700" y="150" class="lbl" text-anchor="middle" fill="#a8501f">aucune enveloppe</text>
+
+  <rect x="290" y="165" width="80" height="34" rx="6" fill="#dff0ef"/>
+  <text x="330" y="187" class="lbl-strong" text-anchor="middle">lit avec sa clé</text>
+  <rect x="520" y="165" width="80" height="34" rx="6" fill="#dff0ef"/>
+  <text x="560" y="187" class="lbl-strong" text-anchor="middle">lit avec sa clé</text>
+
+  <text x="430" y="222" class="lbl" text-anchor="middle" opacity="0.9">Un membre qui arrive en retard reçoit la clé d'un pair (re-chiffrée, vérifiée par key_check).</text>
+  <text x="430" y="240" class="lbl" text-anchor="middle" opacity="0.8">B et D obtiennent key5 - C ne peut plus déchiffrer les nouveaux messages du groupe.</text>
+  <text x="430" y="258" class="lbl" text-anchor="middle" opacity="0.6">limite assumée : un membre malhonnête peut retransmettre key5 à C hors protocole.</text>  <defs>
+    <marker id="aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#4a5a8a"/></marker>
+    <marker id="aR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a8501f"/></marker>
+  </defs>
+</svg>

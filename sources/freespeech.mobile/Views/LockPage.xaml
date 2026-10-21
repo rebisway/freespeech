@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:svc="clr-namespace:FreeSpeech.Mobile.Services" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" x:Class="FreeSpeech.Mobile.Views.LockPage" Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout Padding="28" Spacing="14" VerticalOptions="Center">
+            <Image Source="{x:Static svc:ThemeService.Logo}" WidthRequest="72" HeightRequest="72" HorizontalOptions="Center" />
+            <Label x:Name="TitleLabel" FontSize="22" FontFamily="OpenSansSemibold" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center" />
+            <Label x:Name="Hint" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" />
+
+            <Entry x:Name="Pin" IsPassword="True" Keyboard="Numeric" MaxLength="8" HorizontalTextAlignment="Center" FontSize="24" Completed="OnPinCompleted" />
+            <Entry x:Name="Confirm" IsPassword="True" Keyboard="Numeric" MaxLength="8" HorizontalTextAlignment="Center" FontSize="24" IsVisible="False" Placeholder="{loc:Tr lock_confirm_hint}" Completed="OnConfirmCompleted" />
+            <Label x:Name="Error" TextColor="{StaticResource Danger}" HorizontalTextAlignment="Center" IsVisible="False" />
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="24">
+                <ImageButton x:Name="CancelButton" Source="ic_close.png" StyleClass="Icon" Clicked="OnCancel" SemanticProperties.Description="{loc:Tr cancel}" />
+                <ImageButton x:Name="OkButton" Source="ic_check.png" StyleClass="Icon" Clicked="OnOk" SemanticProperties.Description="{loc:Tr ok}" />
+            </HorizontalStackLayout>
+            <ActivityIndicator x:Name="Spinner" IsRunning="False" IsVisible="False" />
+
+            <!-- Forgotten PIN: the three phrases prove it is the owner, and switch the lock off. -->
+            <Label x:Name="ForgotLink" Text="{loc:Tr lock_forgot}" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center" Margin="0,16,0,0">
+                <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnForgot" /></Label.GestureRecognizers>
+            </Label>
+            <VerticalStackLayout x:Name="ForgotBox" IsVisible="False" Spacing="8">
+                <Label Text="{loc:Tr lock_forgot_hint}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Editor x:Name="Phrase1" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="1" />
+                <Editor x:Name="Phrase2" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="2" />
+                <Editor x:Name="Phrase3" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="3" />
+                <ImageButton Source="ic_check.png" StyleClass="Icon" HorizontalOptions="Center" Clicked="OnPhrases" SemanticProperties.Description="{loc:Tr ok}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

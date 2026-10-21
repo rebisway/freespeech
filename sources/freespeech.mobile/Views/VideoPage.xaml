@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.VideoPage" BackgroundColor="Black" Shell.FlyoutBehavior="Disabled" Shell.NavBarIsVisible="False">
+    <!-- A received or sent video, played inside the app. -->
+    <Grid BackgroundColor="Black">
+        <ctl:VideoPlayerView x:Name="Player" />
+        <ImageButton Source="ic_close.png" StyleClass="Icon" HorizontalOptions="End" VerticalOptions="Start" Margin="12,40,12,0" Clicked="OnClose" SemanticProperties.Description="{loc:Tr a11y_close}" />
+    </Grid>
+</ContentPage>

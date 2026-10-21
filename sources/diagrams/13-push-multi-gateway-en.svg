@@ -1,0 +1,41 @@
+<svg viewBox="0 0 980 410" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Multi-gateway push: the relay tries the device’s gateway then another one, with a circuit breaker">
+  <rect x="0" y="0" width="980" height="410" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  </style>
+  <text x="110" y="30" class="actor" text-anchor="middle">Relay server</text>
+  <text x="360" y="30" class="actor" text-anchor="middle">Gateway A (the device’s)</text>
+  <text x="610" y="30" class="actor" text-anchor="middle">Gateway B</text>
+  <text x="860" y="30" class="actor" text-anchor="middle">FCM / device</text>
+  <line x1="110" y1="45" x2="110" y2="400" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="360" y1="45" x2="360" y2="400" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="610" y1="45" x2="610" y2="400" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="860" y1="45" x2="860" y2="400" stroke="#1c1a17" opacity="0.25"/>
+  <path d="M114 70 L356 70" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="235" y="63" class="lbl" text-anchor="middle">POST /push {wake}</text>
+  <path d="M356 105 L114 105" fill="none" stroke="#a4402f" stroke-width="1.6" marker-end="url(#arrowWarn)"/>
+  <text x="235" y="98" class="lbl" text-anchor="middle">503 / timeout / 429 busy</text>
+  <rect x="132" y="120" width="236" height="24" rx="4" fill="#dff0ef"/>
+  <text x="250" y="136" class="lbl-strong" text-anchor="middle">next one, random order, 3 at most</text>
+  <path d="M114 175 L606 175" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="360" y="168" class="lbl" text-anchor="middle">POST /push {wake}</text>
+  <path d="M614 215 L856 215" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="735" y="208" class="lbl" text-anchor="middle">FCM data message</text>
+  <text x="735" y="229" class="lbl" text-anchor="middle" opacity="0.75">(wake-up only, no content)</text>
+  <path d="M606 255 L114 255" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="360" y="248" class="lbl" text-anchor="middle">200 OK</text>
+  <rect x="688" y="268" width="183" height="24" rx="4" fill="#dff0ef"/>
+  <text x="780" y="284" class="lbl-strong" text-anchor="middle">wakes up, connects, READY</text>
+  <rect x="227" y="315" width="506" height="24" rx="4" fill="#dff0ef"/>
+  <text x="480" y="331" class="lbl-strong" text-anchor="middle">429 token: stop (already woken) · 410: token dropped · other 4xx: no retry</text>
+  <rect x="184" y="347" width="592" height="24" rx="4" fill="#dff0ef"/>
+  <text x="480" y="363" class="lbl-strong" text-anchor="middle">Circuit breaker: 3 failures in a row → 45 s; busy + Retry-After N → N s (120 s at most)</text>
+  <text x="20" y="392" font-family="'IBM Plex Sans',sans-serif" font-size="12" fill="#6b665d">At most one wake-up per identity every 30 s; with no gateway available, OS polling remains.</text>
+  <defs>
+    <marker id="arrowInk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#1c1a17"/></marker>
+    <marker id="arrowAcc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="arrowWarn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a4402f"/></marker>
+  </defs>
+</svg>

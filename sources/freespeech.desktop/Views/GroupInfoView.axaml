@@ -1,0 +1,71 @@
+<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.GroupInfoView"
+             x:DataType="vm:GroupInfoViewModel">
+	<!-- Leaving the group stays at the bottom of the screen, not under the list of members. -->
+	<DockPanel>
+		<Button DockPanel.Dock="Bottom" Classes="icon" HorizontalAlignment="Left" Margin="18,8,18,14" IsVisible="{Binding IsActive}" Command="{Binding LeaveCommand}" ToolTip.Tip="{Binding LeaveTip}"><PathIcon Data="{StaticResource Icon.leave}" /></Button>
+	<ScrollViewer>
+		<StackPanel Margin="18,16" Spacing="8" MaxWidth="600" HorizontalAlignment="Stretch">
+				<!-- Left: the group and what my role lets me change. Right: me in this group, with the same editing buttons. -->
+				<Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+					<StackPanel Spacing="4" HorizontalAlignment="Center">
+						<c:Avatar Title="{Binding Name}" IsGroup="True" Photo="{Binding Photo}" Size="80" HorizontalAlignment="Center" />
+						<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" TextAlignment="Center" />
+						<TextBlock Text="{Binding Summary}" Classes="hint" FontSize="12" TextAlignment="Center" />
+						<TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" FontSize="13" TextWrapping="Wrap" TextAlignment="Center" />
+						<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0" HorizontalAlignment="Center">
+							<Button Classes="icon" IsVisible="{Binding CanModerate}" Command="{Binding AddMemberCommand}" ToolTip.Tip="{Binding AddTip}"><PathIcon Data="{StaticResource Icon.person_add}" /></Button>
+							<Button Classes="icon" IsVisible="{Binding CanSuggest}" Command="{Binding SuggestMemberCommand}" ToolTip.Tip="{Binding SuggestTip}"><PathIcon Data="{StaticResource Icon.person_add}" /></Button>
+							<Button Classes="icon" IsVisible="{Binding IsCreator}" Command="{Binding EditCommand}" ToolTip.Tip="{Binding RenameTip}"><PathIcon Data="{StaticResource Icon.edit}" /></Button>
+							<Button Classes="icon" IsVisible="{Binding IsCreator}" Command="{Binding ChangePhotoCommand}" ToolTip.Tip="{Binding PhotoTip}"><PathIcon Data="{StaticResource Icon.photo}" /></Button>
+						</StackPanel>
+					</StackPanel>
+					<StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center" IsVisible="{Binding IsActive}">
+						<c:Avatar Title="{Binding MyName}" Photo="{Binding MyPhoto}" Size="80" HorizontalAlignment="Center" />
+						<TextBlock Text="{Binding MyName}" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" TextAlignment="Center" />
+						<TextBlock Text="{Binding MyNameLabel}" Classes="hint" FontSize="12" TextAlignment="Center" />
+						<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,4,0,0">
+							<Button Classes="icon" Command="{Binding EditMyNameCommand}" ToolTip.Tip="{Binding MyNameTip}"><PathIcon Data="{StaticResource Icon.edit}" /></Button>
+							<Button Classes="icon" Command="{Binding ChangeMyPhotoCommand}" ToolTip.Tip="{Binding MyPhotoTip}"><PathIcon Data="{StaticResource Icon.photo}" /></Button>
+						</StackPanel>
+					</StackPanel>
+				</Grid>
+
+			<!-- A line and some air between the two columns above and the list of members. -->
+			<Border Height="1" Background="{DynamicResource PrimaryBrush}" Opacity="0.35" Margin="0,10,0,6" />
+			<TextBlock Text="{Binding TrustLegend}" Classes="hint" FontSize="12" IsVisible="{Binding HasTrust}" TextWrapping="Wrap" />
+			<ItemsControl ItemsSource="{Binding Members}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vm:MemberRow">
+						<Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="8,6" CornerRadius="0" Opacity="{Binding RowOpacity}"
+						        Command="{Binding $parent[ItemsControl].((vm:GroupInfoViewModel)DataContext).MemberActionsCommand}" CommandParameter="{Binding}">
+							<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+								<c:Avatar Title="{Binding Nickname}" Photo="{Binding Photo}" />
+								<TextBlock Grid.Column="1" Text="{Binding Nickname}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+								<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+										<TextBlock Text="{Binding Role}" IsVisible="{Binding HasRole}" Foreground="{DynamicResource PrimaryBrush}" FontSize="12" VerticalAlignment="Center" />
+										<!-- A contact of mine: grey check; one whose safety number I compared: gold check. Clicking it opens the number. -->
+										<Button Classes="flat" Padding="4,0" MinHeight="0" IsVisible="{Binding IsContact}" Content="✓" FontSize="16" VerticalAlignment="Center" Command="{Binding $parent[ItemsControl].((vm:GroupInfoViewModel)DataContext).OpenSafetyCommand}" CommandParameter="{Binding}" />
+										<Button Classes="flat" Padding="4,0" MinHeight="0" IsVisible="{Binding IsVerified}" Content="✓" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Command="{Binding $parent[ItemsControl].((vm:GroupInfoViewModel)DataContext).OpenSafetyCommand}" CommandParameter="{Binding}" />
+									</StackPanel>
+							</Grid>
+						</Button>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+
+			<Button Content="{Binding BansLabel}" Command="{Binding ShowBansCommand}" IsVisible="{Binding HasBans}" Classes="flat" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" />
+			<TextBlock Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+	</ScrollViewer>
+	</DockPanel>
+</UserControl>

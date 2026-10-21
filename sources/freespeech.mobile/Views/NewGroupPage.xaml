@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" x:Class="FreeSpeech.Mobile.Views.NewGroupPage" Title="{loc:Tr newgroup_title}" Shell.FlyoutBehavior="Disabled">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="18" RowSpacing="10">
+        <Entry Text="{Binding Name}" Placeholder="{loc:Tr newgroup_name_hint}" />
+        <Label Grid.Row="1" Text="{loc:Tr newgroup_members}" TextColor="{StaticResource Gray200}" />
+        <VerticalStackLayout Grid.Row="2" Spacing="4">
+            <Entry Text="{Binding Filter}" Placeholder="{loc:Tr pick_search}" ClearButtonVisibility="WhileEditing" />
+            <Label Text="{Binding SelectedText}" TextColor="{StaticResource Gray200}" FontSize="13" />
+        </VerticalStackLayout>
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Shown}" SelectionMode="None">
+            <CollectionView.EmptyView><Label Text="{loc:Tr newgroup_no_contacts}" TextColor="{StaticResource Gray200}" /></CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="Auto,*" Padding="0,2">
+                        <CheckBox IsChecked="{Binding IsSelected}" />
+                        <Label Grid.Column="1" Text="{Binding Nickname}" VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <VerticalStackLayout Grid.Row="4" Spacing="8">
+            <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" IsVisible="{Binding Error, Converter={StaticResource StringNotEmptyConverter}}" />
+            <Button Text="{loc:Tr newgroup_create}" Command="{Binding CreateCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

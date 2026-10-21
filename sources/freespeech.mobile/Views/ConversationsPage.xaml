@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.ConversationsPage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr nav_chats}" /></Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+        <!-- Who, and one line (text, "Photo", "File: ..."). A swipe to the left closes it, a tap opens what it is about. -->
+        <Border Grid.Row="0" IsVisible="{Binding HasBanner}" BackgroundColor="{StaticResource Gray600}" Stroke="{StaticResource Primary}" StrokeShape="RoundRectangle 10" Margin="12,8" Padding="14,8">
+            <Border.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Left" Command="{Binding DismissBannerCommand}" />
+                <TapGestureRecognizer Command="{Binding OpenBannerCommand}" />
+            </Border.GestureRecognizers>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{Binding BannerTitle}" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{StaticResource Primary}" MaxLines="1" LineBreakMode="TailTruncation" />
+                <Label Text="{Binding BannerText}" FontSize="13" MaxLines="1" LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Something waits for my answer (request, invitation, proposal): one tap goes to Approve. -->
+        <Border Grid.Row="1" IsVisible="{Binding HasPending}" BackgroundColor="{StaticResource Primary}" StrokeShape="RoundRectangle 10" Stroke="Transparent" Margin="12,0,12,6" Padding="14,10">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenApproveCommand}" />
+            </Border.GestureRecognizers>
+            <Label Text="{Binding PendingText}" TextColor="#16130F" FontFamily="OpenSansSemibold" FontSize="14" />
+        </Border>
+
+        <!-- Another device of mine asks to be mirrored: touch to type the code it shows. -->
+        <Border Grid.Row="2" IsVisible="{Binding HasSyncPending}" BackgroundColor="{StaticResource Primary}" StrokeShape="RoundRectangle 10" Stroke="Transparent" Margin="12,0,12,6" Padding="14,10">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding EnterSyncCodeCommand}" />
+            </Border.GestureRecognizers>
+            <Label Text="{loc:Tr sync_bar}" TextColor="#16130F" FontFamily="OpenSansSemibold" FontSize="14" />
+        </Border>
+
+        <CollectionView x:Name="List" Grid.Row="3" ItemsSource="{Binding Items}" SelectionMode="Single" SelectionChanged="OnSelected">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Padding="30" Spacing="8">
+                    <Label Text="{loc:Tr chats_empty_title}" FontSize="18" HorizontalTextAlignment="Center" />
+                    <Label Text="{loc:Tr chats_empty_text}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*,Auto" Padding="14,10" ColumnSpacing="12">
+                        <ctl:AvatarView Title="{Binding Title}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="16" FontAttributes="{Binding TitleStyle}" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Preview}" TextColor="{StaticResource Gray200}" FontSize="13" MaxLines="1" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                        <!-- Time, and under it the number of messages not read yet. -->
+                        <VerticalStackLayout Grid.Column="2" Spacing="6" HorizontalOptions="End" VerticalOptions="Start">
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="4">
+                                <Image Source="ic_bell_off.png" IsVisible="{Binding IsMuted}" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
+                                <Label Text="{Binding TimeText}" TextColor="{StaticResource Gray300}" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <Border IsVisible="{Binding HasUnread}" BackgroundColor="{Binding UnreadColor}" StrokeShape="RoundRectangle 11" Stroke="Transparent" Padding="7,1" MinimumWidthRequest="22" HorizontalOptions="End">
+                                <Label Text="{Binding UnreadText}" TextColor="#16130F" FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="Center" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

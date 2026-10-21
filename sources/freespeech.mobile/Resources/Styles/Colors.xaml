@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="FreeSpeech.Mobile.Resources.Styles.Palette">
+
+    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+
+    <!-- Charte graphique de la marque —
+         "veine d'or" sur fond sombre. L'appli ne propose pas de thème clair
+         séparé : Light/Dark ci-dessous pointent volontairement vers la même
+         palette de marque. -->
+    <Color x:Key="Primary">#C89A4B</Color>
+    <!-- color accent -->
+    <Color x:Key="PrimaryDark">#C89A4B</Color>
+    <Color x:Key="PrimaryDarkText">#16130F</Color>
+    <!-- color bg -->
+    <Color x:Key="Secondary">#B8A67D</Color>
+    <!-- color accent soft -->
+    <Color x:Key="SecondaryDarkText">#9C9187</Color>
+    <!-- color text muted -->
+    <Color x:Key="Tertiary">#3A342E</Color>
+    <!-- color border -->
+
+    <Color x:Key="White">#EDE7DD</Color>
+    <!-- color text -->
+    <Color x:Key="Black">#16130F</Color>
+    <!-- color bg -->
+    <Color x:Key="Magenta">#C89A4B</Color>
+    <Color x:Key="MidnightBlue">#F4F0E8</Color>
+    <!-- color text strong -->
+    <Color x:Key="OffBlack">#16130F</Color>
+    <!-- color bg -->
+
+    <Color x:Key="Gray100">#EDE7DD</Color>
+    <!-- color text -->
+    <Color x:Key="Gray200">#9C9187</Color>
+    <!-- color text muted -->
+    <Color x:Key="Gray300">#6F675C</Color>
+    <!-- color text faint -->
+    <Color x:Key="Gray400">#4A4338</Color>
+    <!-- color border soft -->
+    <Color x:Key="Gray500">#3A342E</Color>
+    <!-- color border -->
+    <Color x:Key="Gray600">#2B2620</Color>
+    <!-- color surface -->
+    <Color x:Key="Gray900">#1C1812</Color>
+    <!-- color bg alt -->
+    <Color x:Key="Gray950">#16130F</Color>
+    <!-- color bg -->
+
+    <Color x:Key="BubbleMine">#2A2318</Color>
+    <Color x:Key="BubbleTheirs">#2B2620</Color>
+    <Color x:Key="Danger">#C4584B</Color>
+    <!-- background of the round icon buttons ("Icon" filled, "IconFlat" bare): the light theme puts a dark disc behind the gold glyph -->
+    <Color x:Key="IconSurface">#2B2620</Color>
+    <Color x:Key="IconFlatSurface">#00000000</Color>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
+    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+
+    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
+    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
+    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
+    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
+    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
+    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
+    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
+    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+</ResourceDictionary>

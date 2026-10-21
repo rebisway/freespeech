@@ -1,0 +1,28 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.SafetyView"
+             x:DataType="vm:SafetyViewModel">
+	<ScrollViewer>
+		<StackPanel Margin="24,24" Spacing="16" MaxWidth="480" HorizontalAlignment="Stretch">
+			<StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
+				<c:Avatar Title="{Binding Title}" Photo="{Binding Photo}" />
+				<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" VerticalAlignment="Center" />
+			</StackPanel>
+			<!-- The number itself: four lines of three groups, so two people can read it to each other. -->
+			<Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="14" Padding="18,16">
+				<SelectableTextBlock Text="{Binding Number}" FontSize="18" FontWeight="SemiBold" TextAlignment="Center" LineHeight="27" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" />
+			</Border>
+			<TextBlock Text="{Binding ExplainText}" Classes="hint" TextAlignment="Center" />
+			<TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" TextAlignment="Center" HorizontalAlignment="Center" />
+			<Button Content="{Binding ToggleLabel}" Command="{Binding ToggleCommand}" HorizontalAlignment="Center" Padding="18,8" />
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

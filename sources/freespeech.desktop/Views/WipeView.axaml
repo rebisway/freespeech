@@ -1,0 +1,28 @@
+<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             x:Class="FreeSpeech.Desktop.Views.WipeView"
+             x:DataType="vm:WipeViewModel">
+	<ScrollViewer>
+		<StackPanel Margin="24,18" Spacing="12" MaxWidth="600" HorizontalAlignment="Stretch">
+			<TextBlock Text="{Binding HintText}" Classes="hint" FontSize="12" />
+			<TextBlock Text="{Binding StateText}" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource DangerBrush}" IsVisible="{Binding !StateIsGood}" />
+			<TextBlock Text="{Binding StateText}" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryBrush}" IsVisible="{Binding StateIsGood}" />
+
+			<TextBlock Text="{Binding PhrasesText}" Classes="hint" FontSize="12" Margin="0,8,0,0" />
+			<TextBox Text="{Binding Phrase1}" PlaceholderText="1" AcceptsReturn="True" TextWrapping="Wrap" />
+			<TextBox Text="{Binding Phrase2}" PlaceholderText="2" AcceptsReturn="True" TextWrapping="Wrap" />
+			<TextBox Text="{Binding Phrase3}" PlaceholderText="3" AcceptsReturn="True" TextWrapping="Wrap" />
+
+			<Button Content="{Binding ActivateLabel}" Command="{Binding ActivateCommand}" IsVisible="{Binding CanActivate}" IsEnabled="{Binding !Busy}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,10" />
+			<Button Content="{Binding SendLabel}" Command="{Binding SendCommand}" IsEnabled="{Binding !Busy}" Background="{DynamicResource DangerBrush}" Foreground="White" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,10" />
+			<TextBlock Text="{Binding Result}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" IsVisible="{Binding Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

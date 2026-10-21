@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FreeSpeech.Directory</RootNamespace>
+    <Version>$(FsDirectoryVersion)</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Release date, shown next to the version (admin version, notification mails). -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>VersionDate</_Parameter1><_Parameter2>$(FsDirectoryVersionDate)</_Parameter2></AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\freespeech.ops\FreeSpeech.Ops.csproj" />
+  </ItemGroup>
+
+</Project>

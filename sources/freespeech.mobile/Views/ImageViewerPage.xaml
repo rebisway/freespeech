@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.ImageViewerPage" BackgroundColor="Black" Shell.FlyoutBehavior="Disabled" Shell.NavBarIsVisible="False">
+    <!-- A picture in full size. Zoom: pinch or double tap. Drag to move once zoomed. Long press or the menu button: reply, react, forward, delete. -->
+    <Grid x:Name="Stage" BackgroundColor="Black" IsClippedToBounds="True">
+        <Image x:Name="Picture" Aspect="AspectFit" InputTransparent="True" />
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnDoubleTap" />
+            <PinchGestureRecognizer PinchUpdated="OnPinch" />
+            <PanGestureRecognizer PanUpdated="OnPan" />
+        </Grid.GestureRecognizers>
+
+        <ImageButton Source="ic_menu.png" StyleClass="Icon" HorizontalOptions="Start" VerticalOptions="Start" Margin="12,40,12,0" Clicked="OnMenu" SemanticProperties.Description="{loc:Tr a11y_menu}" />
+        <ImageButton Source="ic_close.png" StyleClass="Icon" HorizontalOptions="End" VerticalOptions="Start" Margin="12,40,12,0" Clicked="OnClose" SemanticProperties.Description="{loc:Tr a11y_close}" />
+
+        <!-- The same popup as in the chat: a dimmed backdrop (tap to close) and a card of icon + label rows. -->
+        <Grid IsVisible="{Binding IsMenuOpen}" BackgroundColor="#99000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseMenu" />
+            </Grid.GestureRecognizers>
+            <Border HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="280" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="6,8">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding MenuItems}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MenuOption">
+                            <HorizontalStackLayout Spacing="16" Padding="14,11">
+                                <HorizontalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnPick" />
+                                </HorizontalStackLayout.GestureRecognizers>
+                                <Image Source="{Binding Icon}" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" />
+                                <Label Text="{Binding Label}" VerticalOptions="Center" TextColor="{StaticResource Gray100}" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+        <!-- Reaction bar of the viewer (same row of emojis as in the chat). -->
+        <Grid IsVisible="{Binding IsReactionBarOpen}" BackgroundColor="#99000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseReactions" />
+            </Grid.GestureRecognizers>
+            <Border HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="344" HeightRequest="64" BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 32" Padding="10,0">
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="2" BindableLayout.ItemsSource="{Binding ReactionEmojis}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Label Text="{Binding .}" FontSize="30" Padding="8,6" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnPickEmoji" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

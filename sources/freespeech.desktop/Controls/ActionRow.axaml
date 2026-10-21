@@ -1,0 +1,23 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FreeSpeech.Desktop.Controls.ActionRow"
+             x:Name="Root">
+	<!-- One row of actions, as on the mobile app: a round icon, a title, a line of help, a gold edge. -->
+	<Button Classes="card" Command="{Binding #Root.Command}">
+		<Grid ColumnDefinitions="38,*" ColumnSpacing="12">
+			<Border Width="38" Height="38" CornerRadius="19" Background="{DynamicResource RaisedBrush}">
+				<PathIcon Data="{Binding #Root.Icon}" Foreground="{DynamicResource PrimaryBrush}" Width="20" Height="20" />
+			</Border>
+			<StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+				<TextBlock Text="{Binding #Root.Title}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" />
+				<TextBlock Text="{Binding #Root.Hint}" Classes="hint" IsVisible="{Binding #Root.HasHint}" />
+			</StackPanel>
+		</Grid>
+	</Button>
+</UserControl>

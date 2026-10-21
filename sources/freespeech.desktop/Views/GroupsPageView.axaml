@@ -1,0 +1,39 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.GroupsPageView"
+             x:DataType="vm:GroupsPageViewModel">
+	<Grid>
+		<TextBlock Text="{Binding EmptyText}" Classes="hint" HorizontalAlignment="Center" Margin="0,24" IsVisible="{Binding IsEmpty}" />
+		<ScrollViewer>
+			<ItemsControl ItemsSource="{Binding Groups}" MaxWidth="640">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="vm:GroupRow">
+						<Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="14,10" CornerRadius="0"
+						        Command="{Binding $parent[ItemsControl].((vm:GroupsPageViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}">
+							<Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+								<c:Avatar Title="{Binding Name}" Photo="{Binding Photo}" IsGroup="True" />
+								<StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+									<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
+									<TextBlock Text="{Binding Description}" Classes="hint" FontSize="12" MaxLines="2" TextTrimming="CharacterEllipsis" IsVisible="{Binding HasDescription}" />
+								</StackPanel>
+							</Grid>
+						</Button>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+		<!-- Floating "new group" button. -->
+		<Button Command="{Binding NewCommand}" Width="44" Height="44" CornerRadius="22" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,22,22"
+		        Background="{DynamicResource PrimaryBrush}" ToolTip.Tip="{Binding NewTip}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+			<PathIcon Data="{StaticResource Icon.add_dark}" Foreground="{DynamicResource OnPrimaryBrush}" Width="20" Height="20" />
+		</Button>
+	</Grid>
+</UserControl>

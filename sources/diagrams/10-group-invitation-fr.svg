@@ -1,0 +1,48 @@
+<svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Un membre B propose son contact C au modérateur M ; M invite C avec la signature de B ; C, qui connaît B, voit l'invitation en attente et l'accepte ou la refuse">
+  <rect x="0" y="0" width="900" height="330" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .col{font-size:10.5px;fill:#1c1a17;font-family:'IBM Plex Mono',monospace}
+    .key{font-size:10.5px;fill:#a8501f;font-family:'IBM Plex Mono',monospace;font-weight:600}
+  </style>
+  <text x="110" y="26" class="actor" text-anchor="middle">Membre B</text>
+  <text x="110" y="40" class="lbl" text-anchor="middle">(contact de C)</text>
+  <text x="410" y="26" class="actor" text-anchor="middle">Modérateur M</text>
+  <text x="410" y="40" class="lbl" text-anchor="middle">(ne connaît pas C)</text>
+  <text x="760" y="26" class="actor" text-anchor="middle">Invité C</text>
+  <text x="760" y="40" class="lbl" text-anchor="middle">(contact de B)</text>
+
+  <path d="M135 70 L375 70" fill="none" stroke="#4a5a8a" stroke-width="1.6" marker-end="url(#aB)"/>
+  <text x="255" y="62" class="lbl-strong" text-anchor="middle">1. group_suggest</text>
+  <text x="255" y="86" class="lbl" text-anchor="middle">{ candidat C, ts, sig(B) }</text>
+
+  <rect x="300" y="98" width="220" height="50" rx="6" fill="#e6e9f2" stroke="#4a5a8a" stroke-width="1.2"/>
+  <text x="310" y="115" class="lbl-strong">2. Propositions en attente</text>
+  <text x="310" y="130" class="lbl">B est membre ? sig(B) valide ?</text>
+  <text x="310" y="142" class="lbl">C ni membre ni banni ?</text>
+
+  <path d="M445 172 L725 172" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#aT)"/>
+  <text x="585" y="164" class="lbl-strong" text-anchor="middle">3. Inviter : group_state + clé</text>
+  <text x="585" y="188" class="lbl" text-anchor="middle">+ preuve du parrain { B, ts, sig(B) }</text>
+
+  <rect x="610" y="204" width="270" height="62" rx="6" fill="#dff0ef" stroke="#2f6f6e" stroke-width="1.4"/>
+  <text x="620" y="221" class="lbl-strong">4. Invitations en attente</text>
+  <text x="620" y="236" class="lbl">B est mon contact ? sig(B) couvre ce groupe</text>
+  <text x="620" y="248" class="lbl">et moi ? Rien n'est rejoint, aucune clé adoptée.</text>
+  <text x="620" y="260" class="lbl">M ne sait rien de ma réponse tant que je n'ai pas répondu.</text>
+
+  <text x="20" y="214" class="lbl-strong">5. C répond</text>
+  <text x="20" y="230" class="lbl">Accepter : adopte l'état, rattrapage p2p, il est membre.</text>
+  <text x="20" y="244" class="lbl">Refuser : une marque est gardée, le groupe ne redemande pas.</text>
+
+  <text x="450" y="292" class="lbl" text-anchor="middle" opacity="0.9">Un modérateur invite directement un de SES contacts : même étape 4 (l'invité décide toujours).</text>
+  <text x="450" y="308" class="lbl" text-anchor="middle" opacity="0.8">Être rajouté après avoir quitté suit la même voie : accepter réactive le groupe archivé, historique compris.</text>
+  <text x="450" y="324" class="lbl" text-anchor="middle" opacity="0.6">sig(B) = signature de B sur "gsponsor|groupe|C|ts" ; la preuve ne vaut que pour ce groupe et cet invité.</text>
+  <defs>
+    <marker id="aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#4a5a8a"/></marker>
+    <marker id="aR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a8501f"/></marker>
+  </defs>
+</svg>

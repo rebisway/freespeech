@@ -1,0 +1,47 @@
+<svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Deux devices dérivent indépendamment la même identité à partir des mêmes 3 phrases, puis chacun ouvre sa propre connexion vers le même discovery_id sur le serveur">
+  <rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  </style>
+  <text x="140" y="30" class="actor" text-anchor="middle">3 phrases</text>
+  <rect x="70" y="42" width="140" height="34" rx="6" fill="none" stroke="#1c1a17" opacity="0.5"/>
+  <text x="140" y="64" class="lbl" text-anchor="middle">"ivoire / spectre / ..."</text>
+
+  <path d="M140 76 L140 100 M140 100 L60 130 M140 100 L220 130" fill="none" stroke="#1c1a17" opacity="0.6"/>
+
+  <rect x="10" y="130" width="100" height="40" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6"/>
+  <text x="60" y="154" class="lbl-strong" text-anchor="middle">Device 1</text>
+  <rect x="170" y="130" width="100" height="40" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6"/>
+  <text x="220" y="154" class="lbl-strong" text-anchor="middle">Device 2</text>
+
+  <text x="60" y="188" class="lbl" text-anchor="middle">Argon2id + HKDF</text>
+  <text x="220" y="188" class="lbl" text-anchor="middle">Argon2id + HKDF</text>
+
+  <rect x="10" y="198" width="100" height="30" rx="5" fill="#dff0ef" stroke="#1c1a17" opacity="0.3"/>
+  <text x="60" y="217" class="lbl-strong" text-anchor="middle" fill="#2f6f6e">did = 9f3a…</text>
+  <rect x="170" y="198" width="100" height="30" rx="5" fill="#dff0ef" stroke="#1c1a17" opacity="0.3"/>
+  <text x="220" y="217" class="lbl-strong" text-anchor="middle" fill="#2f6f6e">did = 9f3a…</text>
+
+  <text x="140" y="245" class="lbl" text-anchor="middle" opacity="0.7">identiques — calculés séparément, sans échange</text>
+
+  <rect x="640" y="110" width="180" height="90" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.6"/>
+  <text x="730" y="135" class="actor" text-anchor="middle">Serveur</text>
+  <text x="730" y="155" class="lbl" text-anchor="middle">9f3a… → [conn1, conn2]</text>
+  <text x="730" y="175" class="lbl" text-anchor="middle" opacity="0.7">registre, pas de notion</text>
+  <text x="730" y="188" class="lbl" text-anchor="middle" opacity="0.7">de "device"</text>
+
+  <path d="M110 150 L636 150" fill="none" stroke="#4a5a8a" stroke-width="1.4" marker-end="url(#arrowDevice)"/>
+  <text x="380" y="140" class="lbl" text-anchor="middle">RegisterAsync(9f3a…, conn1)</text>
+
+  <path d="M270 150 Q 450 95 636 128" fill="none" stroke="#4a5a8a" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrowDevice)"/>
+  <text x="450" y="88" class="lbl" text-anchor="middle">RegisterAsync(9f3a…, conn2)</text>
+
+  <defs>
+    <marker id="arrowDevice" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#4a5a8a"/>
+    </marker>
+  </defs>
+  <text x="20" y="285" font-family="'IBM Plex Sans',sans-serif" font-size="12" fill="#6b665d">Aucune poignée de main entre devices : clés et discovery_id sont une fonction pure des 3 phrases (Argon2id, voir 14). Le serveur ne voit que des connexions anonymes sous un même discovery_id.</text>
+</svg>

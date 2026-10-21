@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The system bar above the app: the app's own dark tones, not the template's purple. -->
+    <color name="colorPrimary">#1C1812</color>
+    <color name="colorPrimaryDark">#1C1812</color>
+    <color name="colorAccent">#C89A4B</color>
+</resources>

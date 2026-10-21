@@ -1,0 +1,50 @@
+<svg viewBox="0 0 880 335" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Alice's client stays connected to all her servers at once; a private server never enters the public server's discovery cascade">
+  <rect x="0" y="0" width="880" height="335" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .col{font-size:10.5px;fill:#1c1a17;font-family:'IBM Plex Mono',monospace}
+    .key{font-size:10.5px;fill:#a8501f;font-family:'IBM Plex Mono',monospace;font-weight:600}
+  </style>  <text x="70" y="28" class="actor">Alice's client</text>
+  <rect x="10" y="40" width="130" height="34" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6"/>
+  <text x="75" y="62" class="lbl" text-anchor="middle">servers[]</text>
+
+  <rect x="220" y="20" width="200" height="60" rx="8" fill="none" stroke="#a8501f" stroke-width="1.6"/>
+  <text x="320" y="42" class="actor" text-anchor="middle">Private server</text>
+  <text x="320" y="60" class="lbl" text-anchor="middle">entreprise.local - priority 0</text>
+  <text x="320" y="72" class="lbl" text-anchor="middle" opacity="0.7">not exposed to the internet</text>
+
+  <rect x="220" y="110" width="200" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.6"/>
+  <text x="320" y="132" class="actor" text-anchor="middle">Public server</text>
+  <text x="320" y="150" class="lbl" text-anchor="middle">freespeech.org - priority 1</text>
+
+  <path d="M140 55 L216 50" fill="none" stroke="#4a5a8a" stroke-width="1.6" marker-end="url(#aB)"/>
+  <text x="178" y="42" class="lbl" text-anchor="middle">connected + registered</text>
+  <path d="M140 62 Q170 100 216 138" fill="none" stroke="#4a5a8a" stroke-width="1.6" marker-end="url(#aB)"/>
+  <text x="170" y="112" class="lbl" text-anchor="middle">connected + registered</text>
+
+  <rect x="560" y="20" width="220" height="60" rx="8" fill="none" stroke="#1c1a17" opacity="0.5"/>
+  <text x="670" y="42" class="actor" text-anchor="middle">Stranger Z</text>
+  <text x="670" y="60" class="lbl" text-anchor="middle">discovery for a random id</text>
+
+  <path d="M670 82 L670 100 L420 130" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#aT)"/>
+  <text x="600" y="98" class="lbl" text-anchor="middle">queries the public server</text>
+
+  <path d="M420 150 L560 150" fill="none" stroke="#a8501f" stroke-width="1.8" stroke-dasharray="3 4" marker-end="url(#aR)"/>
+  <text x="490" y="200" class="lbl" text-anchor="middle" fill="#a8501f">cascade NEVER reaches the private one</text>
+  <text x="490" y="215" class="lbl" text-anchor="middle" opacity="0.7">to_server does not feed KnownServers (§10)</text>
+  <text x="600" y="150" font-size="20" fill="#a8501f" text-anchor="middle">x</text>
+
+  <rect x="20" y="228" width="840" height="68" rx="6" fill="#dff0ef"/>
+  <text x="32" y="247" class="lbl-strong">Sending: the contact's servers (by priority), then my own servers.</text>
+  <text x="32" y="264" class="lbl">An unknown contact server: connected on demand (5 s), failure remembered for 30 s.</text>
+  <text x="32" y="277" class="lbl">Received via two servers: de-duplicated on (from, to, ts, crypto); a dropped server is reconnected every 30 s.</text>
+
+  <text x="32" y="290" class="lbl">Full server: it may suggest a sibling (server_redirect), the client decides and tells its contacts (see 12).</text>
+  <text x="440" y="320" class="lbl" text-anchor="middle" opacity="0.8" font-weight="600">Z can neither reach nor even confirm the existence of the private server.</text>  <defs>
+    <marker id="aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#4a5a8a"/></marker>
+    <marker id="aR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a8501f"/></marker>
+  </defs>
+</svg>

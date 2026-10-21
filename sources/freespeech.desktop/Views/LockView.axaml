@@ -1,0 +1,38 @@
+<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             x:Class="FreeSpeech.Desktop.Views.LockView"
+             x:DataType="vm:LockViewModel">
+	<!-- Over the whole window: opaque, so nothing of the app shows while it is locked. -->
+	<Grid Background="{DynamicResource BgBrush}">
+		<ScrollViewer>
+			<StackPanel Margin="28,60,28,28" Spacing="14" MaxWidth="360" HorizontalAlignment="Center">
+				<TextBlock Text="{Binding Title}" Classes="title" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" />
+				<TextBlock Text="{Binding Hint}" Classes="hint" FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" IsVisible="{Binding IsSet}" />
+				<TextBox x:Name="PinBox" Text="{Binding Pin}" PasswordChar="●" MaxLength="8" TextAlignment="Center" FontSize="24" PlaceholderText="{Binding PinHint}" KeyDown="OnPinKeyDown" TextInput="OnDigitsOnly" />
+				<TextBox Text="{Binding Confirm}" PasswordChar="●" MaxLength="8" TextAlignment="Center" FontSize="24" PlaceholderText="{Binding ConfirmHint}" IsVisible="{Binding IsSet}" KeyDown="OnPinKeyDown" TextInput="OnDigitsOnly" />
+				<TextBlock Text="{Binding Error}" Classes="error" TextAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+				<StackPanel Orientation="Horizontal" Spacing="24" HorizontalAlignment="Center">
+					<Button Classes="icon" IsVisible="{Binding CanCancel}" Command="{Binding CancelCommand}" ToolTip.Tip="{Binding CancelTip}"><PathIcon Data="{StaticResource Icon.close}" /></Button>
+					<Button Classes="icon" Command="{Binding OkCommand}" IsEnabled="{Binding !Busy}" ToolTip.Tip="{Binding OkTip}"><PathIcon Data="{StaticResource Icon.check}" /></Button>
+				</StackPanel>
+
+				<!-- Forgotten PIN: the three phrases prove it is the owner, and switch the lock off. -->
+				<Button Content="{Binding ForgotText}" Command="{Binding ToggleForgotCommand}" IsVisible="{Binding CanForget}" Classes="flat" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" Margin="0,16,0,0" />
+				<StackPanel Spacing="8" IsVisible="{Binding ForgotOpen}">
+					<TextBlock Text="{Binding ForgotHint}" Classes="hint" FontSize="12" />
+					<TextBox Text="{Binding Phrase1}" PlaceholderText="1" AcceptsReturn="True" TextWrapping="Wrap" />
+					<TextBox Text="{Binding Phrase2}" PlaceholderText="2" AcceptsReturn="True" TextWrapping="Wrap" />
+					<TextBox Text="{Binding Phrase3}" PlaceholderText="3" AcceptsReturn="True" TextWrapping="Wrap" />
+					<Button Classes="icon" HorizontalAlignment="Center" Command="{Binding PhrasesCommand}" IsEnabled="{Binding !Busy}" ToolTip.Tip="{Binding OkTip}"><PathIcon Data="{StaticResource Icon.check}" /></Button>
+				</StackPanel>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

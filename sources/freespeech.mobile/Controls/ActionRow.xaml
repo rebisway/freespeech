@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<!-- One big, plain line: a round icon, what it does, and in a few words when to use it. The whole line is the button. -->
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="FreeSpeech.Mobile.Controls.ActionRow" x:Name="Root">
+    <Border BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="14,12" MinimumHeightRequest="68">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding Command, Source={x:Reference Root}}" />
+        </Border.GestureRecognizers>
+        <Grid ColumnDefinitions="52,*" ColumnSpacing="14">
+            <Border BackgroundColor="{StaticResource IconSurface}" StrokeShape="RoundRectangle 26" Stroke="Transparent" WidthRequest="52" HeightRequest="52">
+                <Image Source="{Binding Icon, Source={x:Reference Root}}" WidthRequest="28" HeightRequest="28" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                <Label Text="{Binding Title, Source={x:Reference Root}}" FontFamily="OpenSansSemibold" FontSize="17" />
+                <Label Text="{Binding Hint, Source={x:Reference Root}}" IsVisible="{Binding HasHint, Source={x:Reference Root}}" FontSize="14" TextColor="{StaticResource Gray200}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

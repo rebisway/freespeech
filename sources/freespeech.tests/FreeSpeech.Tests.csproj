@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <ProjectReference Include="..\freespeech.client\FreeSpeech.Client.csproj" />
+    <ProjectReference Include="..\freespeech.ops\FreeSpeech.Ops.csproj" />
+    <ProjectReference Include="..\freespeech.console\FreeSpeech.Console.csproj" />
+    <!-- Built first: RelayServerTests start the real server from its output folder. -->
+    <ProjectReference Include="..\freespeech.relay\FreeSpeech.Relay.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\freespeech.push\FreeSpeech.Push.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\freespeech.directory\FreeSpeech.Directory.csproj" ReferenceOutputAssembly="false" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The server is not referenced as an assembly; its pure volume limiter is compiled here to be tested without a process. -->
+    <Compile Include="..\freespeech.relay\Services\TrafficLimiter.cs" Link="Linked\TrafficLimiter.cs" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
+
+

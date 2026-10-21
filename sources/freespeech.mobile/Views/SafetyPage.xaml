@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.SafetyPage" Title="{loc:Tr safety_title}" Shell.FlyoutBehavior="Disabled">
+    <ScrollView>
+        <VerticalStackLayout Padding="22" Spacing="16">
+            <HorizontalStackLayout Spacing="14" HorizontalOptions="Center">
+                <ctl:AvatarView Title="{Binding Title}" Photo="{Binding Photo}" />
+                <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="20" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <!-- The number itself: four lines of three groups, in a fixed-width look so two people can read it to each other. -->
+            <Border BackgroundColor="{StaticResource Gray900}" Stroke="{StaticResource Primary}" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="18,16">
+                <Label Text="{Binding Number}" FontSize="22" FontFamily="OpenSansSemibold" HorizontalTextAlignment="Center" LineHeight="1.5" TextColor="{StaticResource Primary}" />
+            </Border>
+
+            <Label Text="{loc:Tr safety_explain}" TextColor="{StaticResource Gray200}" FontSize="14" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding StatusText}" FontFamily="OpenSansSemibold" HorizontalTextAlignment="Center" />
+            <Button Text="{Binding ToggleLabel}" Command="{Binding ToggleCommand}" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

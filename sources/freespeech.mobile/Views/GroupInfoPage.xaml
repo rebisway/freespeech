@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.GroupInfoPage" Title="{loc:Tr group_info_title}" Shell.FlyoutBehavior="Disabled">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Left: the group (picture, name, members, description, and what my role lets me change). Right: me in this group (picture, name, their editing buttons). -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*" ColumnSpacing="10" Padding="14,16,14,10">
+            <VerticalStackLayout Grid.Column="0" Spacing="4" HorizontalOptions="Center">
+                <ctl:AvatarView Title="{Binding Name}" IsGroup="True" Photo="{Binding Photo}" Size="72" HorizontalOptions="Center" />
+                <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="18" HorizontalTextAlignment="Center" />
+                <Label Text="{Binding Summary}" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" />
+                <Label Text="{Binding Description}" IsVisible="{Binding HasDescription}" FontSize="13" HorizontalTextAlignment="Center" />
+                <FlexLayout Wrap="Wrap" JustifyContent="Center">
+                    <ImageButton Source="ic_person_add.png" StyleClass="Icon" IsVisible="{Binding CanModerate}" Margin="4,0" Command="{Binding AddMemberCommand}" SemanticProperties.Description="{loc:Tr a11y_add}" />
+                    <ImageButton Source="ic_person_add.png" StyleClass="Icon" IsVisible="{Binding CanSuggest}" Margin="4,0" Command="{Binding SuggestMemberCommand}" SemanticProperties.Description="{loc:Tr a11y_suggest}" />
+                    <ImageButton Source="ic_edit.png" StyleClass="Icon" IsVisible="{Binding IsCreator}" Margin="4,0" Command="{Binding EditCommand}" SemanticProperties.Description="{loc:Tr a11y_rename}" />
+                    <ImageButton Source="ic_photo.png" StyleClass="Icon" IsVisible="{Binding IsCreator}" Margin="4,0" Command="{Binding ChangePhotoCommand}" SemanticProperties.Description="{loc:Tr a11y_photo}" />
+                </FlexLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center" IsVisible="{Binding IsActive}">
+                <ctl:AvatarView Title="{Binding MyName}" Photo="{Binding MyPhoto}" Size="72" HorizontalOptions="Center" />
+                <Label Text="{Binding MyName}" FontFamily="OpenSansSemibold" FontSize="18" HorizontalTextAlignment="Center" />
+                <Label Text="{loc:Tr group_me_here}" TextColor="{StaticResource Gray200}" FontSize="13" HorizontalTextAlignment="Center" />
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+                    <ImageButton Source="ic_edit.png" StyleClass="Icon" Command="{Binding EditMyNameCommand}" SemanticProperties.Description="{loc:Tr group_my_name}" />
+                    <ImageButton Source="ic_photo.png" StyleClass="Icon" Command="{Binding ChangeMyPhotoCommand}" SemanticProperties.Description="{loc:Tr group_my_photo}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- A line and some air between the two columns above and the list of members. -->
+        <BoxView Grid.Row="1" HeightRequest="1" Color="{StaticResource Gray400}" VerticalOptions="Start" Margin="14,0" />
+        <!-- What the checks mean (shown when a member is one of my contacts). -->
+        <Label Grid.Row="1" Text="{loc:Tr group_trust_legend}" IsVisible="{Binding HasTrust}" TextColor="{StaticResource Gray200}" FontSize="12" Margin="14,8,14,0" VerticalOptions="Start" />
+        <CollectionView Grid.Row="1" Margin="0,52,0,0" ItemsSource="{Binding Members}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*,Auto" Padding="14,6" ColumnSpacing="12" Opacity="{Binding RowOpacity}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupInfoViewModel}}, Path=MemberActionsCommand}" CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <ctl:AvatarView Title="{Binding Nickname}" Photo="{Binding Photo}" />
+                        <Label Grid.Column="1" Text="{Binding Nickname}" FontFamily="OpenSansSemibold" FontSize="16" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                            <Label Text="{Binding Role}" IsVisible="{Binding HasRole}" TextColor="{StaticResource Primary}" FontSize="12" VerticalOptions="Center" />
+                            <!-- A contact of mine: grey check; a contact whose safety number I compared: gold check. Touching it opens the number. -->
+                            <Label Text="✓" IsVisible="{Binding IsContact}" TextColor="{StaticResource Gray200}" FontSize="18" VerticalOptions="Center" Padding="6">
+                                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupInfoViewModel}}, Path=OpenSafetyCommand}" CommandParameter="{Binding .}" /></Label.GestureRecognizers>
+                            </Label>
+                            <Label Text="✓" IsVisible="{Binding IsVerified}" TextColor="{StaticResource Primary}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center" Padding="6">
+                                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroupInfoViewModel}}, Path=OpenSafetyCommand}" CommandParameter="{Binding .}" /></Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="2" Padding="18,6,18,14" Spacing="6">
+            <Label Text="{Binding BansLabel}" IsVisible="{Binding HasBans}" TextColor="{StaticResource Primary}" FontSize="14" Padding="0,6">
+                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding ShowBansCommand}" /></Label.GestureRecognizers>
+            </Label>
+            <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+            <ImageButton Source="ic_leave.png" StyleClass="Icon" HorizontalOptions="Start" IsVisible="{Binding IsActive}" Command="{Binding LeaveCommand}" SemanticProperties.Description="{loc:Tr group_leave}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

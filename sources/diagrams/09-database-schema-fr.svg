@@ -1,0 +1,92 @@
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Schéma de la base locale : la table messages (historique paginé) et la table docs (collections JSON : identité, contacts, groupes, outbox, pièces jointes)">
+  <rect x="0" y="0" width="900" height="640" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .col{font-size:10.5px;fill:#1c1a17;font-family:'IBM Plex Mono',monospace}
+    .key{font-size:10.5px;fill:#a8501f;font-family:'IBM Plex Mono',monospace;font-weight:600}
+  </style>  <text x="20" y="24" class="actor">freespeech.db</text>
+  <text x="170" y="24" class="lbl">une base SQLite par profil, son contenu chiffré ; les fichiers joints restent hors base</text>
+
+  <rect x="20" y="36" width="410" height="214" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.8"/>
+  <rect x="20" y="36" width="410" height="26" rx="8" fill="#dff0ef"/>
+  <text x="32" y="54" class="actor">messages</text>
+  <text x="130" y="54" class="lbl">historique, une ligne par message</text>
+  <text x="32" y="82" class="key">conv        TEXT</text><text x="150" y="82" class="lbl">conversation (contact ou groupe)</text>
+  <text x="32" y="98" class="key">id          TEXT</text><text x="150" y="98" class="lbl">message_id "{expéditeur}:{ts}"</text>
+  <text x="32" y="114" class="col">ts          INTEGER</text><text x="150" y="114" class="lbl">horloge de l'expéditeur (ticks UTC)</text>
+  <text x="32" y="130" class="col">direction   INTEGER</text><text x="150" y="130" class="lbl">0 = envoyé, 1 = reçu</text>
+  <text x="32" y="146" class="col">text        TEXT</text><text x="150" y="146" class="lbl">texte (vide si supprimé pour tous)</text>
+  <text x="32" y="162" class="col">reply_to    TEXT</text><text x="150" y="162" class="lbl">message_id cité</text>
+  <text x="32" y="178" class="col">from_id     TEXT</text><text x="150" y="178" class="lbl">auteur (groupes)</text>
+  <text x="32" y="194" class="col">state       INTEGER</text><text x="150" y="194" class="lbl">voir la légende ci-dessous</text>
+  <text x="32" y="210" class="col">edited_ts   INTEGER</text><text x="150" y="210" class="lbl">dernière modification (auteur)</text>
+  <text x="32" y="226" class="lbl">PRIMARY KEY (conv, id)   INDEX (conv, ts, id)</text>
+  <text x="32" y="242" class="lbl">state : 0 normal, 1 suppr. moi, 2 suppr. tous, 3-4 fichier</text>
+
+  <rect x="20" y="256" width="410" height="110" rx="8" fill="none" stroke="#a8501f" stroke-width="1.6"/>
+  <text x="32" y="276" class="lbl-strong">Clé de conversation (conv)</text>
+  <text x="32" y="296" class="col">"&lt;discovery_id&gt;"</text><text x="200" y="296" class="lbl">discussion 1-à-1</text>
+  <text x="32" y="314" class="col">"group:&lt;group_id&gt;"</text><text x="200" y="314" class="lbl">discussion de groupe</text>
+  <text x="32" y="334" class="lbl">Ordre total : (ts, id) - le même sur tous les appareils ;</text>
+  <text x="32" y="348" class="lbl">pagination par curseur (ts, id), jamais par décalage.</text>
+
+  <rect x="20" y="380" width="410" height="84" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="32" y="400" class="actor">message_ops</text>
+  <text x="140" y="400" class="lbl">modifications arrivées avant leur message</text>
+  <text x="32" y="418" class="col">conv, target, kind, ts, text</text>
+  <text x="32" y="434" class="lbl">Parquées ici, appliquées dès que le message est stocké ;</text>
+  <text x="32" y="448" class="lbl">une suppression l'emporte toujours sur une modification.</text>
+
+  <rect x="20" y="478" width="410" height="74" rx="8" fill="none" stroke="#1c1a17" stroke-width="1.2"/>
+  <text x="32" y="498" class="lbl-strong">Ouverture</text>
+  <text x="32" y="516" class="col">key = x'&lt;32 bytes&gt;'  journal_mode = WAL</text>
+  <text x="32" y="532" class="lbl">La clé vient des 3 phrases (HKDF "database-v1"),</text>
+  <text x="32" y="545" class="lbl">mise en cache par IKeyCache. Mauvaise clé = refus.</text>
+  <rect x="470" y="36" width="410" height="168" rx="8" fill="none" stroke="#4a5a8a" stroke-width="1.8"/>
+  <rect x="470" y="36" width="410" height="26" rx="8" fill="#e6e9f2"/>
+  <text x="482" y="54" class="actor">docs</text>
+  <text x="530" y="54" class="lbl">petites collections, un document JSON par ligne</text>
+  <text x="482" y="82" class="key">collection  TEXT</text><text x="650" y="82" class="lbl">nom de la collection</text>
+  <text x="482" y="98" class="key">id          TEXT</text><text x="650" y="98" class="lbl">clé de l'élément</text>
+  <text x="482" y="114" class="col">pos         INTEGER</text><text x="650" y="114" class="lbl">rang dans la liste (l'ordre est conservé)</text>
+  <text x="482" y="130" class="col">json        TEXT</text><text x="650" y="130" class="lbl">l'objet sérialisé</text>
+  <text x="482" y="152" class="lbl">PRIMARY KEY (collection, id)</text>
+  <text x="482" y="170" class="lbl">Sauvegarde : seules les lignes dont le JSON ou le rang a</text>
+  <text x="482" y="184" class="lbl">changé sont réécrites, dans une seule transaction.</text>
+
+  <path d="M675 206 L675 226" stroke="#4a5a8a" stroke-width="1.4" fill="none" marker-end="url(#aB)"/>
+  <text x="690" y="220" class="lbl">collections</text>
+
+  <rect x="470" y="230" width="410" height="258" rx="8" fill="none" stroke="#4a5a8a" stroke-dasharray="4 3"/>
+  <text x="482" y="250" class="lbl-strong">collection -> clé -> contenu</text>
+  <text x="482" y="272" class="key">identity</text><text x="600" y="272" class="lbl">"me" -> UserIdentity (clés privées)</text>
+  <text x="482" y="290" class="key">contacts</text><text x="600" y="290" class="lbl">discovery_id -> Contact</text>
+  <text x="482" y="308" class="key">aliases</text><text x="600" y="308" class="lbl">nom -> discovery_id</text>
+  <text x="482" y="326" class="key">otc_entries</text><text x="600" y="326" class="lbl">otc -> OtcEntry</text>
+  <text x="482" y="344" class="key">pending_contacts</text><text x="600" y="344" class="lbl">id -> PendingContact</text>
+  <text x="482" y="362" class="key">outbox</text><text x="600" y="362" class="lbl">id -> PendingMessage</text>
+  <text x="482" y="380" class="key">groups</text><text x="600" y="380" class="lbl">group_id -> GroupRecord (états, clés)</text>
+  <text x="482" y="398" class="key">attachments</text><text x="600" y="398" class="lbl">ref -> AttachmentRecord</text>
+  <text x="482" y="416" class="key">group_invites</text><text x="600" y="416" class="lbl">group_id -> invitation en attente / refusée</text>
+  <text x="482" y="434" class="key">group_suggestions</text><text x="620" y="434" class="lbl">groupe/candidat -> proposition (modérateur)</text>
+  <text x="482" y="452" class="key">archived_contacts</text><text x="620" y="452" class="lbl">discovery_id -> contact supprimé (archive)</text>
+  <text x="482" y="476" class="lbl" opacity="0.8">Stores en mémoire + Save() ; API inchangée.</text>
+
+  <rect x="470" y="498" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="516" class="actor">read_marks</text>
+  <text x="580" y="516" class="lbl">lu / non lu, par conversation</text>
+  <text x="482" y="533" class="col">conv, side, ts, id</text>
+  <text x="482" y="549" class="lbl">side 0 : j'ai lu ; side 1 : l'autre a lu (✓✓). Avance seulement.</text>
+  <rect x="470" y="568" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="586" class="actor">reactions</text>
+  <text x="560" y="586" class="lbl">emoji sur les messages</text>
+  <text x="482" y="603" class="col">conv, target, who, emoji, ts</text>
+  <text x="482" y="619" class="lbl">Une par personne et par message ; la plus récente l'emporte.</text>
+  <defs>
+    <marker id="aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#4a5a8a"/></marker>
+    <marker id="aR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a8501f"/></marker>
+  </defs>
+</svg>

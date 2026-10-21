@@ -1,0 +1,42 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             xmlns:c="using:FreeSpeech.Desktop.Controls"
+             x:Class="FreeSpeech.Desktop.Views.ApproveView"
+             x:DataType="vm:ApproveViewModel">
+	<DockPanel>
+		<TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" Margin="24,8" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		<Grid>
+			<TextBlock Text="{Binding EmptyText}" Classes="hint" HorizontalAlignment="Center" Margin="0,24" IsVisible="{Binding IsEmpty}" />
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding Items}" MaxWidth="640">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:ApprovalItem">
+							<Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="14,10">
+								<c:Avatar Margin="0,0,14,0" Title="{Binding Title}" Photo="{Binding Photo}" IsGroup="{Binding IsGroup}" />
+								<StackPanel Grid.Column="1" VerticalAlignment="Center">
+									<TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" />
+									<TextBlock Text="{Binding Subtitle}" Classes="hint" FontSize="12" IsVisible="{Binding HasSubtitle}" />
+								</StackPanel>
+								<Button Grid.Column="2" Classes="iconflat" IsVisible="{Binding CanDecline}" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ApproveViewModel)DataContext).DeclineTip}"
+								        Command="{Binding $parent[ItemsControl].((vm:ApproveViewModel)DataContext).DeclineCommand}" CommandParameter="{Binding}">
+									<PathIcon Data="{StaticResource Icon.close}" />
+								</Button>
+								<Button Grid.Column="3" Classes="icon" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ApproveViewModel)DataContext).AcceptTip}"
+								        Command="{Binding $parent[ItemsControl].((vm:ApproveViewModel)DataContext).AcceptCommand}" CommandParameter="{Binding}">
+									<PathIcon Data="{StaticResource Icon.check}" />
+								</Button>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Grid>
+	</DockPanel>
+</UserControl>

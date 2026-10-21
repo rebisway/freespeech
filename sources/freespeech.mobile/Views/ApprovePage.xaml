@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" xmlns:vm="clr-namespace:FreeSpeech.Mobile.ViewModels" x:Class="FreeSpeech.Mobile.Views.ApprovePage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr nav_approve}" /></Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" Margin="18,12" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="{loc:Tr approve_empty}" TextColor="{StaticResource Gray200}" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="30" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="56,*,Auto,Auto" Padding="14,6" ColumnSpacing="10">
+                        <ctl:AvatarView Title="{Binding Title}" IsGroup="{Binding IsGroup}" Photo="{Binding Photo}" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding Title}" FontFamily="OpenSansSemibold" FontSize="16" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" TextColor="{StaticResource Gray200}" FontSize="13" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                        <ImageButton Grid.Column="2" Source="ic_close.png" StyleClass="Icon" IsVisible="{Binding CanDecline}" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ApproveViewModel}}, Path=DeclineCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_decline}" />
+                        <ImageButton Grid.Column="3" Source="ic_check.png" StyleClass="Icon" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ApproveViewModel}}, Path=AcceptCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_accept}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

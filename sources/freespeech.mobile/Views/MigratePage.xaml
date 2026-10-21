@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:loc="clr-namespace:FreeSpeech.Mobile.Localization" xmlns:ctl="clr-namespace:FreeSpeech.Mobile.Controls" x:Class="FreeSpeech.Mobile.Views.MigratePage">
+    <Shell.TitleView><ctl:BrandTitleView Heading="{loc:Tr mig_title}" /></Shell.TitleView>
+    <ScrollView>
+        <VerticalStackLayout Padding="18" Spacing="12">
+
+            <!-- Step 1: who takes over my groups, and the old phrases that sign the notice. -->
+            <VerticalStackLayout x:Name="Step1" Spacing="12">
+                <Label Text="{loc:Tr mig_intro}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Label Text="{loc:Tr mig_groups}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,8,0,0" />
+                <Label x:Name="NoGroups" Text="{loc:Tr mig_no_groups}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <VerticalStackLayout x:Name="GroupsBox" Spacing="10" />
+                <Label Text="{loc:Tr mig_old_phrases}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" Margin="0,8,0,0" />
+                <Editor x:Name="Old1" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="1" />
+                <Editor x:Name="Old2" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="2" />
+                <Editor x:Name="Old3" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="3" />
+                <Button Text="{loc:Tr mig_continue}" Clicked="OnContinue" />
+            </VerticalStackLayout>
+
+            <!-- Step 2: the notice is out; switch to the new identity once it has reached everyone. -->
+            <VerticalStackLayout x:Name="Step2" Spacing="12" IsVisible="False">
+                <Label Text="{loc:Tr mig_sent_title}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" />
+                <Label x:Name="NewIdLabel" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Label Text="{loc:Tr mig_wait}" TextColor="{StaticResource Gray200}" FontSize="13" />
+                <Label x:Name="PendingLabel" FontFamily="OpenSansSemibold" />
+                <Button Text="{loc:Tr mig_refresh}" Clicked="OnRefresh" />
+                <Label Text="{loc:Tr mig_finish_hint}" TextColor="{StaticResource Gray200}" FontSize="13" Margin="0,8,0,0" />
+                <Editor x:Name="New1" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="1" />
+                <Editor x:Name="New2" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="2" />
+                <Editor x:Name="New3" AutoSize="TextChanges" IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" Placeholder="3" />
+                <Button Text="{loc:Tr mig_finish}" BackgroundColor="{StaticResource Danger}" Clicked="OnFinish" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator x:Name="Spinner" IsRunning="False" IsVisible="False" />
+            <Label x:Name="Result" TextColor="{StaticResource Secondary}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

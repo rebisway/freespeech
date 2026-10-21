@@ -1,0 +1,42 @@
+<svg viewBox="0 0 980 480" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Déplacement d’un client : le serveur plein interroge ses frères, suggère server_redirect, le client s’inscrit sur le nouveau serveur puis prévient ses contacts">
+  <rect x="0" y="0" width="980" height="480" fill="#ffffff"/>
+  <style>
+    .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
+    .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    .actor{font-size:12.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  </style>
+  <text x="110" y="30" class="actor" text-anchor="middle">Client</text>
+  <text x="360" y="30" class="actor" text-anchor="middle">Serveur plein</text>
+  <text x="610" y="30" class="actor" text-anchor="middle">Serveur frère</text>
+  <text x="860" y="30" class="actor" text-anchor="middle">Contacts / groupes</text>
+  <line x1="110" y1="45" x2="110" y2="440" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="360" y1="45" x2="360" y2="440" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="610" y1="45" x2="610" y2="440" stroke="#1c1a17" opacity="0.25"/>
+  <line x1="860" y1="45" x2="860" y2="440" stroke="#1c1a17" opacity="0.25"/>
+  <path d="M356 70 L114 70" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="235" y="63" class="lbl" text-anchor="middle">registered</text>
+  <rect x="268" y="82" width="183" height="24" rx="4" fill="#dff0ef"/>
+  <text x="360" y="98" class="lbl-strong" text-anchor="middle">au-delà de MaxConnections</text>
+  <path d="M364 135 L606 135" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="485" y="128" class="lbl" text-anchor="middle">POST /s2s/capacity (signé)</text>
+  <path d="M606 165 L364 165" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="485" y="158" class="lbl" text-anchor="middle">{free_slots: n}</text>
+  <rect x="163" y="180" width="394" height="24" rx="4" fill="#dff0ef"/>
+  <text x="360" y="196" class="lbl-strong" text-anchor="middle">écarte les pleins, tirage pondéré, 3 au plus (cache 15 s)</text>
+  <path d="M356 245 L114 245" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="235" y="238" class="lbl" text-anchor="middle">server_redirect {servers, reason}</text>
+  <rect x="123" y="258" width="414" height="24" rx="4" fill="#dff0ef"/>
+  <text x="330" y="274" class="lbl-strong" text-anchor="middle">suit si : l’un de MES serveurs, https, 3 fois / 24 h au plus</text>
+  <path d="M114 320 L606 320" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="360" y="313" class="lbl" text-anchor="middle">register + preuve (§11)</text>
+  <path d="M606 350 L114 350" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="360" y="343" class="lbl" text-anchor="middle">registered</text>
+  <path d="M114 400 L856 400" fill="none" stroke="#2f6f6e" stroke-width="1.6" marker-end="url(#arrowAcc)"/>
+  <text x="485" y="393" class="lbl" text-anchor="middle">identity_update (nouveau serveur, mis en file si hors ligne)</text>
+  <text x="20" y="462" font-family="'IBM Plex Sans',sans-serif" font-size="12" fill="#6b665d">Rien n’est déplacé de force : sans frère disponible, le client reste. Un contact qui écrit encore à l’ancien serveur retrouve le client par la cascade S2S.</text>
+  <defs>
+    <marker id="arrowInk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#1c1a17"/></marker>
+    <marker id="arrowAcc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
+    <marker id="arrowWarn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#a4402f"/></marker>
+  </defs>
+</svg>

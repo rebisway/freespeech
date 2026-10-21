@@ -1,0 +1,35 @@
+﻿<!--
+  FreeSpeech - P2P Encrypted Messaging
+  Copyright (c) 2024-2026 Thomas Gourgnier
+  Licensed under the GNU Affero General Public License v3.0 or later.
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FreeSpeech.Desktop.ViewModels"
+             x:Class="FreeSpeech.Desktop.Views.OutboxView"
+             x:DataType="vm:OutboxViewModel">
+	<DockPanel>
+		<TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" Margin="24,8" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		<Grid>
+			<TextBlock Text="{Binding EmptyText}" Classes="hint" HorizontalAlignment="Center" Margin="0,24" IsVisible="{Binding IsEmpty}" />
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding Items}" MaxWidth="640">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:OutboxItem">
+							<Grid ColumnDefinitions="*,Auto" Margin="14,10">
+								<StackPanel Spacing="1" VerticalAlignment="Center">
+									<TextBlock Text="{Binding To}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
+									<TextBlock Text="{Binding Preview}" FontSize="13" TextTrimming="CharacterEllipsis" />
+									<TextBlock Text="{Binding Detail}" Classes="hint" FontSize="12" TextWrapping="Wrap" />
+								</StackPanel>
+								<Button Grid.Column="1" Content="{Binding ActionLabel}" IsVisible="{Binding CanToggle}" VerticalAlignment="Center" Margin="10,0,0,0"
+								        Command="{Binding $parent[ItemsControl].((vm:OutboxViewModel)DataContext).ToggleCommand}" CommandParameter="{Binding}" />
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Grid>
+	</DockPanel>
+</UserControl>
