@@ -11,6 +11,7 @@ public partial class App : Application
 {
 	public App()
 	{
+		Services.StartupTrace.Mark("App: start");
 		Localization.Loc.Instance.Initialize();   // before any page binds to a text
 		InitializeComponent();
 		// One palette, dark: gold on a dark background (same charte as the other Rebis apps).
@@ -19,7 +20,9 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
+		Services.StartupTrace.Mark("CreateWindow: shell");
 		var window = new Window(new AppShell());
+		Services.StartupTrace.Mark("CreateWindow: shell built");
 		// A message shown in a chat only counts as read while the app is on screen.
 		window.Activated += (_, _) => { Services.ClientService.InForeground = !Services.AppLock.Showing; _ = ShowLockIfDueAsync(); };
 		window.Deactivated += (_, _) => { Services.ClientService.InForeground = false; Services.AppLock.MarkLeft(); };

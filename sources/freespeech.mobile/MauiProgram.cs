@@ -19,6 +19,7 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		StartupTrace.Begin();
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
@@ -116,7 +117,9 @@ public static class MauiProgram
 #endif
 
 		DiagLog.Apply();   // diagnostic journal: off unless the user switched it on in Settings
-		return builder.Build();
+		var app = builder.Build();
+		StartupTrace.Mark("app built");
+		return app;
 	}
 
 #if ANDROID

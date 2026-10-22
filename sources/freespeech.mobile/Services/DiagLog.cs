@@ -36,7 +36,19 @@ public static class DiagLog
 		if (!Enabled) Clear();   // switching it off also forgets what was recorded
 	}
 
-	public static bool HasContent => File.Exists(FilePath) && new FileInfo(FilePath).Length > 0;
+	public static bool HasContent => NotEmpty(FilePath) || NotEmpty(StartupTrace.StartupPath) || NotEmpty(StartupTrace.CrashPath);
+
+	private static bool NotEmpty(string path) => File.Exists(path) && new FileInfo(path).Length > 0;
+
+	/// <summary>The file to share: the crashes, the steps of the last start, then the journal itself (each part only when it has something).</summary>
+	public static string BuildExport()
+	{
+		var target = Path.Combine(FileSystem.CacheDirectory, "diagnostic-share.log");
+		using var output = new StreamWriter(target, append: false);
+		foreach (var (title, path) in new[] { ("crashes", StartupTrace.CrashPath), ("last start", StartupTrace.StartupPath), ("journal", FilePath) })
+			if (NotEmpty(path)) { output.WriteLine($"==== {title} ===="); output.WriteLine(File.ReadAllText(path)); }
+		return target;
+	}
 
 	public static void Clear()
 	{

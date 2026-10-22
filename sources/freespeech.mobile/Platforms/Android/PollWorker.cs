@@ -1,4 +1,4 @@
-﻿/*******************************************************************
+/*******************************************************************
  * FreeSpeech - P2P Encrypted Messaging
  * -----------------------------------------------------------------------
  * Copyright (c) 2024-2026 Thomas Gourgnier
@@ -21,10 +21,15 @@ public sealed class PollWorker(Context context, WorkerParameters parameters) : W
 	{
 		try
 		{
+			// The system starts this job with the process, at the very moment the screen is being created: the screen builds ClientService
+			// and opens the profile itself, and the app is connected live, so the check stays out of its way until it has finished.
+			if (StartupTrace.ActivityCreated && !StartupTrace.UiReady) { StartupTrace.Mark("PollWorker: the screen is starting, no check"); return Result.InvokeSuccess()!; }
+			StartupTrace.Mark("PollWorker: start");
 			var live = IPlatformApplication.Current?.Services.GetService<ClientService>();
 			if (live != null) BackgroundPoll.RunOnceAsync(live).GetAwaiter().GetResult();
+			StartupTrace.Mark("PollWorker: end");
 		}
-		catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"PollWorker: {ex.Message}"); }
+		catch (Exception ex) { StartupTrace.Crash("PollWorker", ex); }
 		return Result.InvokeSuccess()!;   // the next period will try again whatever happened
 	}
 

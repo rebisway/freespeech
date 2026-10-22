@@ -70,7 +70,7 @@ Les primitives viennent de BouncyCastle, du code managé qui fonctionne sur Andr
 - Perdre les trois phrases fait perdre l'identité. Il n'y a pas de récupération.
 - Supprimer un message pour tout le monde et le modifier se font au mieux : un client modifié peut les ignorer, et le destinataire a pu copier le message avant.
 - Un membre de groupe peut transmettre la clé courante à une personne exclue, hors protocole.
-- Les fichiers reçus sont stockés en clair dans l'espace protégé de l'application.
+- Les fichiers reçus ne sont pas chiffrés par l'application. Sur Android, ils sont dans l'espace privé de l'application, que le système chiffre ; sur le bureau, ce sont de simples fichiers dans le dossier de données de l'application.
 - Le code PIN protège l'écran, pas le chiffrement.
 
 Le modèle de sécurité est décrit en détail dans [ARCHITECTURE.fr.md](sources/ARCHITECTURE.fr.md), section « Modèle de sécurité et limites connues ».

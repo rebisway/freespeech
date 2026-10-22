@@ -70,7 +70,7 @@ The primitives come from BouncyCastle, which is managed code and runs on Android
 - Losing the three phrases loses the identity. There is no recovery.
 - Deleting a message for everyone and editing a message are best effort. A modified client can ignore them, and the recipient may have copied the message already.
 - A group member can pass the current key to someone who was excluded, outside the protocol.
-- Received files are stored unencrypted in the app's protected storage.
+- Received files are not encrypted by the app. On Android they sit in the app's private storage, which the system encrypts; on the desktop they are plain files in the app's data folder.
 - The PIN protects the screen, not the encryption.
 
 The security model is described in full in [ARCHITECTURE.en.md](sources/ARCHITECTURE.en.md), section "Security model and known limits".

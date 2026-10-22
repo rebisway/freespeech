@@ -273,6 +273,7 @@ moves to a **new identity** (new phrases) and tells contacts and group moderator
   (states, keys, log).
   **Not the identity itself**: it is fully re-derivable from the 3 phrases on any
   device, so no private key has to travel through this file. **Nor the phrases**: the backup only concerns data.
+- **Read marks** (`read_marks`: conversation, side, `ts`, `id`): included, mine and the peer's. On restoration they only move forward; a backup that carries none marks each restored conversation as read up to its last received message.
 - **The identity's servers** (`servers`: addresses in priority order): included. On restoration, when the identity still has the servers the application gave it at creation (§4 d) the client tests those of the backup; if at least one answers, the whole list replaces the initial servers, otherwise nothing changes. An identity whose user chose the server, or whose list was edited, is not touched.
 - **The user's profile** (`profile`: name, description, picture as base64): included, because keys are re-derived but the profile is
   not. On restoration at **first connection** (identity just recreated, empty profile) it is put back; on an identity already in use

@@ -180,7 +180,7 @@ public partial class SettingsViewModel : ObservableObject
 	private async Task ShareDiagLogAsync()
 	{
 		if (!DiagLog.HasContent) { Status = Loc.T("set_diag_empty"); return; }
-		await Share.Default.RequestAsync(new ShareFileRequest { Title = Loc.T("set_diag_title"), File = new ShareFile(DiagLog.FilePath, "text/plain") });
+		await Share.Default.RequestAsync(new ShareFileRequest { Title = Loc.T("set_diag_title"), File = new ShareFile(DiagLog.BuildExport(), "text/plain") });
 	}
 
 	/// <summary>Follow a contact's verified migration without asking (never a contact I verified).</summary>

@@ -419,8 +419,8 @@ scellés (ChaCha20-Poly1305, nonce aléatoire, contexte = table, colonne et iden
 ligne en données associées : un chiffré recopié dans une autre ligne ne s'ouvre pas).
 Restent lisibles les identifiants (conversation, message, correspondant), horodatages et
 états, dont les requêtes et les index ont besoin ; le schéma et le journal WAL ne sont pas
-chiffrés. Un fichier qui n'est pas une base SQLite est mis de côté (`freespeech.db.legacy`), une base neuve est créée. Les fichiers joints restent hors de la base, en clair, dans
-`attachments/` (choix délibéré). Les petites images des photos font exception : elles sont
+chiffrés. Un fichier qui n'est pas une base SQLite est mis de côté (`freespeech.db.legacy`), une base neuve est créée. Les fichiers joints restent hors de la base, non chiffrés par l'application, dans
+`attachments/` (choix délibéré) : sur Android, ce dossier est dans l'espace privé de l'application, chiffré par le système. Les petites images des photos font exception : elles sont
 dans la base, table `thumbnails` (section 5.1 quinquies).
 
 ![schéma de la base](diagrams/09-database-schema-fr.svg)

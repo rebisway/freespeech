@@ -404,8 +404,8 @@ random nonce, context = table, column and row identity as associated data: a sea
 copied into another row does not open). Identifiers (conversation, message, contact),
 timestamps and states stay readable, because queries and indexes need them; the schema
 and the WAL journal are not encrypted. A file that is not a SQLite database is set
-aside (`freespeech.db.legacy`), a new database is created. Attachment files stay outside the database, in clear, in
-`attachments/` (a deliberate choice). The small pictures of images are the exception: they
+aside (`freespeech.db.legacy`), a new database is created. Attachment files stay outside the database, not encrypted by the app, in
+`attachments/` (a deliberate choice): on Android this folder is in the app's private storage, which the system encrypts. The small pictures of images are the exception: they
 are in the database, in table `thumbnails` (section 5.1 quinquies).
 
 ![database schema](diagrams/09-database-schema-en.svg)

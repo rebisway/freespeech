@@ -27,7 +27,10 @@ public class MainActivity : MauiAppCompatActivity
 
 	protected override void OnCreate(Bundle? savedInstanceState)
 	{
+		FreeSpeech.Mobile.Services.StartupTrace.ActivityCreated = true;   // a background check that starts now leaves the profile to the screen
+		FreeSpeech.Mobile.Services.StartupTrace.Mark("MainActivity.OnCreate: start");
 		base.OnCreate(savedInstanceState);
+		FreeSpeech.Mobile.Services.StartupTrace.Mark("MainActivity.OnCreate: base done");
 #if DEBUG
 		FreeSpeech.Mobile.Services.Perf.WatchMainThread();   // slow jobs of the main thread in the log (adb logcat -s FSPERF); Debug builds only
 #endif
@@ -43,6 +46,7 @@ public class MainActivity : MauiAppCompatActivity
 		if (FreeSpeech.Mobile.Services.ClientService.ProtectedScreen) Window?.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);   // no screenshot, no preview in the recent apps
 		Route(Intent);   // started by a tap on a notification
 		FreeSpeech.Mobile.Services.ClientService.Notifier?.ApplyBackgroundPolling(FreeSpeech.Mobile.Services.ClientService.BackgroundWakeEnabled);
+		FreeSpeech.Mobile.Services.StartupTrace.Mark("MainActivity.OnCreate: end");
 	}
 
 #pragma warning disable CA1422   // the old result callback is what the system document picker answers to

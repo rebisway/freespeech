@@ -1,4 +1,4 @@
-﻿/*******************************************************************
+/*******************************************************************
  * FreeSpeech - P2P Encrypted Messaging
  * -----------------------------------------------------------------------
  * Copyright (c) 2024-2026 Thomas Gourgnier
@@ -389,16 +389,29 @@ public sealed class ClientService
 		if (State == AppState.Ready) return State;
 		// A background check may still hold the profile: it is told to stop (it would otherwise run up to 45 s, or 10 min while serving a file).
 		var waited = System.Diagnostics.Stopwatch.StartNew();
+		StartupTrace.Mark("StartAsync: waiting for the profile");
 		BackgroundPoll.RequestStop();
-		await BackgroundPoll.Gate.WaitAsync();
-		BackgroundPoll.Gate.Release();
+		// The wait has an end: a check that does not let go of the profile in 20 s is asked again, and the screen opens anyway after it
+		// (a blank page for ever is worse than two short-lived clients on one database, which SQLite handles).
+		if (await BackgroundPoll.Gate.WaitAsync(TimeSpan.FromSeconds(10))) BackgroundPoll.Gate.Release();
+		else
+		{
+			StartupTrace.Mark("StartAsync: the background check still holds the profile after 10 s, asking it to stop again");
+			BackgroundPoll.RequestStop();
+			if (await BackgroundPoll.Gate.WaitAsync(TimeSpan.FromSeconds(10))) BackgroundPoll.Gate.Release();
+			else StartupTrace.Mark("StartAsync: the background check never let go; opening the profile anyway");
+		}
+		StartupTrace.Mark($"StartAsync: profile free after {waited.ElapsedMilliseconds} ms");
 		Diag.Log($"Start: profile free after {waited.ElapsedMilliseconds} ms");
 		if (_client == null) Create();
+		StartupTrace.Mark("StartAsync: client created");
 
 		var loaded = await Task.Run(() => _client!.TryLoadIdentity());
+		StartupTrace.Mark($"StartAsync: identity loaded={loaded}");
 		if (!loaded) return State = _client!.NeedsPhrases ? AppState.NeedsPhrases : AppState.NeedsOnboarding;
 
 		await ConnectAsync();
+		StartupTrace.Mark("StartAsync: connected");
 		return State;
 	}
 

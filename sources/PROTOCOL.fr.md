@@ -294,6 +294,7 @@ passe donc à une **nouvelle identité** (nouvelles phrases) et prévient ses co
   **Pas l'identité elle-même** : entièrement redérivable depuis les 3
   phrases sur n'importe quel device, donc pas de clé privée à faire
   transiter par ce fichier. **Ni les phrases** : la sauvegarde ne concerne que les données.
+- **Marques de lecture** (`read_marks` : conversation, côté, `ts`, `id`) : incluses, les miennes et celles du correspondant. À la restauration elles ne font qu'avancer ; une sauvegarde qui n'en porte pas marque chaque conversation restaurée comme lue jusqu'à son dernier message reçu.
 - **Serveurs de l'identité** (`servers` : adresses par ordre de priorité) : inclus. À la restauration, quand l'identité a encore les serveurs que l'application lui a donnés à sa création (§4 d), le client teste ceux de la sauvegarde ; si au moins un répond, toute la liste remplace les serveurs initiaux, sinon rien ne change. Une identité dont l'utilisateur a choisi le serveur, ou dont la liste a été modifiée, n'est pas touchée.
 - **Profil de l'utilisateur** (`profile` : nom, description, photo en base64) : inclus, car les clés se redérivent mais pas le
   profil. À la restauration à la **première connexion** (identité tout juste recréée, profil vide) il est remis en place ; sur une

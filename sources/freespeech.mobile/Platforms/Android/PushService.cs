@@ -28,6 +28,8 @@ public sealed class PushService : FirebaseMessagingService
 		try
 		{
 			Diag.Log("Push: wake-up received");
+			// The screen is opening the profile: the app is about to be connected live and fetch what is waiting, so this check stays out of its way.
+			if (StartupTrace.ActivityCreated && !StartupTrace.UiReady) { StartupTrace.Mark("Push: the screen is starting, no check"); return; }
 			var live = IPlatformApplication.Current?.Services.GetService<ClientService>();
 			Diag.Log($"Push: client service {(live == null ? "missing" : live.State.ToString())}");
 			if (live != null) BackgroundPoll.RunOnceAsync(live, TimeSpan.FromSeconds(25)).GetAwaiter().GetResult();

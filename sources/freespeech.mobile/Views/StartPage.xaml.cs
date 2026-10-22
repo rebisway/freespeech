@@ -24,6 +24,7 @@ public partial class StartPage : ContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+		StartupTrace.Mark("StartPage: appearing");
 		await StartAsync();
 	}
 
@@ -35,11 +36,16 @@ public partial class StartPage : ContentPage
 		try
 		{
 			var state = await _service.StartAsync();
+			StartupTrace.Mark($"StartPage: profile opened, state {state}");
 			await AppLock.WaitUnlockedAsync();   // a navigation would take the lock screen off: the app opens once the code is right
 			await Shell.Current.GoToAsync(state == AppState.Ready ? _service.FirstScreen() : "//onboarding");
+			StartupTrace.UiReady = true;
+			StartupTrace.Mark("StartPage: first screen shown");
 		}
 		catch (Exception ex)
 		{
+			StartupTrace.UiReady = true;   // the start failed and says so: the background check must not wait for it
+			StartupTrace.Crash("start page", ex);
 			Spinner.IsRunning = false;
 			Message.Text = Loc.T("start_open_error", ex.Message);
 			Retry.IsVisible = true;
