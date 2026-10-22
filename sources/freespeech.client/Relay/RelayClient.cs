@@ -56,6 +56,9 @@ public class RelayClient : IAsyncDisposable
     /// <summary>Raised when a contact with a message waiting from us has just connected to this server (protocol §9) — the outbox can resend now.</summary>
     public event Action<string>? OnPeerOnline;
 
+    /// <summary>Every WebSocket text frame as it goes by: direction ("->" sent, "<-" received) and the JSON. For protocol debugging tools (the console's <c>raw</c>); nothing is kept.</summary>
+    public event Action<string, string>? OnFrame;
+
     /// <summary>The server suggests siblings that can take this client instead (§10 "Moving a client"): servers best first, and why ("load"/"admin"). The caller decides.</summary>
     public event Action<IReadOnlyList<string>, string>? OnRedirect;
 
@@ -227,6 +230,15 @@ public class RelayClient : IAsyncDisposable
         return response.Online ?? false;
     }
 
+    /// <summary>Sends <paramref name="json"/> as one text frame, exactly as given (it may be invalid on purpose: a tool checking how a server refuses it). No correlation: the answer, if any, comes through <see cref="OnFrame"/>.</summary>
+    public async Task SendRawAsync(string json, CancellationToken ct = default)
+    {
+        if (!_connected) throw new InvalidOperationException("Not connected to this server.");
+        var bytes = Encoding.UTF8.GetBytes(json);
+        OnFrame?.Invoke("->", json);
+        await _socket.SendAsync(bytes, WebSocketMessageType.Text, endOfMessage: true, ct);
+    }
+
     // ------------------------------------------------------------------
     // Request/response correlation
     // ------------------------------------------------------------------
@@ -240,6 +252,7 @@ public class RelayClient : IAsyncDisposable
         try
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(request, Json);
+            OnFrame?.Invoke("->", Encoding.UTF8.GetString(bytes));
             await _socket.SendAsync(bytes, WebSocketMessageType.Text, endOfMessage: true, ct);
 
             using var registration = ct.Register(() => tcs.TrySetCanceled());
@@ -260,6 +273,7 @@ public class RelayClient : IAsyncDisposable
             {
                 var text = await ReceiveFullTextMessageAsync(buffer, ct);
                 if (text == null) break;
+                OnFrame?.Invoke("<-", text);
 
                 WsMessage? msg;
                 try { msg = JsonSerializer.Deserialize<WsMessage>(text, Json); }

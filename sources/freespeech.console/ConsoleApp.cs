@@ -25,7 +25,7 @@ namespace FreeSpeech.Console;
 ///
 /// USAGE: dotnet run &lt;profileName&gt; [serverUrl] [--log level] [--log-file path] — type 'help' for the commands.
 /// </summary>
-public class ConsoleApp
+public partial class ConsoleApp
 {
     private readonly string _profileName;
     private readonly FreeSpeechClient _client;
@@ -61,6 +61,7 @@ public class ConsoleApp
         _client.ServerConnectionChanged += (url, up) =>
             PrintNotification(up ? $"[reconnected to {url}]" : $"[disconnected from {url} — will retry automatically]");
         _client.Notice += PrintNotification;
+        HookExtraEvents();
 
         foreach (var s in await _client.ConnectAsync())
             Print(s.Connected ? $"Connected and registered on {s.Server.Url}." : $"[!] {s.Server.Url} unreachable — will retry automatically.");
@@ -120,6 +121,19 @@ public class ConsoleApp
                     case "restore": HandleRestore(parts); break;
                     case "server": await HandleServerAsync(parts); break;
                     case "log": Print(ConsoleLog.Command(parts)); break;
+                    case "chats": HandleChats(); break;
+                    case "raw": await HandleRawAsync(line, parts); break;
+                    case "search": HandleSearch(parts); break;
+                    case "read": await HandleReadAsync(parts); break;
+                    case "typing": await HandleTypingAsync(parts); break;
+                    case "settings": HandleSettings(parts); break;
+                    case "pin" or "unpin" or "pins": await HandlePinAsync(command, parts); break;
+                    case "contact": HandleContactCommand(parts); break;
+                    case "archive": HandleArchive(parts); break;
+                    case "filearchive": HandleFileArchive(parts); break;
+                    case "sync": await HandleDeviceSyncAsync(parts); break;
+                    case "migrate": await HandleMigrateAsync(parts); break;
+                    case "wipe": await HandleWipeAsync(parts); break;
                     case "help": PrintHelp(); break;
                     case "quit":
                     case "exit":
@@ -974,6 +988,19 @@ public class ConsoleApp
   server add <url> [prio] [fs-inv-...]  Add a server (private or public; the token is the administrator's invitation), notify contacts via identity_update
   server request <url> [note]  Ask the administrator of a private server to allow you (sends your name and the note)
   server remove <url>    Remove a server, notify contacts
+  raw on [full]|off | send [url] <json> | http [url] <METHOD> <path> [json] | example   Show every wire frame; send frames as is (protocol debugging)
+  chats                  Conversation list (contacts and groups, unread counts)
+  search <text> [in <contact|group>]   Search messages
+  read <contact|group>   Mark as read (a contact gets a read receipt unless 'settings receipts off')
+  typing <contact|group> Tell the conversation that you are typing
+  settings [receipts|typing|auto-accept-migration|auto-exclude-migrated on|off]   Privacy and migration switches
+  pin|unpin <g> <#> | pins <g>   Pin / release a group message (moderators); list the pinned ones
+  contact remove <x> | rename <x> <private name>|clear   Remove a contact (conversation archived) / name only you see
+  archive list | delete <x>   Contacts removed and groups left, readable until deleted for good
+  filearchive preview|create <path> [months <n>] [with <x>] [kind image|video|audio|other] [min <MB>] | restore <path>   Move attachment files into an encrypted archive file / bring them back
+  sync request | list | approve <id> <code> | reject <id>   Mirror another device of this identity
+  migrate send | switch | list | accept <id> | decline <id>   Move to a new identity / follow a contact who moved
+  wipe check | enable | send   Erase the other devices of this identity (asks the 3 phrases)
   help                   This help
   quit                   Exit
 """);

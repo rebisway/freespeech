@@ -62,6 +62,9 @@ public class RelayPool : IAsyncDisposable
     /// <summary>A contact we have a message waiting for just connected to one of our servers (protocol §9).</summary>
     public event Action<string>? OnPeerOnline;
 
+    /// <summary>Every WebSocket frame of every server (url, direction, JSON) and every HTTP call (url, "-> METHOD path", "<- status body"). For protocol debugging tools.</summary>
+    public event Action<string, string, string>? OnFrame;
+
     /// <summary>One of our servers suggests moving to a sibling: (server url, candidates best first, reason).</summary>
     public event Action<string, IReadOnlyList<string>, string>? OnRedirect;
 
@@ -251,6 +254,23 @@ public class RelayPool : IAsyncDisposable
         await entry.Client.SendMessageAsync(envelope);
     }
 
+
+    /// <summary>Protocol debugging: one raw WebSocket text frame to a server, exactly as given. Connects first when needed.</summary>
+    public async Task SendRawAsync(string url, string json)
+    {
+        var entry = await GetEntryAsync(Normalize(url)) ?? throw new InvalidOperationException($"{url} is unreachable.");
+        await entry.Client.SendRawAsync(json);
+    }
+
+    /// <summary>Protocol debugging: one raw HTTP call (flags, session endpoints) with this identity's token. Returns status and body.</summary>
+    public async Task<(int Status, string Body)> RawHttpAsync(string url, string method, string path, string? json)
+    {
+        var entry = await GetEntryAsync(Normalize(url)) ?? throw new InvalidOperationException($"{url} is unreachable.");
+        using var request = new HttpRequestMessage(new HttpMethod(method.ToUpperInvariant()), path);
+        if (json != null) request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        using var response = await entry.Http.SendAsync(request);
+        return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+    }
     public async Task<bool> IsOnlineAsync(IEnumerable<string> urls, string discoveryId)
     {
         foreach (var url in urls.Select(Normalize).Distinct())
@@ -361,24 +381,28 @@ public class RelayPool : IAsyncDisposable
         };
         client.OnDisconnected += () => OnDisconnected?.Invoke(url);
         client.OnPeerOnline += id => OnPeerOnline?.Invoke(id);
+        client.OnFrame += (dir, json) => OnFrame?.Invoke(url, dir, json);
         client.OnRedirect += (servers, reason) => OnRedirect?.Invoke(url, servers, reason);
         client.Push = _push;
         client.Auth = _auth;
         client.Invitation = _invitations.TryGetValue(url, out var invitation) ? invitation : null;
         if (_pendingAsks.TryRemove(url, out var ask)) client.AccessRequest = ask;
 
-        var http = new HttpClient(new FlagTokenHandler(() => client.HttpToken) { InnerHandler = new HttpClientHandler() }) { BaseAddress = new Uri(url) };
+        var http = new HttpClient(new FlagTokenHandler(() => client.HttpToken, (dir, text) => OnFrame?.Invoke(url, "http " + dir, text)) { InnerHandler = new HttpClientHandler() }) { BaseAddress = new Uri(url) };
         http.DefaultRequestHeaders.Add("X-Discovery-Id", _discoveryId);
         return new Entry { Url = url, Client = client, Http = http };
     }
 
     /// <summary>Adds the connection's current X-Flag-Token to every HTTP call (it changes whenever the relay connection is re-established).</summary>
-    private sealed class FlagTokenHandler(Func<string?> token) : DelegatingHandler
+    private sealed class FlagTokenHandler(Func<string?> token, Action<string, string>? tap = null) : DelegatingHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             if (token() is { } t) { request.Headers.Remove("X-Flag-Token"); request.Headers.Add("X-Flag-Token", t); }
-            return base.SendAsync(request, ct);
+            tap?.Invoke("->", $"{request.Method} {request.RequestUri?.PathAndQuery}{(request.Content == null ? "" : " " + await request.Content.ReadAsStringAsync(ct))}");
+            var response = await base.SendAsync(request, ct);
+            if (tap != null) tap("<-", $"{(int)response.StatusCode} {(response.Content == null ? "" : await response.Content.ReadAsStringAsync(ct))}");
+            return response;
         }
     }
 
