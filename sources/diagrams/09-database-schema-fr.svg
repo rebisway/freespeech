@@ -1,5 +1,5 @@
-<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Schéma de la base locale : la table messages (historique paginé) et la table docs (collections JSON : identité, contacts, groupes, outbox, pièces jointes)">
-  <rect x="0" y="0" width="900" height="640" fill="#ffffff"/>
+<svg viewBox="0 0 900 810" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono',ui-monospace,Consolas,monospace" role="img" aria-label="Schéma de la base locale : la table messages (historique paginé) et la table docs (collections JSON : identité, contacts, groupes, outbox, pièces jointes)">
+  <rect x="0" y="0" width="900" height="810" fill="#ffffff"/>
   <style>
     .lbl{font-size:11px;fill:#6b665d;font-family:'IBM Plex Mono',monospace}
     .lbl-strong{font-size:11.5px;fill:#1c1a17;font-weight:600;font-family:'IBM Plex Mono',monospace}
@@ -40,8 +40,8 @@
   <text x="32" y="448" class="lbl">une suppression l'emporte toujours sur une modification.</text>
 
   <rect x="20" y="478" width="410" height="74" rx="8" fill="none" stroke="#1c1a17" stroke-width="1.2"/>
-  <text x="32" y="498" class="lbl-strong">Ouverture</text>
-  <text x="32" y="516" class="col">key = x'&lt;32 bytes&gt;'  journal_mode = WAL</text>
+  <text x="32" y="558" class="lbl-strong">Ouverture</text>
+  <text x="32" y="576" class="col">key = x'&lt;32 bytes&gt;'  journal_mode = WAL</text>
   <text x="32" y="532" class="lbl">La clé vient des 3 phrases (HKDF "database-v1"),</text>
   <text x="32" y="545" class="lbl">mise en cache par IKeyCache. Mauvaise clé = refus.</text>
   <rect x="470" y="36" width="410" height="168" rx="8" fill="none" stroke="#4a5a8a" stroke-width="1.8"/>
@@ -59,7 +59,7 @@
   <path d="M675 206 L675 226" stroke="#4a5a8a" stroke-width="1.4" fill="none" marker-end="url(#aB)"/>
   <text x="690" y="220" class="lbl">collections</text>
 
-  <rect x="470" y="230" width="410" height="258" rx="8" fill="none" stroke="#4a5a8a" stroke-dasharray="4 3"/>
+  <rect x="470" y="230" width="410" height="324" rx="8" fill="none" stroke="#4a5a8a" stroke-dasharray="4 3"/>
   <text x="482" y="250" class="lbl-strong">collection -> clé -> contenu</text>
   <text x="482" y="272" class="key">identity</text><text x="600" y="272" class="lbl">"me" -> UserIdentity (clés privées)</text>
   <text x="482" y="290" class="key">contacts</text><text x="600" y="290" class="lbl">discovery_id -> Contact</text>
@@ -72,18 +72,28 @@
   <text x="482" y="416" class="key">group_invites</text><text x="600" y="416" class="lbl">group_id -> invitation en attente / refusée</text>
   <text x="482" y="434" class="key">group_suggestions</text><text x="620" y="434" class="lbl">groupe/candidat -> proposition (modérateur)</text>
   <text x="482" y="452" class="key">archived_contacts</text><text x="620" y="452" class="lbl">discovery_id -> contact supprimé (archive)</text>
-  <text x="482" y="476" class="lbl" opacity="0.8">Stores en mémoire + Save() ; API inchangée.</text>
+  <text x="482" y="470" class="key">migration_notices</text><text x="620" y="470" class="lbl">old_id -> avis de migration reçu (attente / accepté / refusé)</text>
+  <text x="482" y="488" class="key">migration_out</text><text x="620" y="488" class="lbl">"out" -> ma propre migration annoncée</text>
+  <text x="482" y="506" class="key">pending_wipe</text><text x="620" y="506" class="lbl">"wipe" -> ordre d'effacement à redistribuer</text>
+  <text x="482" y="524" class="key">revocation_pins</text><text x="620" y="524" class="lbl">contact -> clé de révocation épinglée</text>
+  <text x="482" y="546" class="lbl" opacity="0.8">Stores en mémoire + Save() ; API inchangée.</text>
 
-  <rect x="470" y="498" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <text x="482" y="516" class="actor">read_marks</text>
-  <text x="580" y="516" class="lbl">lu / non lu, par conversation</text>
-  <text x="482" y="533" class="col">conv, side, ts, id</text>
-  <text x="482" y="549" class="lbl">side 0 : j'ai lu ; side 1 : l'autre a lu (✓✓). Avance seulement.</text>
-  <rect x="470" y="568" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <text x="482" y="586" class="actor">reactions</text>
-  <text x="560" y="586" class="lbl">emoji sur les messages</text>
-  <text x="482" y="603" class="col">conv, target, who, emoji, ts</text>
-  <text x="482" y="619" class="lbl">Une par personne et par message ; la plus récente l'emporte.</text>
+  <rect x="470" y="558" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="576" class="actor">read_marks</text>
+  <text x="580" y="576" class="lbl">lu / non lu, par conversation</text>
+  <text x="482" y="593" class="col">conv, side, ts, id</text>
+  <text x="482" y="609" class="lbl">side 0 : j'ai lu ; side 1 : l'autre a lu (✓✓). Avance seulement.</text>
+  <rect x="470" y="628" width="410" height="60" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="646" class="actor">reactions</text>
+  <text x="560" y="646" class="lbl">emoji sur les messages</text>
+  <text x="482" y="663" class="col">conv, target, who, emoji, ts</text>
+  <text x="482" y="679" class="lbl">Une par personne et par message ; la plus récente l'emporte.</text>
+  <rect x="470" y="698" width="410" height="44" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="716" class="actor">thumbnails</text>
+  <text x="482" y="732" class="lbl">root, width, height, data - une miniature par contenu de fichier (scellée)</text>
+  <rect x="470" y="752" width="410" height="44" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="482" y="770" class="actor">meta</text>
+  <text x="482" y="786" class="lbl">k, v - mode (sealed / plain) + marqueur de vérification de la clé</text>
   <defs>
     <marker id="aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#2f6f6e"/></marker>
     <marker id="aB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0,0 7,3 0,6" fill="#4a5a8a"/></marker>

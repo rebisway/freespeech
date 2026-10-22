@@ -11,8 +11,8 @@
   <text x="95" y="59" class="lbl-strong" text-anchor="middle">Console (REPL)</text>
   <rect x="190" y="34" width="150" height="40" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6"/>
   <text x="265" y="59" class="lbl-strong" text-anchor="middle">Mobile (MAUI)</text>
-  <rect x="360" y="34" width="150" height="40" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6" stroke-dasharray="4 3"/>
-  <text x="435" y="59" class="lbl-strong" text-anchor="middle">Desktop (à venir)</text>
+  <rect x="360" y="34" width="150" height="40" rx="6" fill="none" stroke="#4a5a8a" stroke-width="1.6"/>
+  <text x="435" y="59" class="lbl-strong" text-anchor="middle">Desktop (Avalonia)</text>
 
   <path d="M95 76 L95 104 M265 76 L265 104 M435 76 L435 104" stroke="#4a5a8a" stroke-width="1.4" fill="none" marker-end="url(#aB)"/>
   <text x="540" y="62" class="lbl">Elles appellent des méthodes et écoutent</text>
@@ -25,12 +25,13 @@
 
   <path d="M265 172 L265 196" stroke="#2f6f6e" stroke-width="1.4" fill="none" marker-end="url(#aT)"/>
 
-  <rect x="20" y="200" width="490" height="62" rx="8" fill="none" stroke="#1c1a17" stroke-width="1.2"/>
+  <rect x="20" y="200" width="490" height="72" rx="8" fill="none" stroke="#1c1a17" stroke-width="1.2"/>
   <text x="30" y="218" class="lbl-strong">Services</text>
-  <text x="30" y="234" class="col">RelayPool   ContactExchange   AttachmentService</text>
-  <text x="30" y="249" class="col">GroupService   BackupService   BackgroundScheduler</text>
+  <text x="30" y="233" class="col">RelayPool   ContactExchange   AttachmentService</text>
+  <text x="30" y="248" class="col">GroupService   BackupService   ArchiveService</text>
+  <text x="30" y="263" class="col">BackgroundScheduler   DirectoryClient</text>
 
-  <path d="M150 264 L150 290 M410 264 L410 290" stroke="#1c1a17" stroke-width="1.2" fill="none" marker-end="url(#aB)"/>
+  <path d="M150 274 L150 290 M410 274 L410 290" stroke="#1c1a17" stroke-width="1.2" fill="none" marker-end="url(#aB)"/>
 
   <rect x="20" y="294" width="270" height="62" rx="8" fill="none" stroke="#2f6f6e" stroke-width="1.6"/>
   <text x="30" y="312" class="lbl-strong">ClientDatabase</text>

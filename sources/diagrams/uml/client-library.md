@@ -42,6 +42,10 @@ classDiagram
     class GroupService
     class BackupService
     class BackgroundScheduler
+    class ArchiveService
+    class ArchivedContactStore
+    class RevocationPinStore
+    class TransferPolicy
 
     FreeSpeechClient *-- ClientDatabase
     FreeSpeechClient *-- UserIdentity
@@ -58,6 +62,10 @@ classDiagram
     FreeSpeechClient *-- OtcEntryStore
     FreeSpeechClient *-- PendingContactStore
     FreeSpeechClient *-- PendingMessageStore
+    FreeSpeechClient *-- ArchiveService
+    FreeSpeechClient *-- ArchivedContactStore
+    FreeSpeechClient *-- RevocationPinStore
+    FreeSpeechClient *-- TransferPolicy
 
     IdentityStorage ..> ClientDatabase
     HistoryStore ..> ClientDatabase
@@ -66,6 +74,9 @@ classDiagram
     OtcEntryStore ..> ClientDatabase
     PendingContactStore ..> ClientDatabase
     PendingMessageStore ..> ClientDatabase
+    ArchivedContactStore ..> ClientDatabase
+    RevocationPinStore ..> ClientDatabase
+    ArchiveService ..> AttachmentService
 
     RelayPool o-- "1..*" RelayClient : one per server
     ContactExchangeService ..> RelayPool
