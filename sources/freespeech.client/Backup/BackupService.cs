@@ -118,6 +118,12 @@ public class BackupService
                     if (lines.Count > 0) { WriteHistoryBlock(zip, block++, conversation, lines); messages += lines.Count; }
                 }
 
+                payload.ReadMarks = [];
+                foreach (var conversation in _history.Conversations())
+                    foreach (var side in new[] { HistoryStore.ReadByMe, HistoryStore.ReadByPeer })
+                        if (_history.ReadCursor(conversation, side) is { } mark)
+                            payload.ReadMarks.Add(new BackupReadMark { Conversation = conversation, Side = side, Ts = mark.Ts, Id = mark.Id });
+
                 var manifest = zip.CreateEntry(ManifestEntry, CompressionLevel.Optimal);
                 using var ms = manifest.Open();
                 JsonSerializer.Serialize(ms, payload);
@@ -190,6 +196,8 @@ public class BackupService
                 }
             }
 
+            RestoreReadMarks(payload, zip);
+
             int restored = 0, downloadable = 0, dropped = 0, skipped = 0;
             foreach (var item in payload.Attachments)
             {
@@ -240,6 +248,31 @@ public class BackupService
         }
     }
 
+    /// <summary>Read marks only move forward. A backup without marks reads every restored conversation up to its newest received message.</summary>
+    private void RestoreReadMarks(BackupPayload payload, ZipArchive zip)
+    {
+        if (payload.ReadMarks != null)
+        {
+            foreach (var m in payload.ReadMarks) _history.AdvanceRead(m.Conversation, m.Side, new HistoryCursor(m.Ts, m.Id));
+            return;
+        }
+        var restored = payload.History.Keys.ToHashSet();
+        foreach (var entry in zip.Entries.Where(e => e.FullName.StartsWith(HistoryEntryPrefix, StringComparison.Ordinal)))
+        {
+            BackupHistoryBlock? block;
+            using (var stream = entry.Open()) block = JsonSerializer.Deserialize<BackupHistoryBlock>(stream);
+            if (block != null) restored.Add(block.Conversation);
+        }
+        ReadUpToNewest(restored);
+    }
+
+    private void ReadUpToNewest(IEnumerable<string> conversations)
+    {
+        foreach (var conversation in conversations)
+            if (_history.LastReceived(conversation) is { } last)
+                _history.AdvanceRead(conversation, HistoryStore.ReadByMe, new HistoryCursor(last.Ts, last.Id));
+    }
+
     private RestoreSummary? RestoreLegacy(string path)
     {
         var json = BackupCrypto.TryDecrypt(File.ReadAllText(path), _encryptionPrivateKey);
@@ -250,6 +283,8 @@ public class BackupService
         if (payload == null) return null;
 
         var messages = MergeCore(payload);
+        if (payload.ReadMarks != null) foreach (var m in payload.ReadMarks) _history.AdvanceRead(m.Conversation, m.Side, new HistoryCursor(m.Ts, m.Id));
+        else ReadUpToNewest(payload.History.Keys);
         return new RestoreSummary(payload.Contacts.Count, payload.Aliases.Count, messages, 0, 0, 0, 0);
     }
 

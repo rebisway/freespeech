@@ -66,6 +66,44 @@ public class LongHistoryTests : IDisposable
     }
 
     [Fact]
+    public void ARestoredConversation_keepsItsReadMarks_andIsNotUnread()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        BackupService Service(string name, HistoryStore history)
+        {
+            var dir = Path.Combine(_root, name);
+            return new BackupService(key, new ContactStore(dir), new ContactAliasStore(dir), history, new AttachmentStore(dir));
+        }
+
+        var source = NewHistory("rm-src", 10);   // odd ids are received
+        source.AdvanceRead("bob", HistoryStore.ReadByMe, new HistoryCursor(7, "bob:7"));
+        var file = Path.Combine(_root, "marks.enc");
+        Service("rm-src", source).Create(file, AttachmentBackupMode.None);
+
+        var target = new HistoryStore(Path.Combine(_root, "rm-dst"));
+        Service("rm-dst", target).Restore(file);
+        Assert.Equal(source.UnreadCount("bob"), target.UnreadCount("bob"));
+        Assert.Equal(1, target.UnreadCount("bob"));   // bob:9 was never read
+    }
+
+    [Fact]
+    public void ABackupWithoutReadMarks_restoresEveryConversationAsRead()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        var dir = Path.Combine(_root, "legacy");
+        var history = NewHistory("legacy", 6);
+        var payload = new BackupPayload { History = { ["bob"] = history.Stream("bob", 100).ToList() } };
+        var json = System.Text.Json.JsonSerializer.Serialize(payload);
+        var file = Path.Combine(_root, "legacy.enc");
+        File.WriteAllText(file, BackupCrypto.Encrypt(json, key));
+
+        var target = new HistoryStore(Path.Combine(_root, "legacy-dst"));
+        var dst = Path.Combine(_root, "legacy-dst");
+        new BackupService(key, new ContactStore(dst), new ContactAliasStore(dst), target, new AttachmentStore(dst)).Restore(file);
+        Assert.Equal(0, target.UnreadCount("bob"));
+    }
+
+    [Fact]
     public void ABackupOfALongHistory_isWrittenInBlocks_andRestoredWhole()
     {
         var key = RandomNumberGenerator.GetBytes(32);

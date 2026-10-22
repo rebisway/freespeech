@@ -42,6 +42,17 @@ public class BackupPayload
 
     /// <summary>The revocation keys pinned for my contacts and group peers (§12, identity migration): a restored phone can still check a migration notice.</summary>
     [JsonPropertyName("revocation_pins")] public List<BackupPin> RevocationPins { get; set; } = [];
+
+    /// <summary>Where each conversation was read up to (mine and the peer's), so a restored conversation is not shown as unread. Null in a backup that carries none.</summary>
+    [JsonPropertyName("read_marks")] public List<BackupReadMark>? ReadMarks { get; set; }
+}
+
+public class BackupReadMark
+{
+    [JsonPropertyName("conversation")] public required string Conversation { get; set; }
+    [JsonPropertyName("side")] public int Side { get; set; }
+    [JsonPropertyName("ts")] public long Ts { get; set; }
+    [JsonPropertyName("id")] public required string Id { get; set; }
 }
 
 /// <summary>A block of history lines of one conversation: a zip entry <c>history/N</c> of a backup.</summary>
