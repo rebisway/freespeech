@@ -17,7 +17,9 @@
                             <Label Text="{Binding Preview}" FontSize="14" MaxLines="2" LineBreakMode="TailTruncation" />
                             <Label Text="{Binding Detail}" TextColor="{StaticResource Gray200}" FontSize="12" />
                         </VerticalStackLayout>
-                        <Button Grid.Column="1" IsVisible="{Binding CanToggle}" Text="{Binding ActionLabel}" VerticalOptions="Center" Padding="12,0"
+                        <Button Grid.Column="1" IsVisible="{Binding CanOpenFallback}" Text="{loc:Tr outbox_open_server}" VerticalOptions="Center" Padding="12,0"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OutboxViewModel}}, Path=UseOpenServerCommand}" CommandParameter="{Binding .}" />
+                        <Button Grid.Column="1" IsVisible="{Binding ShowToggle}" Text="{Binding ActionLabel}" VerticalOptions="Center" Padding="12,0"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OutboxViewModel}}, Path=ToggleCommand}" CommandParameter="{Binding .}" />
                     </Grid>
                 </DataTemplate>

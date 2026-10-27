@@ -202,7 +202,7 @@ public sealed partial class FreeSpeechClient
             EncryptionPublicKey = Convert.ToBase64String(fresh.EncryptionPublicKey),
             SigningPublicKey = Convert.ToBase64String(fresh.SigningPublicKey),
             RevocationPublicKey = Convert.ToBase64String(fresh.RevocationPublicKey!),
-            Servers = _identity.Servers.OrderBy(s => s.Priority).Select(s => new ServerEntry { Url = s.Url, Priority = s.Priority }).ToList(),
+            Servers = Relay.RoutePolicy.CardServers(_identity.Servers),
             CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
         };
         var ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -250,7 +250,7 @@ public sealed partial class FreeSpeechClient
         fresh.Photo = _identity.Photo;
         fresh.Description = _identity.Description;
         fresh.PublicServer = _identity.PublicServer;
-        fresh.Servers = _identity.Servers.Select(s => new ServerEntry { Url = s.Url, Priority = s.Priority }).ToList();
+        fresh.Servers = _identity.Servers.Select(s => new ServerEntry { Url = s.Url, Priority = s.Priority, Restricted = s.Restricted }).ToList();
         fresh.RetiredServers = _identity.RetiredServers.ToList();
 
         foreach (var rec in _groups.Store.All.Where(r => r.Active)) rec.Active = false;

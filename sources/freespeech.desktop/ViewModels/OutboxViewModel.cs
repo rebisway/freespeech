@@ -13,7 +13,13 @@ using FreeSpeech.Desktop.Services;
 
 namespace FreeSpeech.Desktop.ViewModels;
 
-public sealed record OutboxItem(string Id, string To, string Preview, string Detail, bool Parked, string ActionLabel, bool CanToggle);
+public sealed record OutboxItem(string Id, string To, string Preview, string Detail, bool Parked, string ActionLabel, bool CanToggle, string ContactId = "", bool CanOpenFallback = false)
+{
+	public string OpenServerLabel => Loc.T("outbox_open_server");
+
+	/// <summary>Stop / resume the wait: hidden when the open-server button takes its place.</summary>
+	public bool ShowToggle => CanToggle && !CanOpenFallback;
+}
 
 /// <summary>
 /// The letters waiting for their recipient. Stopping the wait leaves the letter queued (it still goes out when its contact comes online) but the
@@ -50,10 +56,13 @@ public sealed partial class OutboxViewModel : ObservableObject, IDisposable
 		{
 			var to = client.Contacts.FirstOrDefault(c => c.DiscoveryId == p.To)?.Nickname ?? p.To;
 			var last = p.LastAttemptAt is { } t ? Loc.T("outbox_last", Ago(DateTime.UtcNow - t)) : Loc.T("outbox_never");
-			var state = p.SentAt != null ? Loc.T("outbox_delivered", p.Resends) : p.Parked ? Loc.T("outbox_parked") : Loc.T("outbox_waiting");
+			var route = client.RouteStateOf(p.To);
+			var privateDown = p.SentAt == null && route == FreeSpeech.Client.Relay.RouteState.PrivateDown;
+			var state = p.SentAt != null ? Loc.T("outbox_delivered", p.Resends) : p.Parked ? Loc.T("outbox_parked") : privateDown ? Loc.T("outbox_private_wait") : Loc.T("outbox_waiting");
 			var detail = Loc.T("outbox_detail", Ago(DateTime.UtcNow - p.CreatedAt), last, state);
 			var preview = p.Type == "message" ? p.Text : $"[{p.Type}]";
-			Items.Add(new OutboxItem(p.Id, to, preview.ReplaceLineEndings(" "), detail, p.Parked, Loc.T(p.Parked ? "outbox_resume" : "outbox_stop"), p.SentAt == null));
+			Items.Add(new OutboxItem(p.Id, to, preview.ReplaceLineEndings(" "), detail, p.Parked, Loc.T(p.Parked ? "outbox_resume" : "outbox_stop"), p.SentAt == null, p.To,
+				privateDown && client.OpenFallbackOf(p.To) == FreeSpeech.Client.Relay.OpenFallbackMode.Ask && client.PeerAllowsOpenFallback(p.To)));
 		}
 		OnPropertyChanged(nameof(IsEmpty));
 	}
@@ -63,6 +72,14 @@ public sealed partial class OutboxViewModel : ObservableObject, IDisposable
 		: span.TotalHours < 1 ? $"{(int)span.TotalMinutes} min"
 		: span.TotalDays < 1 ? $"{(int)span.TotalHours} h {span.Minutes:00}"
 		: $"{(int)span.TotalDays} j {span.Hours} h";
+
+	/// <summary>The user says yes to an open server for this contact's waiting messages.</summary>
+	[RelayCommand]
+	private void UseOpenServer(OutboxItem item)
+	{
+		_owner.Session.Client.ApproveOpenFallback(item.ContactId);
+		Refresh();
+	}
 
 	[RelayCommand]
 	private void Toggle(OutboxItem item)

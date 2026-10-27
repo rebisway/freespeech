@@ -674,5 +674,20 @@
   "info_status": "Status",
   "pick_search": "Search",
   "pick_count": "{0} selected",
-  "pick_max": "At most {0} at a time."
+  "pick_max": "At most {0} at a time.",
+  "route_button": "If the private server does not answer",
+  "route_title": "{0}: if the private servers do not answer",
+  "route_never": "Wait for the private server",
+  "route_ask": "Ask me before using an open server",
+  "route_auto": "Use an open server without asking",
+  "route_saved_never": "Messages will wait for the private server.",
+  "route_saved": "Saved. You both allow it.",
+  "route_saved_needs_peer": "Saved. {0} must allow it too.",
+  "outbox_private_wait": "waiting for the private server",
+  "outbox_open_server": "Send through an open server",
+  "banner_route": "The private server does not answer. Send through an open server?",
+  "route_ask_title": "Private server not answering",
+  "route_ask_text": "The private server shared with {0} does not answer. Send through an open server until it is back?",
+  "route_ask_yes": "Yes, send",
+  "route_ask_no": "No, wait"
 }

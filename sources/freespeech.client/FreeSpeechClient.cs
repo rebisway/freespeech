@@ -240,6 +240,7 @@ public sealed partial class FreeSpeechClient : IGroupTransport, IAsyncDisposable
     public async Task<IReadOnlyList<ServerStatus>> ConnectAsync()
     {
         _relay.OnMessage += HandleIncomingEnvelope;
+        _relay.OnServerAccess += OnOwnServerAccess;
         _relay.OnDisconnected += url => ServerConnectionChanged?.Invoke(url, false);
         _relay.OnReconnected += url => ServerConnectionChanged?.Invoke(url, true);
         _relay.OnAccessGranted += url => RaiseNotice($"[+] The administrator of {url} accepted your access request: you are connected.");
@@ -296,9 +297,6 @@ public sealed partial class FreeSpeechClient : IGroupTransport, IAsyncDisposable
     // ------------------------------------------------------------------
     // Incoming traffic
     // ------------------------------------------------------------------
-
-    private IReadOnlyList<string> CandidatesFor(string peerId) =>
-        _relay.Candidates(_confirmedContacts.FindById(peerId)?.Servers ?? _groups.FindMember(peerId)?.Servers);
 
     /// <summary>Who may fetch a file from us: in 1-to-1 the contact it was sent to; in a group any current member (what we hold of the file, whole or in part, is decided by the service: every member who downloads it becomes a source).</summary>
     private bool AuthorizeAttachmentRequest(AttachmentRecord rec, string from) =>
@@ -460,6 +458,11 @@ public sealed partial class FreeSpeechClient : IGroupTransport, IAsyncDisposable
         if (type == "identity_update")
         {
             HandleIncomingIdentityUpdate(envelope.From, payload);
+            return;
+        }
+        if (type == TypeRoutePolicy)
+        {
+            HandleIncomingRoutePolicy(envelope.From, payload);
             return;
         }
 

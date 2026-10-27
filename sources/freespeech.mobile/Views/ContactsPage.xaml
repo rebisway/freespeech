@@ -11,7 +11,7 @@
         </CollectionView.EmptyView>
         <CollectionView.ItemTemplate>
             <DataTemplate>
-                <Grid ColumnDefinitions="56,*,Auto,Auto,Auto" Padding="14,10" ColumnSpacing="4">
+                <Grid ColumnDefinitions="56,*,Auto,Auto,Auto,Auto" Padding="14,10" ColumnSpacing="4">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
                     </Grid.GestureRecognizers>
@@ -23,7 +23,8 @@
                     </VerticalStackLayout>
                     <ImageButton Grid.Column="2" Source="ic_edit.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RenameCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr contact_rename_title}" />
                     <ImageButton Grid.Column="3" Source="ic_shield.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=VerifyCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr safety_title}" />
-                    <ImageButton Grid.Column="4" Source="ic_delete.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RemoveCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_delete}" />
+                    <ImageButton Grid.Column="4" Source="ic_srv_private_ok.png" StyleClass="IconFlat" IsVisible="{Binding CanRoute}" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RouteCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr route_button}" />
+                    <ImageButton Grid.Column="5" Source="ic_delete.png" StyleClass="IconFlat" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContactsViewModel}}, Path=RemoveCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="{loc:Tr a11y_delete}" />
                 </Grid>
             </DataTemplate>
         </CollectionView.ItemTemplate>

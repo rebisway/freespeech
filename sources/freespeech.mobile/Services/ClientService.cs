@@ -470,6 +470,7 @@ public sealed class ClientService
 			client.MessageChanged += c => OnUi(() => { MessageChanged?.Invoke(c); ConversationsChanged?.Invoke(); });
 			client.ContactConfirmed += _ => OnUi(() => { UpdateBadges(); ConversationsChanged?.Invoke(); });
 			client.ContactUpdated += _ => OnUi(() => ConversationsChanged?.Invoke());
+			client.OpenFallbackProposed += c => OnUi(() => _ = AskOpenServerAsync(client, c));
 			client.ContactRequested += c => OnUi(() => { UpdateBadges(); Banner?.Invoke(new BannerInfo(c.Nickname, Loc.T("banner_request"), "//approve")); Notify(c.Nickname, Loc.T("banner_request"), "//approve"); });
 			client.MigrationRequested += n => OnUi(() => { UpdateBadges(); ConversationsChanged?.Invoke(); Banner?.Invoke(new BannerInfo(n.OldName, Loc.T("banner_migration"), "//approve")); Notify(n.OldName, Loc.T("banner_migration"), "//approve"); });
 				client.Notice += n => OnUi(() => Notice?.Invoke(n));
@@ -636,4 +637,17 @@ public sealed class ClientService
 	}
 
 	private static void OnUi(Action a) => MainThread.BeginInvokeOnMainThread(a);
+
+	/// <summary>The private servers shared with a contact do not answer and both sides allow an open one: the question, once for the outage. In the background it is a notice that leads to "Sends in progress".</summary>
+	private async Task AskOpenServerAsync(FreeSpeechClient client, FreeSpeech.Client.Contacts.Contact contact)
+	{
+		if (!InForeground)
+		{
+			Banner?.Invoke(new BannerInfo(contact.DisplayName, Loc.T("banner_route"), "//outbox"));
+			Notify(contact.DisplayName, Loc.T("banner_route"), "//outbox");
+			return;
+		}
+		if (await Dialogs.AlertAsync(Loc.T("route_ask_title"), Loc.T("route_ask_text", contact.DisplayName), Loc.T("route_ask_yes"), Loc.T("route_ask_no")))
+			client.ApproveOpenFallback(contact.DiscoveryId);
+	}
 }

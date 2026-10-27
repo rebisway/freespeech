@@ -16,13 +16,13 @@
 		<FsConsoleVersion>1.1.1</FsConsoleVersion>
 		<FsConsoleVersionDate>2026-10-17</FsConsoleVersionDate>
 
-		<FsDesktopVersion>1.3.2</FsDesktopVersion>
-		<FsDesktopVersionDate>2026-10-21</FsDesktopVersionDate>
+		<FsDesktopVersion>1.3.3</FsDesktopVersion>
+		<FsDesktopVersionDate>2026-10-24</FsDesktopVersionDate>
 
 		<!-- The mobile app also has a build number (the Android versionCode): it only goes up, Android refuses to "update" to a lower or equal one. -->
-		<FsMobileVersion>1.3.4</FsMobileVersion>
-		<FsMobileVersionDate>2026-10-22</FsMobileVersionDate>
-		<FsMobileBuild>309</FsMobileBuild>
+		<FsMobileVersion>1.3.5</FsMobileVersion>
+		<FsMobileVersionDate>2026-10-24</FsMobileVersionDate>
+		<FsMobileBuild>310</FsMobileBuild>
 	</PropertyGroup>
 
 </Project>

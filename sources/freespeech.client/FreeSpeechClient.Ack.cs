@@ -27,7 +27,7 @@ public sealed partial class FreeSpeechClient
     private const string TypeAck = "ack";
 
     /// <summary>The Letter types that are confirmed: every one that goes through the outbox and is kept by the receiver.</summary>
-    private static readonly HashSet<string> AckTypes = ["message", "attachment", TypeEdit, TypeRetract, TypeFileRetract, TypeReaction, "identity_update"];
+    private static readonly HashSet<string> AckTypes = ["message", "attachment", TypeEdit, TypeRetract, TypeFileRetract, TypeReaction, "identity_update", TypeRoutePolicy];
 
     private static readonly TimeSpan[] DefaultAckBackoff = [TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(10), TimeSpan.FromHours(1), TimeSpan.FromHours(6)];
 

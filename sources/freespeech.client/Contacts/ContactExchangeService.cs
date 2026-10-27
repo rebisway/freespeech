@@ -320,7 +320,7 @@ public class ContactExchangeService
         EncryptionPublicKey = Convert.ToBase64String(_identity.EncryptionPublicKey),
         SigningPublicKey = Convert.ToBase64String(_identity.SigningPublicKey),
         RevocationPublicKey = _identity.RevocationPublicKey == null ? null : Convert.ToBase64String(_identity.RevocationPublicKey),
-        Servers = _identity.Servers.OrderBy(s => s.Priority).Select(s => new ServerEntry { Url = s.Url, Priority = s.Priority }).ToList(),
+        Servers = Relay.RoutePolicy.CardServers(_identity.Servers),
         EnablePush = false,
         CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
     };

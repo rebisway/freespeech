@@ -23,7 +23,9 @@
 									<TextBlock Text="{Binding Preview}" FontSize="13" TextTrimming="CharacterEllipsis" />
 									<TextBlock Text="{Binding Detail}" Classes="hint" FontSize="12" TextWrapping="Wrap" />
 								</StackPanel>
-								<Button Grid.Column="1" Content="{Binding ActionLabel}" IsVisible="{Binding CanToggle}" VerticalAlignment="Center" Margin="10,0,0,0"
+								<Button Grid.Column="1" Content="{Binding OpenServerLabel}" IsVisible="{Binding CanOpenFallback}" VerticalAlignment="Center" Margin="10,0,0,0"
+								        Command="{Binding $parent[ItemsControl].((vm:OutboxViewModel)DataContext).UseOpenServerCommand}" CommandParameter="{Binding}" />
+								<Button Grid.Column="1" Content="{Binding ActionLabel}" IsVisible="{Binding ShowToggle}" VerticalAlignment="Center" Margin="10,0,0,0"
 								        Command="{Binding $parent[ItemsControl].((vm:OutboxViewModel)DataContext).ToggleCommand}" CommandParameter="{Binding}" />
 							</Grid>
 						</DataTemplate>

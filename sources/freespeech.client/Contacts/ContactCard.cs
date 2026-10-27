@@ -15,6 +15,9 @@ public class ServerEntry
 {
     [JsonPropertyName("url")] public required string Url { get; set; }
     [JsonPropertyName("priority")] public int Priority { get; set; }
+
+    /// <summary>True for a server that restricts who may sign up (a private server): nobody tries it who is not let in on it. Omitted when false.</summary>
+    [JsonPropertyName("restricted")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool Restricted { get; set; }
 }
 
 /// <summary>

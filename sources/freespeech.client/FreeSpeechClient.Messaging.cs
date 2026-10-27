@@ -215,7 +215,7 @@ public sealed partial class FreeSpeechClient
         var cipherMsg = MessageCrypto.Encrypt(_identity.DiscoveryId, peer, type, text, sendTs, Convert.FromBase64String(contact.EncryptionPublicKey), _identity.SigningPrivateKey);
         var envelope = new Envelope { From = _identity.DiscoveryId, To = peer, Crypto = 1, Msg = cipherMsg, Ts = sendTs, ReplyTo = replyToId };
 
-        var result = await _relay.SendAsync(CandidatesFor(peer), envelope);
+        var result = await SendRoutedAsync(peer, CandidatesFor(peer), envelope);
         SendStatus status;
         if (result.Delivered)
         {
@@ -262,7 +262,7 @@ public sealed partial class FreeSpeechClient
         var ts = NextTs();
         var cipherMsg = MessageCrypto.Encrypt(_identity.DiscoveryId, to, type, payload, ts, Convert.FromBase64String(encKey), _identity.SigningPrivateKey);
         var envelope = new Envelope { From = _identity.DiscoveryId, To = to, Crypto = 1, Msg = cipherMsg, Ts = ts };
-        var result = await _relay.SendAsync(CandidatesFor(to), envelope);
+        var result = await SendRoutedAsync(to, CandidatesFor(to), envelope);
         if (!result.Delivered && result.AnyReachable && type == "attachment_request")
             await TrySetWaitingFlagAsync(result.ReachableUrls, to);
         return result.Delivered;
@@ -388,7 +388,7 @@ public sealed partial class FreeSpeechClient
             var cipherMsg = MessageCrypto.Encrypt(_identity.DiscoveryId, pm.To, pm.Type, pm.Text, pm.Ts, recipientEncPub, _identity.SigningPrivateKey);
             var envelope = new Envelope { From = _identity.DiscoveryId, To = pm.To, Crypto = 1, Msg = cipherMsg, Ts = pm.Ts, ReplyTo = pm.ReplyToId };
 
-            var result = await _relay.SendAsync(candidates, envelope);
+            var result = await SendRoutedAsync(pm.RecipientEncKey == null ? pm.To : null, candidates, envelope);
             _pendingMessages.TouchLastAttempt(pm.Id);
 
             if (result.Delivered)

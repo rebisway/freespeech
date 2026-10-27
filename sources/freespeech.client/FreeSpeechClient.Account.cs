@@ -150,7 +150,7 @@ public sealed partial class FreeSpeechClient
             // The newest card replaces any update still waiting for this contact: only the last profile matters.
             foreach (var old in _pendingMessages.All.Where(p => p.Type == "identity_update" && p.To == contact.DiscoveryId).ToList()) _pendingMessages.Remove(old.Id);
 
-            var result = await _relay.SendAsync(CandidatesFor(contact.DiscoveryId), envelope);
+            var result = await SendRoutedAsync(contact.DiscoveryId, CandidatesFor(contact.DiscoveryId), envelope);
             // Kept in the outbox like a chat message: sent again when they come back if they were offline, or if they do not confirm having it (see FreeSpeechClient.Ack.cs).
             _pendingMessages.Add(new PendingMessage
             {

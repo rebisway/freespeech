@@ -80,6 +80,9 @@ public class RelayClient : IAsyncDisposable
     /// <summary>Raised when the receive loop ends unexpectedly (connection lost).</summary>
     public event Action? OnDisconnected;
 
+    /// <summary>The server told who may sign up on it (registration, or the administrator changed it): "open", "allowlist", or null.</summary>
+    public event Action<string?>? OnAccessChanged;
+
     /// <summary>False after the relay connection drops, until <see cref="TryReconnectAsync"/> succeeds again.</summary>
     public bool IsConnected => _connected;
 
@@ -175,6 +178,7 @@ public class RelayClient : IAsyncDisposable
 
         HttpToken = response.HttpToken;
         ServerAccess = response.Access;
+        OnAccessChanged?.Invoke(ServerAccess);
         DailyQuota = response.DailyQuota;
         QuotaLeft = response.DailyQuota;
         ServerProvisioners = ValidProvisioners(response.Provisioners);
@@ -296,6 +300,7 @@ public class RelayClient : IAsyncDisposable
                 {
                     // The administrator changed who may sign up: what this server is shown as follows at once (the top bar reads it within seconds).
                     ServerAccess = msg.Access;
+                    OnAccessChanged?.Invoke(ServerAccess);
                     if (msg.Provisioners != null) ServerProvisioners = ValidProvisioners(msg.Provisioners);   // the administrator tools now named (an empty list: none)
                     ClientLog.Info("relay", $"{ClientLog.Host(_wsUrl ?? "")}: the server now says it is {msg.Access}");
                     continue;

@@ -74,6 +74,12 @@ public class Contact
     /// <summary>When the migration was accepted.</summary>
     [JsonPropertyName("moved_at")] public DateTime? MovedAt { get; set; }
 
+    /// <summary>What I allow when the restricted servers I share with this contact do not answer: wait (default), ask me, or fall back on an open server by myself.</summary>
+    [JsonPropertyName("open_fallback")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public Relay.OpenFallbackMode OpenFallback { get; set; }
+
+    /// <summary>What this contact told me they allow (route_policy letter): the fallback needs both sides.</summary>
+    [JsonPropertyName("peer_open_fallback")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool PeerOpenFallback { get; set; }
+
     /// <summary>What I see: my private name when I gave one, their nickname otherwise.</summary>
     [JsonIgnore] public string DisplayName => string.IsNullOrWhiteSpace(LocalName) ? Nickname : LocalName;
 }

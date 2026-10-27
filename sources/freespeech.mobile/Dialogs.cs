@@ -34,6 +34,13 @@ public static class Dialogs
 		return await page.ShowAsync() as List<int>;
 	}
 
+	/// <summary>Asks to select one line among radio buttons, <paramref name="current"/> first selected, and confirm with the tick. The index chosen, or null when cancelled.</summary>
+	public static async Task<int?> ChooseRadioAsync(string title, string accept, string cancel, int current, params string[] items)
+	{
+		var page = new DialogPage(false, title, "", accept, cancel, items, 0, null, "", null, radio: current);
+		return await page.ShowAsync() as int?;
+	}
+
 	/// <summary>Asks to pick one of several lines. The line chosen, or <paramref name="cancel"/> when nothing was.</summary>
 	public static async Task<string?> ChooseAsync(string title, string? cancel, string? destruction, params string[] buttons)
 	{
@@ -53,8 +60,9 @@ internal sealed class DialogPage : ContentPage
 	/// <summary>The text typed is hidden (a PIN).</summary>
 	public bool Secret { init { if (value && _entry != null) _entry.IsPassword = true; } }
 
-	public DialogPage(bool asksText, string title, string message, string accept, string? cancel, string[]? choices, int maxLength, Keyboard? keyboard, string initial, string? placeholder, bool multi = false, int max = 0)
+	public DialogPage(bool asksText, string title, string message, string accept, string? cancel, string[]? choices, int maxLength, Keyboard? keyboard, string initial, string? placeholder, bool multi = false, int max = 0, int radio = -1)
 	{
+		var radioIndex = radio;
 		var picked = new SortedSet<int>();
 		BackgroundColor = Color.FromArgb("#99000000");
 		Shell.SetNavBarIsVisible(this, false);
@@ -109,6 +117,18 @@ internal sealed class DialogPage : ContentPage
 					rows.Add((line, choices[n]));
 				}
 			}
+			else if (radio >= 0)
+			{
+				var group = Guid.NewGuid().ToString();
+				for (var n = 0; n < choices.Length; n++)
+				{
+					var index = n;
+					var button = new RadioButton { Content = choices[n], GroupName = group, IsChecked = n == radio, FontSize = 15, Padding = new Thickness(4, 6) };
+					button.CheckedChanged += (_, e) => { if (e.Value) radioIndex = index; };
+					list.Add(button);
+					rows.Add((button, choices[n]));
+				}
+			}
 			else
 			{
 				foreach (var choice in choices)
@@ -139,6 +159,7 @@ internal sealed class DialogPage : ContentPage
 		var buttons = new HorizontalStackLayout { Spacing = 12, HorizontalOptions = LayoutOptions.End };
 		if (cancel != null) buttons.Add(Round("ic_close.png", cancel, false, () => Close(null)));
 		if (multi) buttons.Add(Round("ic_check.png", accept, true, () => Close(picked.ToList())));
+		else if (radio >= 0) buttons.Add(Round("ic_check.png", accept, true, () => Close(radioIndex)));
 		else if (choices == null) buttons.Add(Round("ic_check.png", accept, true, () => Close(_entry != null ? _entry.Text ?? "" : _editor != null ? _editor.Text ?? "" : true)));
 		body.Add(buttons);
 

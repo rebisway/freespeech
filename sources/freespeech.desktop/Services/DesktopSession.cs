@@ -111,6 +111,12 @@ public sealed class DesktopSession
 			client.PinsChanged += c => Dispatcher.UIThread.Post(() => PinsChanged?.Invoke(c.HistoryKey));
 			client.ContactConfirmed += _ => Dispatcher.UIThread.Post(() => ConversationsChanged?.Invoke());
 			client.SendLimited += (code, seconds) => Dispatcher.UIThread.Post(() => SystemNotice?.Invoke(Loc.T("limit_title"), Loc.T(code == "quota_exceeded" ? "limit_quota" : "limit_rate", WaitText(seconds))));
+			client.OpenFallbackProposed += c => Dispatcher.UIThread.Post(async () =>
+			{
+				SystemNotice?.Invoke(c.DisplayName, Loc.T("banner_route"));
+				if (await Ui.ConfirmAsync(Loc.T("route_ask_title"), Loc.T("route_ask_text", c.DisplayName), Loc.T("route_ask_yes"), Loc.T("route_ask_no"))) client.ApproveOpenFallback(c.DiscoveryId);
+				ConversationsChanged?.Invoke();
+			});
 			client.ContactRequested += c => Dispatcher.UIThread.Post(() => { ConversationsChanged?.Invoke(); SystemNotice?.Invoke(c.Nickname, Loc.T("banner_request")); });
 			client.MigrationRequested += n => Dispatcher.UIThread.Post(() => { ConversationsChanged?.Invoke(); SystemNotice?.Invoke(n.OldName, Loc.T("banner_migration")); });
 			client.Groups.InvitationReceived += i => Dispatcher.UIThread.Post(() => { ConversationsChanged?.Invoke(); SystemNotice?.Invoke(i.InviterName, Loc.T("banner_group_invite", i.Name)); });

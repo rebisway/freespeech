@@ -18,7 +18,7 @@
 				<ItemsControl ItemsSource="{Binding Contacts}" MaxWidth="640">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate x:DataType="vm:ContactRow">
-							<Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="14,10" Background="Transparent">
+							<Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="14,10" Background="Transparent">
 								<Grid.GestureRecognizers />
 								<c:Avatar Margin="0,0,14,0" Title="{Binding Nickname}" Photo="{Binding Photo}" />
 								<Button Grid.Column="1" Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="0"
@@ -33,7 +33,9 @@
 								        Command="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).RenameCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.edit}" /></Button>
 								<Button Grid.Column="3" Classes="iconflat" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).VerifyTip}"
 								        Command="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).VerifyCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.shield}" /></Button>
-								<Button Grid.Column="4" Classes="iconflat" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).DeleteTip}"
+								<Button Grid.Column="4" Classes="iconflat" IsVisible="{Binding CanRoute}" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).RouteTip}"
+								        Command="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).RouteCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.key}" /></Button>
+								<Button Grid.Column="5" Classes="iconflat" ToolTip.Tip="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).DeleteTip}"
 								        Command="{Binding $parent[ItemsControl].((vm:ContactsPageViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Icon.delete}" /></Button>
 							</Grid>
 						</DataTemplate>

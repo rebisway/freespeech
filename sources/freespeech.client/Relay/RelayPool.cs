@@ -96,6 +96,9 @@ public class RelayPool : IAsyncDisposable
     /// <summary>An own server that had dropped is registered again.</summary>
     public event Action<string>? OnReconnected;
 
+    /// <summary>An own server told who may sign up on it: its URL and "open" or "allowlist".</summary>
+    public event Action<string, string?>? OnServerAccess;
+
     /// <summary>A private server that had my access request waiting now lets me in (the administrator accepted it): the URL.</summary>
     public event Action<string>? OnAccessGranted;
 
@@ -380,6 +383,7 @@ public class RelayPool : IAsyncDisposable
             else OnDuplicate?.Invoke(env);
         };
         client.OnDisconnected += () => OnDisconnected?.Invoke(url);
+        client.OnAccessChanged += access => OnServerAccess?.Invoke(url, access);
         client.OnPeerOnline += id => OnPeerOnline?.Invoke(id);
         client.OnFrame += (dir, json) => OnFrame?.Invoke(url, dir, json);
         client.OnRedirect += (servers, reason) => OnRedirect?.Invoke(url, servers, reason);

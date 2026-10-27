@@ -13,7 +13,7 @@ using FreeSpeech.Desktop.Services;
 
 namespace FreeSpeech.Desktop.ViewModels;
 
-public sealed record ContactRow(string Id, string Nickname, string? Photo, bool Verified, string Original = "", string? About = null)
+public sealed record ContactRow(string Id, string Nickname, string? Photo, bool Verified, string Original = "", string? About = null, bool CanRoute = false)
 {
 	/// <summary>What they wrote about themselves, in small letters under the name (one line, cut short).</summary>
 	public string Description => About is { Length: > 0 } a ? a.ReplaceLineEndings(" ").Trim() : "";
@@ -47,6 +47,7 @@ public sealed partial class ContactsPageViewModel : ObservableObject, IDisposabl
 	public string EmptyText => Loc.T("contacts_empty");
 	public string RenameTip => Loc.T("contact_rename_title");
 	public string VerifyTip => Loc.T("safety_title");
+	public string RouteTip => Loc.T("route_button");
 	public string DeleteTip => Loc.T("a11y_delete");
 
 	public void Dispose() => _owner.Session.ConversationsChanged -= Refresh;
@@ -55,7 +56,7 @@ public sealed partial class ContactsPageViewModel : ObservableObject, IDisposabl
 	{
 		if (_owner.Session.State != SessionState.Ready) return;
 		var rows = _owner.Session.Client.Contacts.OrderBy(c => c.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-			.Select(c => new ContactRow(c.DiscoveryId, c.DisplayName, c.Photo, c.VerifiedAt != null, c.Nickname, c.Description)).ToList();
+			.Select(c => new ContactRow(c.DiscoveryId, c.DisplayName, c.Photo, c.VerifiedAt != null, c.Nickname, c.Description, _owner.Session.Client.RouteStateOf(c.DiscoveryId) != FreeSpeech.Client.Relay.RouteState.Open)).ToList();
 		// Synced in place: clearing the list made the rows blink.
 		for (var i = 0; i < rows.Count; i++)
 		{
@@ -92,6 +93,24 @@ public sealed partial class ContactsPageViewModel : ObservableObject, IDisposabl
 		{
 			_owner.Session.Client.RenameContact(_owner.Session.Client.FindContact(row.Id)!, name);
 			Status = Loc.T("contact_renamed");
+		}
+		catch (ClientException ex) { Status = ErrorText.Of(ex); }
+		_owner.Session.RaiseConversationsChanged();
+	}
+
+	/// <summary>When the private servers shared with this contact do not answer: wait, ask me, or use an open server by myself. Both sides must allow it.</summary>
+	[RelayCommand]
+	private async Task RouteAsync(ContactRow row)
+	{
+		var client = _owner.Session.Client;
+		var choices = new[] { Loc.T("route_never"), Loc.T("route_ask"), Loc.T("route_auto") };
+		var picked = await Ui.ChooseAsync(Loc.T("route_title", row.Nickname), choices, Loc.T("cancel"));
+		if (picked < 0) return;
+		var mode = (FreeSpeech.Client.Relay.OpenFallbackMode)picked;   // Never, Ask, Auto in the order of the list
+		try
+		{
+			await client.SetOpenFallbackAsync(row.Id, mode);
+			Status = mode == FreeSpeech.Client.Relay.OpenFallbackMode.Never ? Loc.T("route_saved_never") : client.PeerAllowsOpenFallback(row.Id) ? Loc.T("route_saved") : Loc.T("route_saved_needs_peer", row.Nickname);
 		}
 		catch (ClientException ex) { Status = ErrorText.Of(ex); }
 		_owner.Session.RaiseConversationsChanged();

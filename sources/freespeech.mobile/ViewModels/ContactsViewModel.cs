@@ -13,7 +13,7 @@ using FreeSpeech.Mobile.Services;
 
 namespace FreeSpeech.Mobile.ViewModels;
 
-public sealed record ContactRow(string Id, string Nickname, string? Photo, bool Verified, string Original = "", string? About = null)
+public sealed record ContactRow(string Id, string Nickname, string? Photo, bool Verified, string Original = "", string? About = null, bool CanRoute = false)
 {
 	/// <summary>What they wrote about themselves, in small letters under the name (one line, cut short).</summary>
 	public string Description => About is { Length: > 0 } a ? a.ReplaceLineEndings(" ").Trim() : "";
@@ -45,7 +45,7 @@ public partial class ContactsViewModel : ListViewModelBase
 		if (_service.State != AppState.Ready) return;
 		// Synced in place: clearing the list made every picture blink out while the page was being left.
 		var rows = _service.Client.Contacts.OrderBy(c => c.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-			.Select(c => new ContactRow(c.DiscoveryId, c.DisplayName, c.Photo, c.VerifiedAt != null, c.Nickname, c.Description)).ToList();
+			.Select(c => new ContactRow(c.DiscoveryId, c.DisplayName, c.Photo, c.VerifiedAt != null, c.Nickname, c.Description, _service.Client.RouteStateOf(c.DiscoveryId) != FreeSpeech.Client.Relay.RouteState.Open)).ToList();
 		for (var i = 0; i < rows.Count; i++)
 		{
 			if (i >= Contacts.Count) Contacts.Add(rows[i]);
@@ -78,6 +78,25 @@ public partial class ContactsViewModel : ListViewModelBase
 		{
 			_service.Client.RenameContact(_service.Client.FindContact(row.Id)!, name);
 			Status = Loc.T("contact_renamed");
+		}
+		catch (ClientException ex) { Status = ErrorText.Of(ex); }
+		_service.NotifyConversationsChanged();
+	}
+
+	/// <summary>When the private servers shared with this contact do not answer: wait, ask me, or use an open server by myself. Both sides must allow it.</summary>
+	[RelayCommand]
+	private async Task RouteAsync(ContactRow row)
+	{
+		var client = _service.Client;
+		var never = Loc.T("route_never"); var ask = Loc.T("route_ask"); var auto = Loc.T("route_auto");
+		var title = Loc.T("route_title", row.Nickname);
+		var picked = await Dialogs.ChooseRadioAsync(title, Loc.T("ok"), Loc.T("cancel"), (int)client.OpenFallbackOf(row.Id), never, ask, auto);
+		if (picked == null) return;
+		var mode = (FreeSpeech.Client.Relay.OpenFallbackMode)picked.Value;
+		try
+		{
+			await client.SetOpenFallbackAsync(row.Id, mode);
+			Status = mode == FreeSpeech.Client.Relay.OpenFallbackMode.Never ? Loc.T("route_saved_never") : client.PeerAllowsOpenFallback(row.Id) ? Loc.T("route_saved") : Loc.T("route_saved_needs_peer", row.Nickname);
 		}
 		catch (ClientException ex) { Status = ErrorText.Of(ex); }
 		_service.NotifyConversationsChanged();

@@ -50,6 +50,9 @@ public sealed class ClientOptions
     /// <summary>The directories (address and public key) the application knows, asked for relays by a new identity and when no relay can be reached. Empty: none.</summary>
     public IReadOnlyList<Discovery.DirectoryEntry> Directories { get; init; } = [];
 
+    /// <summary>How long the restricted servers shared with a contact must have been unreachable before an open server may be used (when both sides agreed).</summary>
+    public TimeSpan OpenFallbackDelay { get; init; } = TimeSpan.FromMinutes(2);
+
     /// <summary>Built-in relays a new identity takes (one, at random) when no directory answers; set by the application only when the user chose no server.</summary>
     public IReadOnlyList<string> FallbackServers { get; init; } = [];
 

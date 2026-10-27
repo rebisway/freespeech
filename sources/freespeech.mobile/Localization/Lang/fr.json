@@ -674,5 +674,20 @@
   "info_status": "État",
   "pick_search": "Rechercher",
   "pick_count": "{0} sélectionnée(s)",
-  "pick_max": "{0} au maximum à la fois."
+  "pick_max": "{0} au maximum à la fois.",
+  "route_button": "Si le serveur privé ne répond pas",
+  "route_title": "{0} : si les serveurs privés ne répondent pas",
+  "route_never": "Attendre le serveur privé",
+  "route_ask": "Me demander avant d'utiliser un serveur ouvert",
+  "route_auto": "Utiliser un serveur ouvert sans demander",
+  "route_saved_never": "Les messages attendront le serveur privé.",
+  "route_saved": "Enregistré. Vous êtes tous deux d'accord.",
+  "route_saved_needs_peer": "Enregistré. {0} doit l'autoriser aussi.",
+  "outbox_private_wait": "en attente du serveur privé",
+  "outbox_open_server": "Envoyer par un serveur ouvert",
+  "banner_route": "Le serveur privé ne répond pas. Envoyer par un serveur ouvert ?",
+  "route_ask_title": "Serveur privé injoignable",
+  "route_ask_text": "Le serveur privé que vous partagez avec {0} ne répond pas. Envoyer par un serveur ouvert jusqu'à son retour ?",
+  "route_ask_yes": "Oui, envoyer",
+  "route_ask_no": "Non, attendre"
 }
