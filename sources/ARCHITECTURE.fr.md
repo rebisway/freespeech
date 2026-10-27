@@ -5,7 +5,7 @@
 Ce document explique **comment FreeSpeech est construit et pourquoi** : les
 composants, les technologies, la cryptographie, le stockage local et le schéma de
 ses tables. Le protocole sur le réseau (formats de messages, règles) est spécifié
-dans [PROTOCOL.fr.md](PROTOCOL.fr.md). Les diagrammes sont dans [diagrams/](diagrams/), chacun
+dans [PROTOCOL.fr.md](PROTOCOL.fr.md). Le rôle de chaque composant et le trajet d'un message sont expliqués dans [HOW_IT_WORKS.fr.md](HOW_IT_WORKS.fr.md) et [MESSAGE_FLOWS.fr.md](MESSAGE_FLOWS.fr.md), les fonctions des applications dans [FEATURES.fr.md](FEATURES.fr.md). Les diagrammes sont dans [diagrams/](diagrams/), chacun
 en français (`-fr`) et en anglais (`-en`).
 
 FreeSpeech est un logiciel libre (AGPL-3.0 ou ultérieure). L'objectif de conception
@@ -547,8 +547,6 @@ mauvaise clé est refusée.
 - **Pas de ratchet** : une clé éphémère neuve est utilisée par message, mais la clé à
   long terme du destinataire déchiffre tout le trafic passé si elle est volée. Perdre les
   phrases fait perdre l'identité ; les voler la vole.
-- Un membre de groupe malhonnête peut transmettre la clé de groupe courante à un exclu
-  hors protocole.
 - « Supprimer pour tous » et « modifier » sont **au mieux** : un client modifié peut les ignorer, et le
   destinataire a pu copier le message avant. « Supprimer chez moi » dans un groupe garde la copie scellée dans le
   journal chiffré pour que les autres puissent encore la récupérer.

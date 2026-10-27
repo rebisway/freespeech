@@ -128,6 +128,9 @@ dotnet build sources/FreeSpeech.Mobile.slnx -f net10.0-windows10.0.19041.0   # r
 
 | | Français | English |
 |---|---|---|
+| How it works: servers, clients, waking a phone | [HOW_IT_WORKS.fr.md](sources/HOW_IT_WORKS.fr.md) | [HOW_IT_WORKS.en.md](sources/HOW_IT_WORKS.en.md) |
+| One message in every case (contact, group) | [MESSAGE_FLOWS.fr.md](sources/MESSAGE_FLOWS.fr.md) | [MESSAGE_FLOWS.en.md](sources/MESSAGE_FLOWS.en.md) |
+| Mobile and desktop features | [FEATURES.fr.md](sources/FEATURES.fr.md) | [FEATURES.en.md](sources/FEATURES.en.md) |
 | Protocol | [PROTOCOL.fr.md](sources/PROTOCOL.fr.md) | [PROTOCOL.en.md](sources/PROTOCOL.en.md) |
 | Protocol API reference | [PROTOCOL_API.fr.md](sources/PROTOCOL_API.fr.md) | [PROTOCOL_API.en.md](sources/PROTOCOL_API.en.md) |
 | Architecture, encryption, storage | [ARCHITECTURE.fr.md](sources/ARCHITECTURE.fr.md) | [ARCHITECTURE.en.md](sources/ARCHITECTURE.en.md) |

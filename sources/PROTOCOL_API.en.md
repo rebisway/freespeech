@@ -278,7 +278,7 @@ A card is a JSON object. Alice exports hers with a one-time code; the relay neve
 | `discovery_id` | string | yes | the identifier |
 | `encryption_public_key` | string | yes | X25519, base64 |
 | `signing_public_key` | string | yes | Ed25519, base64 |
-| `servers` | list | no | the relays the person is on, best first, each `{ url, priority }` |
+| `servers` | list | no | the relays the person is on, best first, each `{ url, priority }` plus `restricted: true` for a server that restricts who signs up (the open ones are listed before the restricted ones) |
 | `revocation_public_key` | string | no | Ed25519 key used to check a migration notice (section 3, `identity_moved`) |
 | `enable_push` | boolean | no | the person can be woken by a notification |
 | `otc` | string | first card only | the one-time code, 16 characters |
@@ -371,6 +371,23 @@ Layer: Letter (`crypto` 1), from a contact to each of their contacts. `payload` 
 {
   "type": "identity_update",
   "payload": "{\"version\":\"2.0\",\"nickname\":\"Alice B.\",\"discovery_id\":\"8daebb1512cfecf8dae4e5fd5909dcaacbb18c2e654f4a7e164f93b94dca1b17\",\"encryption_public_key\":\"6sRBqtczloZ2ymIxEQaxzi0obTPRQYrK9FCaZuKuYhw=\",\"signing_public_key\":\"WekRmGfOa9q9pQKBSy/i4V4hLNatlwfQTAtE10gQRwY=\",\"servers\":[{\"url\":\"https://relay.exemple.org\",\"priority\":0}],\"enable_push\":true,\"created_at\":1791622800000}",
+  "sig": "ZFdh7wy2aeTJh5uy27ZMX92N4QIR8wf9DQNmtrls7uXH70Wv1klLyLtEtSdM4uRtkeulrYtxNqaTgpvqS71aWQ=="
+}
+```
+
+### `route_policy`
+
+Layer: Letter (`crypto` 1), from a contact to a contact. It says whether the sender allows an open server for their messages with the receiver while the restricted servers they share do not answer (see [PROTOCOL.en.md](PROTOCOL.en.md) § 8, "Restricted servers"). It is sent when the sender changes the setting for that contact. Both sides must allow it for an open server to be used. The receiver keeps the last value it got from each contact.
+
+| Field of `payload` | Type | Meaning |
+|---|---|---|
+| `open_fallback` | boolean | true when the sender asks to be asked or allows it by themselves (settings `Ask` and `Auto`), false for `Never` |
+
+<!-- schema: LetterPayload -->
+```json
+{
+  "type": "route_policy",
+  "payload": "{\"open_fallback\":true}",
   "sig": "ZFdh7wy2aeTJh5uy27ZMX92N4QIR8wf9DQNmtrls7uXH70Wv1klLyLtEtSdM4uRtkeulrYtxNqaTgpvqS71aWQ=="
 }
 ```
@@ -623,7 +640,7 @@ Confirms that Letters were kept. `payload` is a JSON string `{ ids }`, the `mess
 }
 ```
 
-Which Letters are confirmed: `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react` and `identity_update`. A Letter that was delivered stays in the sender's queue, marked as delivered and not confirmed, until its `ack` arrives. Without one it is sent again as it was (same `ts`, so same `message_id`) after 30 seconds, 2 minutes, 10 minutes, 1 hour and 6 hours, then dropped. It also goes out at once when the relay announces the receiver's return (`peer_online`). For that return to be announced to it, the sender sets a `WAITING` flag towards the receiver three seconds after a Letter was delivered and stayed without `ack`, and removes it (`DELETE /api/flags/{from}/{to}`) when none of its Letters waits for that receiver any more. See [PROTOCOL.en.md](PROTOCOL.en.md) §5.
+Which Letters are confirmed: `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update` and `route_policy`. A Letter that was delivered stays in the sender's queue, marked as delivered and not confirmed, until its `ack` arrives. Without one it is sent again as it was (same `ts`, so same `message_id`) after 30 seconds, 2 minutes, 10 minutes, 1 hour and 6 hours, then dropped. It also goes out at once when the relay announces the receiver's return (`peer_online`). For that return to be announced to it, the sender sets a `WAITING` flag towards the receiver three seconds after a Letter was delivered and stayed without `ack`, and removes it (`DELETE /api/flags/{from}/{to}`) when none of its Letters waits for that receiver any more. See [PROTOCOL.en.md](PROTOCOL.en.md) §5.
 
 ### A copy for the sender's other devices
 

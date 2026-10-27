@@ -278,7 +278,7 @@ Une fiche est un objet JSON. Alice exporte la sienne avec un code à usage uniqu
 | `discovery_id` | chaîne | oui | l'identifiant |
 | `encryption_public_key` | chaîne | oui | X25519, base64 |
 | `signing_public_key` | chaîne | oui | Ed25519, base64 |
-| `servers` | liste | non | les relais de la personne, le meilleur d'abord, chacun `{ url, priority }` |
+| `servers` | liste | non | les relais de la personne, le meilleur d'abord, chacun `{ url, priority }` plus `restricted: true` pour un serveur qui restreint les inscriptions (les serveurs ouverts sont listés avant les restreints) |
 | `revocation_public_key` | chaîne | non | clé Ed25519 qui sert à vérifier un avis de migration (section 3, `identity_moved`) |
 | `enable_push` | booléen | non | la personne peut être réveillée par une notification |
 | `otc` | chaîne | première fiche seulement | le code à usage unique, 16 caractères |
@@ -371,6 +371,23 @@ Couche : lettre (`crypto` 1), d'un contact vers chacun de ses contacts. `payload
 {
   "type": "identity_update",
   "payload": "{\"version\":\"2.0\",\"nickname\":\"Alice B.\",\"discovery_id\":\"8daebb1512cfecf8dae4e5fd5909dcaacbb18c2e654f4a7e164f93b94dca1b17\",\"encryption_public_key\":\"6sRBqtczloZ2ymIxEQaxzi0obTPRQYrK9FCaZuKuYhw=\",\"signing_public_key\":\"WekRmGfOa9q9pQKBSy/i4V4hLNatlwfQTAtE10gQRwY=\",\"servers\":[{\"url\":\"https://relay.exemple.org\",\"priority\":0}],\"enable_push\":true,\"created_at\":1791622800000}",
+  "sig": "ZFdh7wy2aeTJh5uy27ZMX92N4QIR8wf9DQNmtrls7uXH70Wv1klLyLtEtSdM4uRtkeulrYtxNqaTgpvqS71aWQ=="
+}
+```
+
+### `route_policy`
+
+Couche : lettre (`crypto` 1), d'un contact vers un contact. Elle dit si l'expéditeur autorise un serveur ouvert pour ses messages avec le destinataire tant que les serveurs restreints qu'ils ont en commun ne répondent pas (voir [PROTOCOL.fr.md](PROTOCOL.fr.md) § 8, « Serveurs restreints »). Elle part quand l'expéditeur change le réglage pour ce contact. Les deux côtés doivent l'autoriser pour qu'un serveur ouvert soit utilisé. Le destinataire garde la dernière valeur reçue de chaque contact.
+
+| Champ de `payload` | Type | Sens |
+|---|---|---|
+| `open_fallback` | booléen | vrai quand l'expéditeur demande à être consulté ou l'autorise de lui-même (réglages `Ask` et `Auto`), faux pour `Never` |
+
+<!-- schema: LetterPayload -->
+```json
+{
+  "type": "route_policy",
+  "payload": "{\"open_fallback\":true}",
   "sig": "ZFdh7wy2aeTJh5uy27ZMX92N4QIR8wf9DQNmtrls7uXH70Wv1klLyLtEtSdM4uRtkeulrYtxNqaTgpvqS71aWQ=="
 }
 ```
@@ -623,7 +640,7 @@ Confirme que des lettres ont été conservées. `payload` est une chaîne JSON `
 }
 ```
 
-Lettres confirmées : `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react` et `identity_update`. Une lettre livrée reste dans la file de l'expéditeur, marquée « livrée, non confirmée », jusqu'à l'arrivée de son `ack`. Sans lui elle est renvoyée telle quelle (même `ts`, donc même `message_id`) après 30 secondes, 2 minutes, 10 minutes, 1 heure et 6 heures, puis abandonnée. Elle repart aussi sans attendre dès que le relais annonce le retour du destinataire (`peer_online`). Pour que ce retour lui soit annoncé, l'expéditeur pose un drapeau `WAITING` vers le destinataire trois secondes après la remise d'une lettre restée sans `ack`, et le retire (`DELETE /api/flags/{from}/{to}`) quand plus aucune de ses lettres n'attend ce destinataire. Voir [PROTOCOL.fr.md](PROTOCOL.fr.md) §5.
+Lettres confirmées : `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update` et `route_policy`. Une lettre livrée reste dans la file de l'expéditeur, marquée « livrée, non confirmée », jusqu'à l'arrivée de son `ack`. Sans lui elle est renvoyée telle quelle (même `ts`, donc même `message_id`) après 30 secondes, 2 minutes, 10 minutes, 1 heure et 6 heures, puis abandonnée. Elle repart aussi sans attendre dès que le relais annonce le retour du destinataire (`peer_online`). Pour que ce retour lui soit annoncé, l'expéditeur pose un drapeau `WAITING` vers le destinataire trois secondes après la remise d'une lettre restée sans `ack`, et le retire (`DELETE /api/flags/{from}/{to}`) quand plus aucune de ses lettres n'attend ce destinataire. Voir [PROTOCOL.fr.md](PROTOCOL.fr.md) §5.
 
 ### Une copie pour les autres appareils de l'expéditeur
 

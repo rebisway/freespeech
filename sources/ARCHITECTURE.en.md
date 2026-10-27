@@ -3,7 +3,7 @@
 This document explains **how FreeSpeech is built and why**: the components, the
 technologies, the cryptography, the local storage and its table schema. The wire
 protocol itself (message formats, rules) is specified in
-[PROTOCOL.en.md](PROTOCOL.en.md). Diagrams live in [diagrams/](diagrams/), each in French
+[PROTOCOL.en.md](PROTOCOL.en.md). The role of each component and the path of a message are explained in [HOW_IT_WORKS.en.md](HOW_IT_WORKS.en.md) and [MESSAGE_FLOWS.en.md](MESSAGE_FLOWS.en.md), the features of the applications in [FEATURES.en.md](FEATURES.en.md). Diagrams live in [diagrams/](diagrams/), each in French
 (`-fr`) and English (`-en`). French version: [ARCHITECTURE.fr.md](ARCHITECTURE.fr.md).
 
 FreeSpeech is free software (AGPL-3.0-or-later). The design goal is that everything
@@ -529,8 +529,6 @@ phrases again regenerates the key and unlocks the profile. A wrong key is refuse
 - **No ratchet**: a fresh ephemeral key is used per message, but the recipient's
   long-term key decrypts past traffic if it is ever stolen. Losing the phrases loses
   the identity; stealing them steals it.
-- A dishonest group member can hand the current group key to an excluded one outside
-  the protocol.
 - "Delete for everyone" and "edit" are **best-effort**: a modified client can ignore them, and the recipient may
   have copied the message beforehand. "Delete for me" in a group keeps the sealed copy in the encrypted log so the
   others can still fetch it.

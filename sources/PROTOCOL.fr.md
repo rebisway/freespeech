@@ -99,7 +99,7 @@ signées avec les clés de l'identité ; le relais, qui n'envoie jamais une lett
 
 - **`device_sync_request { id, device, have, contacts, ts, code }`** (A → soi-même) : `id` aléatoire (128 bits) ; `code` = **six chiffres** tirés au hasard,
   affichés **sur A seulement** ; `device` = identifiant aléatoire de cet appareil pour cette exécution (la réponse lui est adressée, un appareil ne se répond
-  jamais) ; `have` = pour chaque conversation **hors groupes**, l'empreinte de ce qu'A détient (SHA-256 tronqué à 16 hexadécimaux sur `id|état|date de
+  jamais) ; `have` = pour chaque conversation **hors groupes**, l'empreinte de ce que A détient (SHA-256 tronqué à 16 hexadécimaux sur `id|état|date de
   modification;` de chaque message, dans l'ordre) ; `contacts` = pour chaque contact, l'empreinte de sa fiche. Valable **5 minutes**. Si aucun autre appareil ne
   l'a reçue (`send_result.delivered` faux), A la renvoie à chaque tick pendant ce temps.
 - **Accord de B : le code se saisit sur B.** B affiche seulement « synchronisation demandée » (avis interne, avis du téléphone en arrière-plan, bandeau sur
@@ -109,7 +109,7 @@ signées avec les clés de l'identité ; le relais, qui n'envoie jamais une lett
   de phrases. Quand l'un des appareils de la même identité y répond, les autres retirent la demande.
 - **`device_sync_data { request, to_device, contacts[], replace[], remove[], history{conv: entries[]}, attachments[], last, refused }`** (B → soi-même, en
   plusieurs parties d'environ 150 Kio, la dernière avec `last`) : les fiches de contact qui diffèrent ; les **conversations dont l'empreinte diffère**,
-  **entières** (messages, états : modifié, supprimé pour tous, fichier retiré) avec leur nom dans `replace` ; `remove` = les conversations qu'A détient et B
+  **entières** (messages, états : modifié, supprimé pour tous, fichier retiré) avec leur nom dans `replace` ; `remove` = les conversations que A détient et B
   non. A ne prend la réponse que si `request` est sa demande en cours et `to_device` son identifiant.
 - **Miroir** : A **remplace** chaque conversation de `replace` (effacée une seule fois par demande, les parties suivantes s'y ajoutent), supprime celles de
   `remove`, et prend les fiches de contact de B (celle de B l'emporte). Les messages supprimés pour soi sur B n'existent plus sur A. Les **groupes** ne
@@ -198,7 +198,8 @@ Rien à voir avec le protocole réseau : c'est un réglage de l'appli mobile (`A
   désactivé (à réactiver avec un nouveau code).
 - **Limites** : verrouillage au niveau de l'appli, pas du chiffrement ; un attaquant qui obtient les droits root du téléphone ou
   l'extraction du Keystore le contourne. Les compteurs et le délai sont des préférences : modifiables avec un accès root. Pas de
-  masquage de l'aperçu dans le sélecteur d'applications récentes (à envisager : `FLAG_SECURE`).
+  masquage de l'aperçu dans le sélecteur d'applications récentes, sauf si le réglage **écran protégé** (Android, désactivé par défaut,
+  `FLAG_SECURE`) est activé.
 
 ### Téléphone volé : effacement à distance (implémenté)
 
@@ -266,8 +267,8 @@ passe donc à une **nouvelle identité** (nouvelles phrases) et prévient ses co
 - **Rien d'écrit sur le téléphone** : ni phrases, ni QR code, ni PDF ne sont créés par l'appli ; seuls le fichier de clé (chiffré) et le
   brouillon en mémoire le sont. Limite : le brouillon est en mémoire gérée (des copies de chaînes peuvent subsister jusqu'au
   ramasse-miettes) ; accepté.
-- **Affichage** : l'écran de sauvegarde n'est **pas protégé contre la capture d'écran** ni l'enregistrement de l'écran, et une personne
-  derrière l'épaule peut lire (à envisager : `FLAG_SECURE` sur cet écran).
+- **Affichage** : l'écran de sauvegarde n'est protégé contre la capture d'écran et l'enregistrement de l'écran que si le réglage
+  **écran protégé** (Android, désactivé par défaut, `FLAG_SECURE`) est activé, et une personne derrière l'épaule peut lire.
 - **Presse-papiers** : le bouton Copier place les phrases dans le presse-papiers, lisible par les claviers et les applications de
   presse-papiers ; à coller aussitôt dans un gestionnaire de mots de passe, puis à vider.
 - **Vérifier un fichier de clé** (Réglages → « Vérifier mon fichier de clé ») : le fichier est ouvert avec son mot de passe, l'identité en est
@@ -371,8 +372,8 @@ Distincte de la sauvegarde : elle sort les **fichiers téléchargés** de l'appa
   "encryption_public_key": "...",
   "signing_public_key": "...",
   "servers": [                          // liste ORDONNÉE par préférence
-    { "url": "https://priv.entreprise.local", "priority": 0 },
-    { "url": "https://public.freespeech.org", "priority": 1 }
+    { "url": "https://public.freespeech.org", "priority": 0 },
+    { "url": "https://priv.entreprise.local", "priority": 1, "restricted": true }
   ],
   "enable_push": false,                 // capacité annoncée, pas le token
   "created_at": ...,
@@ -489,6 +490,7 @@ identity_moved   { old_id, new_card, ts, sig } — migration vers une nouvelle i
                  l'ANCIENNE identité sur "FreeSpeech-moved-v1|<old_id>|<new_id>|<ts>" ; envoyée depuis l'ancien identifiant aux contacts et
                  aux modérateurs de groupe ; acceptée d'un contact ou d'un membre d'un groupe commun ; contrôlée contre la clé épinglée
 identity_update { ContactCard mis à jour — clés crypto immuables }
+route_policy     { open_fallback } — autorise (vrai) ou non un serveur ouvert pour mes messages avec ce contact quand nos serveurs restreints communs ne répondent pas (§ 8)
 attachment       { name, mime, size, root, thumbnail? } — vignette envoyée directement (mobile)
 attachment_request { ref, missing? } — ref = message_id du Letter attachment
 attachment_chunk { ref, chunk_id, total_chunks, data, proof[] } — proof = preuve de Merkle
@@ -589,7 +591,7 @@ Le relais déclare une Letter « livrée » dès qu'il l'a écrite sur la connex
 tué), la Letter est perdue sans que personne le sache. Le destinataire confirme donc ce qu'il garde :
 - **`ack { ids }`** : Letter signée et chiffrée comme les autres, envoyée par le destinataire à l'expéditeur ; `ids` = les `message_id` (`{expéditeur}:{ts}`) des Letters
   gardées, regroupées sur 300 ms. Elle est éphémère (ni outbox, ni historique) et n'est elle-même pas confirmée.
-- **Types confirmés** : `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update` — tous ceux qui passent par
+- **Types confirmés** : `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update`, `route_policy` — tous ceux qui passent par
   l'outbox, d'un contact confirmé. Un message, une modification et une suppression suivent donc le même chemin.
 - **Expéditeur** : une Letter livrée reste dans l'outbox, marquée « livrée, non confirmée », jusqu'à l'`ack`. Sans `ack`, elle est renvoyée telle quelle (même `ts`, donc même
   identifiant) après 30 s, 2 min, 10 min, 1 h puis 6 h ; après le dernier délai elle est abandonnée (une version qui ne confirme pas ne reçoit pas la Letter sans fin). Un
@@ -1095,9 +1097,6 @@ entrent dans le journal et le rattrapage p2p les sert comme les autres. Règles 
   interceptés (relais, réseau), puisqu'il n'a jamais reçu la nouvelle clé.
 - Limites assumées, à ne pas présenter comme des garanties :
   - un exclu conserve tout ce qu'il a déjà reçu ;
-  - un membre malhonnête qui reçoit légitimement la nouvelle clé peut la
-    retransmettre à un exclu — irréductible par la crypto seule, inhérent à
-    tout système E2E décentralisé ;
   - pas de confidentialité persistante *dans* une époque : une clé qui fuit
     expose toute son époque.
 - Pas de suppression de groupe : il s'éteint quand tout le monde l'abandonne.
@@ -1138,6 +1137,26 @@ entrent dans le journal et le rattrapage p2p les sert comme les autres. Règles 
   signalé `self_multi_device`).
 - Commandes console : `server list | add <url> [prio] | remove <url>` ;
   chaque changement envoie un `identity_update` aux contacts confirmés.
+
+### Serveurs restreints : qui peut s'inscrire, et comment écrire à un contact
+
+Un serveur dont le mode d'accès est `allowlist` (§ 10, « Contrôle d'accès des clients ») est dit restreint : seules les identités que son administrateur a autorisées s'y inscrivent. Il ne faut pas le confondre avec le statut privé entre serveurs, qui interdit les appels d'un autre serveur et qu'un client ne voit pas.
+
+Chaque entrée de `servers` dans la fiche porte `restricted`, un booléen absent quand il est faux, vrai pour un serveur restreint. Le propriétaire connaît le mode de ses serveurs, car le serveur l'annonce à l'inscription et chaque fois que l'administrateur le change. Il envoie sa fiche à ses contacts quand le mode change. Les serveurs ouverts sont listés avant les serveurs restreints, chaque groupe dans l'ordre de préférence du propriétaire, et les `priority` sont renumérotées en conséquence. Un client qui ne connaît pas `restricted` ignore le champ et suit l'ordre de la liste.
+
+Un serveur restreint sur lequel je ne suis pas autorisé n'est jamais contacté : ni connexion, ni refus chez l'administrateur, ni marqueur d'attente. Une fiche qui marque à tort un serveur comme restreint ne gêne que son auteur.
+
+Un serveur restreint commun est un serveur de la fiche du contact sur lequel je suis moi-même inscrit avec le mode `allowlist`, ce mode étant mémorisé avec la liste de mes serveurs. Quand il en existe, l'envoi n'utilise que les serveurs communs, dans l'ordre de la fiche. Il n'y a ni serveur ouvert, ni marqueur d'attente sur un serveur ouvert, ni repli sur mes propres serveurs. Sans serveur restreint commun, l'envoi se fait comme au § 8.
+
+Si le serveur restreint ne répond pas, le message reste dans l'outbox avec la mention « en attente d'un serveur privé ». Un serveur restreint qui répond alors que le contact n'y est pas connecté n'est pas en panne : le contact est simplement absent.
+
+Le repli sur un serveur ouvert n'est possible que si les deux côtés l'ont accepté et si aucun serveur restreint commun ne répond. Le réglage est propre à chaque contact et chacun le fait pour ses propres envois. `Never` est la valeur par défaut et le message attend. Avec `Ask`, l'application pose la question dès le premier échec, une seule fois pour la panne, et la réponse « oui » vaut jusqu'au retour d'un serveur restreint commun, sans nouvelle question. Avec `Auto`, le repli commence après `OpenFallbackDelay`, 2 minutes par défaut. Chaque côté fait connaître son choix par la Letter `route_policy { open_fallback }`, vraie pour `Ask` et `Auto`. Elle suit le chemin normal, donc un serveur restreint commun quand il y en a un, passe par l'outbox et est confirmée comme `identity_update`. L'accord est coopératif : il protège contre un passage silencieux sur un serveur ouvert, pas contre un client modifié.
+
+Le repli n'est pas mémorisé. Chaque envoi, et chaque renvoi de l'outbox, commence par les serveurs restreints communs, et le repli prend fin dès que l'un d'eux remet un message.
+
+Pour un membre de groupe qui n'est pas un contact, les serveurs de l'état du groupe sont utilisés : les serveurs restreints non autorisés sont laissés de côté et les communs passent en premier. Le mode strict ne s'applique pas aux groupes.
+
+Le réveil du téléphone (§ 9) passe par le serveur qui détient le marqueur d'attente. Un serveur restreint doit donc être lié à une passerelle push.
 
 ## 9. Notifications push (mobile, app non lancée)
 
@@ -1283,7 +1302,7 @@ Aucune notification de service quand il n'y a rien à envoyer : un simple révei
 - Sur Android, si la batterie est optimisée pour l'appli, elle propose l'exemption d'optimisation (boîte système Oui/Non) dans une boîte, au premier
   affichage de l'accueil. La boîte n'est montrée qu'une fois, et se rouvre depuis Réglages → « Vérifier les réglages du téléphone ».
 - Le push exige les services Google Play et un build avec la configuration Firebase ; sans eux, seule la vérification périodique tourne.
-- iOS : pas de service au premier plan ni de réveil silencieux fiable .
+- iOS : pas de service au premier plan ni de réveil silencieux fiable.
 
 **Confidentialité et précautions.**
 - Google (FCM) voit : le jeton de l'appareil, le paquet de l'appli, l'heure de chaque réveil — **jamais** un contenu, un nom ou un identifiant

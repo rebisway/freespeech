@@ -183,7 +183,7 @@ Nothing to do with the network protocol: it is a setting of the mobile app (`App
 - **Forgotten code**: type the three phrases; they must give back the database key kept on the phone. The lock is then switched off
   (to switch on again with a new code).
 - **Limits**: an app-level lock, not an encryption layer; an attacker with root or a Keystore extraction goes round it. The counters and
-  the delay are preferences: editable with root. The recent-apps preview is not masked (to consider: `FLAG_SECURE`).
+  the delay are preferences: editable with root. The recent-apps preview is not masked unless the **protected screen** setting (Android, off by default, `FLAG_SECURE`) is on.
 
 ### Stolen phone: remote wipe (implemented)
 
@@ -250,8 +250,8 @@ moves to a **new identity** (new phrases) and tells contacts and group moderator
   confirmation before leaving it with nothing done.
 - **Nothing written on the phone**: no phrases, no QR code, no PDF is created by the app; only the (encrypted) key file and the draft
   in memory are. Limit: the draft sits in managed memory (copies of strings can linger until garbage collection); accepted.
-- **Display**: the save screen is **not protected against screenshots** or screen recording, and someone behind the shoulder can read
-  it (to consider: `FLAG_SECURE` on this screen).
+- **Display**: the save screen is protected against screenshots and screen recording only if the **protected screen** setting
+  (Android, off by default, `FLAG_SECURE`) is on, and someone behind the shoulder can read it.
 - **Clipboard**: the Copy button puts the phrases on the clipboard, readable by keyboards and clipboard apps; paste them at once into
   a password manager, then clear it.
 - **Checking a key file** (Settings → "Check my key file"): the file is opened with its password, the identity is derived from it and
@@ -348,8 +348,8 @@ Distinct from the backup: it moves **downloaded files** off the device and leave
   "encryption_public_key": "...",
   "signing_public_key": "...",
   "servers": [                          // list ORDERED by preference
-    { "url": "https://priv.entreprise.local", "priority": 0 },
-    { "url": "https://public.freespeech.org", "priority": 1 }
+    { "url": "https://public.freespeech.org", "priority": 0 },
+    { "url": "https://priv.entreprise.local", "priority": 1, "restricted": true }
   ],
   "enable_push": false,                 // advertised capability, not the token
   "created_at": ...,
@@ -458,6 +458,7 @@ identity_moved   { old_id, new_card, ts, sig } — migration to a new identity (
                  "FreeSpeech-moved-v1|<old_id>|<new_id>|<ts>"; sent from the old identifier to contacts and group moderators; accepted from a
                  contact or a member of a shared group; checked against the pinned key
 identity_update { updated ContactCard — crypto keys immutable }
+route_policy     { open_fallback } — allows (true) or not an open server for my messages with this contact when our shared restricted servers do not answer (§ 8)
 attachment       { name, mime, size, root, thumbnail? } — thumbnail sent directly (mobile)
 attachment_request { ref, missing? } — ref = message_id of the attachment Letter
 attachment_chunk { ref, chunk_id, total_chunks, data, proof[] } — proof = Merkle proof
@@ -555,7 +556,7 @@ The relay calls a Letter "delivered" as soon as it wrote it to the recipient's c
 killed), the Letter is lost and nobody knows. The recipient therefore confirms what it keeps:
 - **`ack { ids }`**: a Letter signed and encrypted like the others, sent by the recipient to the sender; `ids` = the `message_id`s (`{sender}:{ts}`) of the Letters kept, gathered over
   300 ms. It is throw-away (no outbox, no history) and is not itself confirmed.
-- **Confirmed types**: `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update` — all those that go through the outbox,
+- **Confirmed types**: `message`, `attachment`, `message_edit`, `message_retract`, `attachment_retract`, `message_react`, `identity_update`, `route_policy` — all those that go through the outbox,
   from a confirmed contact. A message, an edit and a deletion thus follow the same path.
 - **Sender**: a delivered Letter stays in the outbox, marked "delivered, not confirmed", until the `ack`. Without an `ack` it is sent again as it was (same `ts`, so same identifier)
   after 30 s, 2 min, 10 min, 1 h and 6 h; after the last wait it is dropped (a version that does not confirm is not sent the Letter for ever). An unreachable contact puts it back to
@@ -1036,9 +1037,6 @@ p2p catch-up serves them like the others. Group-specific rules:
   intercepted ones (relay, network), since they never received the new key.
 - Accepted limits, not to be presented as guarantees:
   - an excluded member keeps everything they already received;
-  - a dishonest member who legitimately receives the new key can pass it on to an
-    excluded one — irreducible by cryptography alone, inherent to any
-    decentralized E2E system;
   - no forward secrecy *within* an epoch: a leaked key exposes its whole epoch.
 - No group deletion: it fades away when everyone abandons it.
 
@@ -1078,6 +1076,26 @@ p2p catch-up serves them like the others. Group-specific rules:
   signalled `self_multi_device`).
 - Console commands: `server list | add <url> [prio] | remove <url>`; each change
   sends an `identity_update` to the confirmed contacts.
+
+### Restricted servers: who may sign up, and how to write to a contact
+
+A server whose access mode is `allowlist` (§ 10, "Client access control") is called restricted: only the identities its administrator allowed sign up there. It must not be confused with the private status between servers, which forbids calls from another server and which a client cannot see.
+
+Each entry of `servers` in the card carries `restricted`, a boolean absent when false, true for a restricted server. The owner knows the mode of their servers, because the server states it at registration and each time the administrator changes it. They send their card to their contacts when the mode changes. The open servers are listed before the restricted ones, each group in the owner's order of preference, and the `priority` values are renumbered to match. A client that does not know `restricted` ignores the field and follows the order of the list.
+
+A restricted server on which I am not allowed is never contacted: no connection, no refusal at the administrator, no waiting marker. A card that wrongly marks a server as restricted only hinders its author.
+
+A shared restricted server is a server of the contact's card on which I am myself registered with the `allowlist` mode, this mode being kept with the list of my servers. When there is one, sending uses only the shared servers, in the order of the card. There is no open server, no waiting marker on an open server and no fallback on my own servers. Without a shared restricted server, sending is done as in § 8.
+
+If the restricted server does not answer, the message stays in the outbox with the mention "waiting for a private server". A restricted server that answers while the contact is not connected there is not down: the contact is simply absent.
+
+Falling back on an open server is possible only if both sides accepted it and no shared restricted server answers. The setting belongs to each contact and each side makes it for its own sends. `Never` is the default and the message waits. With `Ask`, the application asks at the first failure, once for the outage, and the answer "yes" holds until a shared restricted server answers again, with no new question. With `Auto`, the fallback starts after `OpenFallbackDelay`, 2 minutes by default. Each side makes its choice known with the Letter `route_policy { open_fallback }`, true for `Ask` and `Auto`. It follows the normal path, so a shared restricted server when there is one, goes through the outbox and is confirmed like `identity_update`. The agreement is cooperative: it protects against a silent move to an open server, not against a modified client.
+
+The fallback is not remembered. Every send, and every resend of the outbox, starts with the shared restricted servers, and the fallback ends as soon as one of them delivers a message.
+
+For a group member who is not a contact, the servers of the group's state are used: the restricted servers that are not allowed are left out and the shared ones come first. The strict mode does not apply to groups.
+
+Waking the phone (§ 9) goes through the server that holds the waiting marker. A restricted server must therefore be linked to a push gateway.
 
 ## 9. Push notifications (mobile, app not running)
 
