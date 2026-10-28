@@ -47,6 +47,7 @@ builder.AddOps(new Dictionary<string, string[]>
 var config = builder.Configuration;
 // Links with relay servers by mutual consent, no shared secret (add relay / requests relay / accept relay): saved next to relays.json.
 builder.AddPeers("push", ["relay"], c => PushStateFiles.PeerDirectory(c));
+builder.Services.AddSingleton(new LinkStatus("relay"));   // when each relay last called, shown by "list"
 builder.AddMail();   // SMTP account and notifications to the administrator (admin smtp / notify)
 builder.Services.AddSingleton(sp => PushStateFiles.Files(sp.GetRequiredService<IConfiguration>()));   // what admin export saves
 builder.Services.AddHttpClient("Push", c => c.Timeout = TimeSpan.FromSeconds(10));
@@ -121,7 +122,8 @@ app.MapPost("/push", async (HttpRequest request, HttpResponse response, PushRequ
             Notifier.Raise(NotifyKind.Abuse, "Forged or replayed relay call", "A call to /push carried a signature that does not verify or that was already used.");
         if (outcome == PeerSigning.Outcome.Banned) return Results.StatusCode(StatusCodes.Status403Forbidden);
         if (outcome != PeerSigning.Outcome.Ok) return Results.Unauthorized();
-        keyId = "relay-" + peer!.Id[..8];
+        app.Services.GetRequiredService<LinkStatus>().Ok(peer!.Url);
+        keyId = "relay-" + peer.Id[..8];
     }
     else if (dev && peers.Accepted("relay").Count == 0) keyId = "open";   // development only, and only while no relay is accepted
     else return Results.Unauthorized();

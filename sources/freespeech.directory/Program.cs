@@ -89,7 +89,7 @@ app.MapPost("/directory/heartbeat", async (HttpRequest request, HeartbeatBody bo
     if (outcome == PeerSigning.Outcome.Banned) return Results.StatusCode(StatusCodes.Status403Forbidden);
     if (outcome != PeerSigning.Outcome.Ok) return Results.Unauthorized();
     registry.Record(peer!.Id, body);
-    app.Services.GetRequiredService<LinkStatus>().Ok(peer.Id);
+    app.Services.GetRequiredService<LinkStatus>().Ok(peer.Url);
     if (!registry.IsProbed(peer.Id)) _ = probe.ProbeAsync(peer);   // the first heartbeat of a relay: look at its address now, not in half an hour
     return Results.Ok();
 });

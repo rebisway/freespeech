@@ -26,7 +26,7 @@ public class S2SAuthMiddleware
 
     public S2SAuthMiddleware(RequestDelegate next) => _next = next;
 
-    public async Task InvokeAsync(HttpContext context, ISiblingRegistry siblings, S2SRateLimiter limiter, RelaySettings settings, PeerStore peers, ILogger<S2SAuthMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context, ISiblingRegistry siblings, S2SRateLimiter limiter, RelaySettings settings, PeerStore peers, LinkStatus links, ILogger<S2SAuthMiddleware> logger)
     {
         if (!context.Request.Path.StartsWithSegments("/s2s"))
         {
@@ -55,6 +55,7 @@ public class S2SAuthMiddleware
             return;
         }
 
+        links.Ok(peer.Url);   // a call received from the sibling counts as an exchange that worked
         context.Items[SiblingItem] = new Sibling { Url = peer.Url.TrimEnd('/') };
         await _next(context);
     }

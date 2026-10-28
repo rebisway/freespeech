@@ -70,7 +70,7 @@ builder.Services.AddSingleton<IPushRegistry, PushRegistry>();
 builder.Services.AddSingleton<IPushNotifier, PushNotifier>();
 builder.Services.AddScoped<RelaySocketHandler>();
 builder.Services.AddHostedService<FlagExpiryService>();
-builder.Services.AddSingleton(new LinkStatus("directory"));   // how the exchanges with the linked servers go, shown by "list"
+builder.Services.AddSingleton(new LinkStatus("directory", "relay", "push"));   // how the exchanges with the linked servers go, shown by "list"
 builder.Services.AddHostedService<DirectoryHeartbeatService>();   // how this relay is, told to the directories it is linked with
 
 // S2S calls to a sibling (protocol §10) must never hang the request that

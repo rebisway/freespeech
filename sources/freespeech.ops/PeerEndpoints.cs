@@ -127,7 +127,7 @@ public static class PeerExtensions
         {
             var view = new Dictionary<string, object?> { ["id"] = p.Id, ["kind"] = p.Kind, ["name"] = p.Name, ["url"] = p.Url, ["contact"] = p.Contact, ["seen_from"] = p.SeenFrom, ["state"] = p.State, ["since"] = p.Since };
             if (country != null) view["country"] = country(p);
-            if (p.State == PeerState.Accepted && c.RequestServices.GetService<LinkStatus>() is { } links && links.Tracks(p.Kind)) view["link"] = links.View(p.Id);
+            if (p.State == PeerState.Accepted && c.RequestServices.GetService<LinkStatus>() is { } links && links.Tracks(p.Kind)) view["link"] = links.View(p.Url);
             return view;
         }
 

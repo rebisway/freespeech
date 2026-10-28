@@ -57,16 +57,16 @@ public sealed class DirectoryHeartbeatService(PeerStore peers, PeerIdentity iden
                 request.Content.Headers.ContentType = new("application/json");
                 PeerSigning.Sign(request, identity, "/directory/heartbeat", body);
                 using var response = await http.CreateClient("peer").SendAsync(request, ct);
-                if (response.IsSuccessStatusCode) links.Ok(directory.Id);
+                if (response.IsSuccessStatusCode) links.Ok(directory.Url);
                 else
                 {
-                    links.Fail(directory.Id, "refused " + (int)response.StatusCode);
+                    links.Fail(directory.Url, "refused " + (int)response.StatusCode);
                     logger.LogWarning("Directory {Url} refused the heartbeat ({Status})", directory.Url, (int)response.StatusCode);
                 }
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
-                links.Fail(directory.Id, "unreachable");
+                links.Fail(directory.Url, "unreachable");
                 logger.LogDebug("Directory {Url} not reachable: {Message}", directory.Url, ex.Message);
             }
         }

@@ -70,10 +70,12 @@ public sealed class PushNotifier : IPushNotifier
 
     private readonly FreeSpeech.Ops.PeerStore _peers;
     private readonly FreeSpeech.Ops.PeerIdentity _identity;
+    private readonly FreeSpeech.Ops.LinkStatus _links;
 
     public PushNotifier(IPushRegistry registry, IPresenceService presence, IHttpClientFactory http, IConfiguration config, ISiblingRegistry siblings, FreeSpeech.Ops.TraceService trace,
-        FreeSpeech.Ops.PeerStore peers, FreeSpeech.Ops.PeerIdentity identity, ILogger<PushNotifier> logger)
+        FreeSpeech.Ops.PeerStore peers, FreeSpeech.Ops.PeerIdentity identity, FreeSpeech.Ops.LinkStatus links, ILogger<PushNotifier> logger)
     {
+        _links = links;
         _peers = peers;
         _identity = identity;
         _trace = trace;
@@ -164,6 +166,7 @@ public sealed class PushNotifier : IPushNotifier
         try { response = await _http.CreateClient("Push").SendAsync(request, ct); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
+            _links.Fail(gateway, "unreachable");
             Failed(gateway);
             _logger.LogWarning("Push gateway {Gateway} unreachable: {Message}", gateway, ex.Message);
             return Attempt.TryNext;
@@ -171,8 +174,9 @@ public sealed class PushNotifier : IPushNotifier
 
         using (response)
         {
-            if (response.IsSuccessStatusCode) { Worked(gateway); return Attempt.Done; }
-            if (response.StatusCode == HttpStatusCode.Gone) { Worked(gateway); return Attempt.Gone; }
+            if (response.IsSuccessStatusCode) { Worked(gateway); _links.Ok(gateway); return Attempt.Done; }
+            if (response.StatusCode == HttpStatusCode.Gone) { Worked(gateway); _links.Ok(gateway); return Attempt.Gone; }
+            _links.Fail(gateway, response.StatusCode == HttpStatusCode.TooManyRequests ? "busy" : (int)response.StatusCode >= 500 ? "error " + (int)response.StatusCode : "refused " + (int)response.StatusCode);
 
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {

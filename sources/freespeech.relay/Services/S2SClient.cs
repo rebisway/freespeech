@@ -20,10 +20,12 @@ public class S2SClient : IS2SClient
 
     private readonly bool _allowInsecure;
     private readonly FreeSpeech.Ops.PeerIdentity _identity;
+    private readonly FreeSpeech.Ops.LinkStatus _links;
 
-    public S2SClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, FreeSpeech.Ops.PeerIdentity identity, ILogger<S2SClient> logger)
+    public S2SClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, FreeSpeech.Ops.PeerIdentity identity, FreeSpeech.Ops.LinkStatus links, ILogger<S2SClient> logger)
     {
         _identity = identity;
+        _links = links;
         _allowInsecure = configuration.GetValue("Server:AllowInsecureSiblings", false);
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -103,7 +105,17 @@ public class S2SClient : IS2SClient
         using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(new Uri(sibling.Url), path)) { Content = new ByteArrayContent(body) };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         FreeSpeech.Ops.PeerSigning.Sign(request, _identity, path, body);
-        return await http.SendAsync(request, ct);
+        try
+        {
+            var response = await http.SendAsync(request, ct);
+            if (response.IsSuccessStatusCode) _links.Ok(sibling.Url); else _links.Fail(sibling.Url, "refused " + (int)response.StatusCode);
+            return response;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _links.Fail(sibling.Url, "unreachable");
+            throw;
+        }
     }
 
     private class LookupResponse { public bool Online { get; set; } }

@@ -60,7 +60,7 @@ A gateway links only with relays: the kind `relay` is optional in these commands
 |---|---|
 | `peer-id` | this gateway's fingerprint, to read out to the relay's administrator |
 | `add relay <url> [--fingerprint f] [--insecure]` | asks a relay for a link; its fingerprint is shown (`--fingerprint` checks it). `https` required; `http` for this machine or a private network, or with `--insecure`. `Peer:PublicUrl` must be set |
-| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; the contact its administrator declared is shown between `<` `>` |
+| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; the contact its administrator declared is shown between `<` `>`; for a relay, the `LINK` column gives the age of the last call received (`ok 35s`, `none yet` since the start; kept in memory) |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | requests received (12-character id, date, name, address) Each request shows the contact the sender declares and the address it came from. |
 | `accept <id…>` or `accept --all [--name t] [--older-than D] [--yes]` | accepts; refuses if the announced address does not show the key of the request (code 4) |
 | `reject <id…>` or `reject --all … [--ban]` | turns down; `--ban` forbids asking again |

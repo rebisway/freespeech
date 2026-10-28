@@ -4,13 +4,13 @@
 	     The single source, written in clear so that a build gives the same result under any version control or from an archive.
 	     Raised by scripts/bump-version.ps1 -Component <relay|push|console|desktop|mobile> before publishing that program. -->
 	<PropertyGroup>
-		<FsRelayVersion>1.6.0</FsRelayVersion>
+		<FsRelayVersion>1.7.0</FsRelayVersion>
 		<FsRelayVersionDate>2026-10-28</FsRelayVersionDate>
 
-		<FsPushVersion>1.3.1</FsPushVersion>
-		<FsPushVersionDate>2026-10-18</FsPushVersionDate>
+		<FsPushVersion>1.4.0</FsPushVersion>
+		<FsPushVersionDate>2026-10-28</FsPushVersionDate>
 
-		<FsDirectoryVersion>1.1.3</FsDirectoryVersion>
+		<FsDirectoryVersion>1.1.4</FsDirectoryVersion>
 		<FsDirectoryVersionDate>2026-10-28</FsDirectoryVersionDate>
 
 		<FsConsoleVersion>1.1.1</FsConsoleVersion>

@@ -60,7 +60,7 @@ Une passerelle ne se lie qu'à des relais : le type `relay` est facultatif dans 
 |---|---|
 | `peer-id` | l'empreinte de cette passerelle, à lire à l'administrateur du relais |
 | `add relay <url> [--fingerprint f] [--insecure]` | demande un lien à un relais ; son empreinte s'affiche (`--fingerprint` la vérifie). `https` obligatoire ; `http` pour cette machine ou un réseau privé, ou avec `--insecure`. `Peer:PublicUrl` doit être réglé |
-| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; le contact déclaré par leur administrateur est affiché entre `<` `>` |
+| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; le contact déclaré par leur administrateur est affiché entre `<` `>` ; pour un relais, la colonne `LINK` donne l'âge du dernier appel reçu (`ok 35s`, `none yet` depuis le démarrage ; en mémoire) |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | demandes reçues (identifiant de 12 caractères, date, nom, adresse) Chaque demande indique le contact déclaré par l'expéditeur et l'adresse d'où elle est venue. |
 | `accept <id…>` ou `accept --all [--name t] [--older-than J] [--yes]` | accepte ; refuse si l'adresse annoncée ne présente pas la clé de la demande (code 4) |
 | `reject <id…>` ou `reject --all … [--ban]` | refuse ; `--ban` interdit de redemander |
