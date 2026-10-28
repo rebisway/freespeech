@@ -60,6 +60,7 @@ Chaque serveur a sa paire de clés (`peer-identity.json`) ; un lien n'existe que
 | `ban <id>` / `unban <id>` | bannit / lève le bannissement |
 | `peer-requests open` / `close` | prend les demandes entrantes, ou non |
 | `peer-refresh` | demande maintenant où en sont les demandes envoyées |
+| `peer-check [secondes]` | tous les combien de secondes les relais liés sont vérifiés (10 à 3 600 ; 60 par défaut, `Link:CheckSeconds`) ; sans valeur, l'affiche. Une vérification n'est pas envoyée si un battement de ce relais est arrivé depuis moins que cette durée |
 
 L'adresse de l'annuaire (`Peer:PublicUrl`, voir `self` ci-dessous) est obligatoire. `Peer:Contact` indique comment un autre administrateur peut joindre le vôtre pour vérifier qui demande.
 
@@ -79,7 +80,7 @@ Le sujet est `<début> <événement>` ; le début par défaut est `[DIRECTORY] <
 
 | Type | Quand |
 |---|---|
-| `peers` | un relais demande un lien : nom, adresse, empreinte à comparer, puis `accept` |
+| `peers` | un relais demande un lien : nom, adresse, empreinte à comparer, puis `accept` ; un relais lié qui échoue à trois vérifications de suite (`Link down`), puis qui répond de nouveau (`Link restored`) |
 | `abuse` | appels signés falsifiés ou rejoués, trop de demandes de lien ou de liste depuis une adresse |
 | `system` | au démarrage, un secret ou un réglage manque |
 

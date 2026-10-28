@@ -60,6 +60,7 @@ Each server has its own key pair (`peer-identity.json`); a link exists only if *
 | `ban <id>` / `unban <id>` | bans / lifts the ban |
 | `peer-requests open` / `close` | takes incoming requests or not |
 | `peer-refresh` | asks now where the requests you sent stand |
+| `peer-check [seconds]` | how often the linked relays are checked (10 to 3600; 60 by default, `Link:CheckSeconds`); without a value, shows it. A check is not sent when a heartbeat from that relay arrived within that time |
 
 The directory's address (`Peer:PublicUrl`, see `self` below) is required. `Peer:Contact` is how another administrator can reach yours to check who is asking.
 
@@ -79,7 +80,7 @@ The subject is `<start> <event>`; the default start is `[DIRECTORY] <host>` (`{k
 
 | Kind | When |
 |---|---|
-| `peers` | a relay asks for a link: name, address, fingerprint to compare, then `accept` |
+| `peers` | a relay asks for a link: name, address, fingerprint to compare, then `accept`; a linked relay that fails three checks in a row (`Link down`), then answers again (`Link restored`) |
 | `abuse` | forged or replayed signed calls, too many link or list requests from one address |
 | `system` | at start-up, a secret or a setting is missing |
 

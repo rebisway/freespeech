@@ -68,6 +68,7 @@ Une passerelle ne se lie qu'à des relais : le type `relay` est facultatif dans 
 | `ban <id>` / `unban <id>` | bannit / lève le ban |
 | `peer-requests open` / `close` | accepte ou non les demandes entrantes |
 | `peer-refresh` | demande tout de suite où en sont les demandes envoyées, et si les relais liés connaissent encore cette passerelle |
+| `peer-check [secondes]` | tous les combien de secondes les relais liés sont vérifiés (10 à 3 600 ; 60 par défaut, `Link:CheckSeconds`) ; sans valeur, l'affiche. Une vérification n'est pas envoyée si un appel de ce relais a réussi depuis moins que cette durée |
 
 Réglages (non secrets, dans `appsettings.Local.json`) : `Peer:Name` (nom présenté), `Peer:Contact` (comment un autre administrateur peut joindre le vôtre pour vérifier qui demande) et `Peer:PublicUrl` (adresse de cette passerelle : obligatoire pour demander un relais).
 
@@ -133,7 +134,7 @@ Par défaut `[{kind}] {host}`, par exemple `[PUSH] push.exemple.org Link request
 
 | Type | Quand |
 |---|---|
-| `peers` | un autre serveur demande un lien : nom, adresse, empreinte à comparer, puis `accept` |
+| `peers` | un autre serveur demande un lien : nom, adresse, empreinte à comparer, puis `accept` ; un relais lié qui échoue à trois vérifications de suite (`Link down`), puis qui répond de nouveau (`Link restored`) |
 | `abuse` | abus ou attaque détectés : appels signés falsifiés ou rejoués, trop de demandes de lien depuis une adresse |
 | `access` | sans objet pour une passerelle push (aucun client) |
 | `system` | au démarrage, un secret ou un réglage manque (la même alarme que le journal *Critical*) |

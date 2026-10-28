@@ -56,9 +56,13 @@ public sealed class PeerClient
     private readonly PeerOptions _options;
     private readonly PeerStore _store;
     private readonly ILogger<PeerClient> _logger;
+    private readonly LinkStatus? _links;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _checkFailures = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _alerted = new();
+    private const int FailuresToAlert = 3;
 
-    public PeerClient(IHttpClientFactory http, PeerIdentity identity, PeerOptions options, PeerStore store, ILogger<PeerClient> logger)
-        => (_http, _identity, _options, _store, _logger) = (http, identity, options, store, logger);
+    public PeerClient(IHttpClientFactory http, PeerIdentity identity, PeerOptions options, PeerStore store, ILogger<PeerClient> logger, LinkStatus? links = null)
+        => (_http, _identity, _options, _store, _logger, _links) = (http, identity, options, store, logger, links);
 
     /// <summary>The server may veto a kind of link for now (a private relay takes no part in server-to-server traffic): returns why, or null.</summary>
     public Func<string, string?>? Precheck { get; set; }
@@ -171,11 +175,13 @@ public sealed class PeerClient
 
     /// <summary>Learns the answer of every server I asked: accepted, still waiting, or turned down. Requests that did not get through are sent again.</summary>
     /// <param name="includeAccepted">Also asks every linked server whether it still knows this one: one that forgot or banned it is shown as refused (no call to it could succeed any more).</param>
-    public async Task RefreshAsync(bool includeAccepted = false, CancellationToken ct = default)
+    public async Task RefreshAsync(bool includeAccepted = false, CancellationToken ct = default, TimeSpan? skipIfWorkedWithin = null)
     {
         if (includeAccepted)
             foreach (var peer in _options.Kinds.SelectMany(_store.Accepted).Where(p => p.Url.Length > 0).ToList())
             {
+                // An exchange that worked a moment ago says as much as a check would: no call is made.
+                if (skipIfWorkedWithin is { } within && _links?.Get(peer.Url) is { LastOk: { } ok } s && DateTime.UtcNow - ok < within && (s.LastFail == null || s.LastFail < ok)) { Settle(peer, null); continue; }
                 try
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Post, peer.Url + "/peer/status") { Content = new ByteArrayContent([]) };
@@ -186,8 +192,9 @@ public sealed class PeerClient
                         _store.SetState(peer.Id, PeerState.Refused);
                         _logger.LogWarning("Peer {Peer} no longer knows this server: marked refused", peer.Url);
                     }
+                    Settle(peer, response.IsSuccessStatusCode ? null : response.StatusCode == HttpStatusCode.TooManyRequests ? "throttled" : (int)response.StatusCode >= 500 ? "error " + (int)response.StatusCode : "refused " + (int)response.StatusCode);
                 }
-                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { /* unreachable is not a refusal: nothing changes */ }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { Settle(peer, "unreachable"); /* unreachable is not a refusal: nothing else changes */ }
             }
 
         foreach (var peer in _store.PendingOut())
@@ -212,6 +219,26 @@ public sealed class PeerClient
         }
     }
 
+    /// <summary>
+    /// Records the result of a check (<paramref name="failure"/> null = it worked) and tells the administrator when a link has failed several checks in a
+    /// row, then when it answers again. One failed check says nothing: a server restarts.
+    /// </summary>
+    private void Settle(Peer peer, string? failure)
+    {
+        if (failure == null)
+        {
+            _links?.Ok(peer.Url);
+            _checkFailures[peer.Id] = 0;
+            if (_alerted.TryRemove(peer.Id, out _))
+                Notifier.Raise(NotifyKind.Peers, $"Link restored: {peer.Name ?? peer.Url}", $"The {peer.Kind} server {peer.Url} answers again.");
+            return;
+        }
+        _links?.Fail(peer.Url, failure);
+        var failures = _checkFailures.AddOrUpdate(peer.Id, 1, (_, n) => n + 1);
+        if (failures >= FailuresToAlert && _alerted.TryAdd(peer.Id, true))
+            Notifier.Raise(NotifyKind.Peers, $"Link down: {peer.Name ?? peer.Url}", $"The {peer.Kind} server {peer.Url} failed {failures} checks in a row (last: {failure}).");
+    }
+
     public enum Claim { Verified, Unverified, Mismatch }
 
     /// <summary>
@@ -227,23 +254,30 @@ public sealed class PeerClient
     }
 }
 
-/// <summary>Every minute, learns the answer of the servers this one asked, and sends again a request that did not get through.</summary>
-public sealed class PeerRefreshService(PeerClient client, PeerStore store) : BackgroundService
+/// <summary>
+/// Learns the answer of the servers this one asked and sends again a request that did not get through (every 20 s while some wait), and checks the linked
+/// servers every <see cref="PeerCheckSettings.Seconds"/> seconds (a server that forgot this one is shown as refused; one that stops answering is reported).
+/// </summary>
+public sealed class PeerRefreshService(PeerClient client, PeerStore store, PeerCheckSettings check) : BackgroundService
 {
-    private static readonly TimeSpan CheckLinked = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan PendingEvery = TimeSpan.FromSeconds(20);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var lastFull = DateTime.UtcNow;
+        var lastPending = DateTime.MinValue;
         while (!stoppingToken.IsCancellationRequested)
         {
-            try { await Task.Delay(TimeSpan.FromSeconds(store.PendingOut().Count > 0 ? 20 : 60), stoppingToken); }
+            try { await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken); }
             catch (OperationCanceledException) { return; }
 
-            // The answer to my requests is learnt quickly; whether a linked server still knows me, every few minutes.
-            var full = DateTime.UtcNow - lastFull >= CheckLinked;
-            if (full) lastFull = DateTime.UtcNow;
-            if (full || store.PendingOut().Count > 0) await client.RefreshAsync(full, stoppingToken);
+            var now = DateTime.UtcNow;
+            var every = TimeSpan.FromSeconds(check.Seconds);
+            var full = now - lastFull >= every;
+            if (full) lastFull = now;
+            var pending = store.PendingOut().Count > 0 && now - lastPending >= PendingEvery;
+            if (pending) lastPending = now;
+            if (full || pending) await client.RefreshAsync(full, stoppingToken, full ? every : null);
         }
     }
 }

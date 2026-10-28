@@ -174,4 +174,17 @@ public class DirectoryTests : IDisposable
         Assert.Null(links.Get("d1")!.Reason);
         Assert.NotNull(links.Get("d1")!.LastOk);
     }
+
+    [Fact]
+    public void The_check_rhythm_has_a_default_and_bounds()
+    {
+        var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
+        var check = new PeerCheckSettings(config, Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(new Microsoft.Extensions.DependencyInjection.ServiceCollection()));
+        Assert.Equal(60, check.Seconds);
+        check.Set(120);
+        Assert.Equal(120, check.Seconds);
+        Assert.Throws<ArgumentException>(() => check.Set(5));
+        Assert.Throws<ArgumentException>(() => check.Set(4000));
+        Assert.Equal(120, check.Seconds);
+    }
 }

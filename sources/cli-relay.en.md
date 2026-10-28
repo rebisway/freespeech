@@ -100,6 +100,7 @@ The kind (`push`, `relay` or `directory`) is required.
 | `ban <push\|relay> <id>` / `unban <push\|relay> <id>` | bans / lifts the ban |
 | `peer-requests open` / `close` | takes incoming requests or not |
 | `peer-refresh` | asks now where the requests you sent stand, and whether linked servers still know this relay |
+| `peer-check [seconds]` | how often the linked servers are checked (10 to 3600; 60 by default, `Link:CheckSeconds`); without a value, shows it. A check is not sent when an exchange with that server worked within that time |
 
 Settings (not secrets, in `appsettings.Local.json`): `Peer:Name` (the name presented), `Peer:Contact` (how another administrator can reach yours to check who is asking) and `Peer:PublicUrl` (this relay's address: required to ask another relay).
 A link between relays requires both to be public (`admin public`).
@@ -179,7 +180,7 @@ Default `[{kind}] {host}`, for example `[RELAY] fs.example.org Link request wait
 
 | Kind | When |
 |---|---|
-| `peers` | another server asks for a link: name, address, fingerprint to compare, then `accept` |
+| `peers` | another server asks for a link: name, address, fingerprint to compare, then `accept`; a linked server that fails three checks in a row (`Link down`), then answers again (`Link restored`) |
 | `abuse` | abuse or attack detected: an identity or address goes over its traffic limit, a linked server goes over its quota, forged or replayed signed calls, too many link requests from one address |
 | `access` | private server in `allowlist` mode: a client asks for access and waits for your decision (`admin pending`, then `accept`) |
 | `system` | at start-up, a secret or a setting is missing (the same alarm as the *Critical* log line) |

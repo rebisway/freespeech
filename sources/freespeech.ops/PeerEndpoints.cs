@@ -38,6 +38,7 @@ public static class PeerExtensions
         builder.Services.AddSingleton(PeerIdentity.LoadOrCreate(Path.Combine(dir, "peer-identity.json")));
         builder.Services.AddSingleton(sp => new PeerStore(Path.Combine(dir, "peers.json"), config.GetValue("Peer:MaxRequests", 200), TimeSpan.FromDays(Math.Max(1, config.GetValue("Peer:RequestDays", 14))), sp.GetRequiredService<ILogger<PeerStore>>()));
         builder.Services.AddHttpClient("peer", c => c.Timeout = TimeSpan.FromSeconds(10)).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+        builder.Services.AddSingleton<PeerCheckSettings>();
         builder.Services.AddSingleton<PeerClient>();
         builder.Services.AddHostedService<PeerRefreshService>();
         return builder;
@@ -102,15 +103,17 @@ public static class PeerExtensions
 
         app.MapPost("/peer/status", async (HttpContext c, PeerStore store, PeerOptions options) =>
         {
-            if (TooMany(c)) return Results.Json(new { state = "throttled" }, statusCode: StatusCodes.Status429TooManyRequests);
+            // A call signed by a server this one knows is the regular check of a link: only strangers are throttled.
             foreach (var kind in options.Kinds)
             {
                 var (outcome, peer) = await PeerSigning.VerifyAsync(c.Request, store, kind, anyState: true);
                 if (outcome == PeerSigning.Outcome.Ok) return Results.Ok(new { state = peer!.State == PeerState.Accepted ? "accepted" : "pending" });
+                if (TooMany(c)) return Results.Json(new { state = "throttled" }, statusCode: StatusCodes.Status429TooManyRequests);
                 if (outcome == PeerSigning.Outcome.Banned) return Results.Json(new { state = "banned" }, statusCode: StatusCodes.Status403Forbidden);
                 if (outcome is PeerSigning.Outcome.BadSignature or PeerSigning.Outcome.Replay) Notifier.Raise(NotifyKind.Abuse, "Forged or replayed server call", "A call to /peer/status carried a signature that does not verify or that was already used.");
                 if (outcome is PeerSigning.Outcome.BadSignature or PeerSigning.Outcome.BadTime or PeerSigning.Outcome.Replay) return Results.Json(new { state = "refused" }, statusCode: StatusCodes.Status401Unauthorized);
             }
+            if (TooMany(c)) return Results.Json(new { state = "throttled" }, statusCode: StatusCodes.Status429TooManyRequests);
             return Results.Json(new { state = "unknown" }, statusCode: StatusCodes.Status404NotFound);
         });
         return app;
@@ -206,6 +209,15 @@ public static class PeerExtensions
             return Results.Ok();
         });
 
+        app.MapGet($"{prefix}/peers/check", (HttpContext c, PeerCheckSettings check) => Guard(c) ?? Results.Ok(new { check_seconds = check.Seconds, min = PeerCheckSettings.Min, max = PeerCheckSettings.Max }));
+        app.MapPost($"{prefix}/peers/check", (HttpContext c, PeerCheckSettings check, PeerCheckBody body) =>
+        {
+            if (Guard(c) is { } denied) return denied;
+            try { check.Set(body.Seconds); }
+            catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
+            return Results.Ok(new { check_seconds = check.Seconds });
+        });
+
         app.MapPost($"{prefix}/peers/refresh", async (HttpContext c, PeerClient client, PeerStore store) =>
         {
             if (Guard(c) is { } denied) return denied;
@@ -278,4 +290,5 @@ public static class PeerExtensions
 
     public sealed class PeerIdBody { public string? Id { get; set; } }
     public sealed class PeerOpenBody { public bool Open { get; set; } }
+    public sealed class PeerCheckBody { [JsonPropertyName("seconds")] public int Seconds { get; set; } }
 }

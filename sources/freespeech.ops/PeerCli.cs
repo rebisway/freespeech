@@ -31,6 +31,7 @@ public static class PeerCli
           ban <push|relay|directory> <id> | unban <push|relay|directory> <id>
           peer-requests open | close                take requests from other servers, or not
           peer-refresh                              ask now where the requests you sent stand
+          peer-check [seconds]                      how often the linked servers are checked (10 to 3600, 60 by default); without a value, shows it
         """;
 
     private static readonly string[] Verbs = ["add", "list", "requests", "accept", "reject", "remove", "ban", "unban"];
@@ -43,6 +44,7 @@ public static class PeerCli
     {
         var verb = list[0];
         if (verb == "peer-id") return await api.Show($"{prefix}/peers/identity");
+        if (verb == "peer-check") return list.Count == 1 ? await api.Show($"{prefix}/peers/check") : await api.ShowPost($"{prefix}/peers/check", new { seconds = int.TryParse(list[1], out var n) ? n : throw new ArgumentException("peer-check [seconds]") });
         if (verb == "peer-refresh") return await api.ShowPost($"{prefix}/peers/refresh", new { });
         if (verb == "peer-requests") return await api.Post($"{prefix}/peers/open", new { open = (list.Count > 1 ? list[1] : "") switch { "open" => true, "close" => false, _ => throw new ArgumentException("peer-requests open | close") } });
         if (!Verbs.Contains(verb)) return null;

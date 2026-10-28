@@ -68,6 +68,7 @@ A gateway links only with relays: the kind `relay` is optional in these commands
 | `ban <id>` / `unban <id>` | bans / lifts the ban |
 | `peer-requests open` / `close` | takes incoming requests or not |
 | `peer-refresh` | asks now where the requests you sent stand, and whether linked relays still know this gateway |
+| `peer-check [seconds]` | how often the linked relays are checked (10 to 3600; 60 by default, `Link:CheckSeconds`); without a value, shows it. A check is not sent when a call from that relay worked within that time |
 
 Settings (not secrets, in `appsettings.Local.json`): `Peer:Name` (the name presented), `Peer:Contact` (how another administrator can reach yours to check who is asking) and `Peer:PublicUrl` (this gateway's address: required to ask a relay).
 
@@ -133,7 +134,7 @@ Default `[{kind}] {host}`, for example `[PUSH] push.example.org Link request wai
 
 | Kind | When |
 |---|---|
-| `peers` | another server asks for a link: name, address, fingerprint to compare, then `accept` |
+| `peers` | another server asks for a link: name, address, fingerprint to compare, then `accept`; a linked relay that fails three checks in a row (`Link down`), then answers again (`Link restored`) |
 | `abuse` | abuse or attack detected: forged or replayed signed calls, too many link requests from one address |
 | `access` | not applicable to a push gateway (it has no clients) |
 | `system` | at start-up, a secret or a setting is missing (the same alarm as the *Critical* log line) |

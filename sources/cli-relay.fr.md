@@ -100,6 +100,7 @@ Le type (`push`, `relay` ou `directory`) est obligatoire.
 | `ban <push\|relay> <id>` / `unban <push\|relay> <id>` | bannit / lève le ban |
 | `peer-requests open` / `close` | accepte ou non les demandes entrantes |
 | `peer-refresh` | demande tout de suite où en sont les demandes envoyées, et si les serveurs liés connaissent encore ce relais |
+| `peer-check [secondes]` | tous les combien de secondes les serveurs liés sont vérifiés (10 à 3 600 ; 60 par défaut, `Link:CheckSeconds`) ; sans valeur, l'affiche. Une vérification n'est pas envoyée si un échange avec ce serveur a réussi depuis moins que cette durée |
 
 Réglages (non secrets, dans `appsettings.Local.json`) : `Peer:Name` (nom présenté), `Peer:Contact` (comment un autre administrateur peut joindre le vôtre pour vérifier qui demande) et `Peer:PublicUrl` (adresse de ce relais : obligatoire pour demander un autre relais).
 Un lien entre relais exige que les deux soient publics (`admin public`).
@@ -180,7 +181,7 @@ Par défaut `[{kind}] {host}`, par exemple `[RELAY] relay.exemple.org Link reque
 
 | Type | Quand |
 |---|---|
-| `peers` | un autre serveur demande un lien : nom, adresse, empreinte à comparer, puis `accept` |
+| `peers` | un autre serveur demande un lien : nom, adresse, empreinte à comparer, puis `accept` ; un serveur lié qui échoue à trois vérifications de suite (`Link down`), puis qui répond de nouveau (`Link restored`) |
 | `abuse` | abus ou attaque détectés : un identifiant ou une adresse dépasse sa limite de trafic, un serveur lié dépasse son quota, appels signés falsifiés ou rejoués, trop de demandes de lien depuis une adresse |
 | `access` | serveur privé en `allowlist` : un client demande l'accès et attend votre décision (`admin pending`, puis `accept`) |
 | `system` | au démarrage, un secret ou un réglage manque (la même alarme que le journal *Critical*) |
