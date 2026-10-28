@@ -53,6 +53,7 @@ public static class DirectoryAdmin
     private static readonly string Usage = $"""
         FreeSpeech directory administration (talks to the running directory's local admin API)
 
+          status                                    relays linked, known (spoke recently) and offered to newcomers now, and the settings in force
           servers                                   relays accepted that spoke recently: country, places left, version, whether they are offered
           settings                                  the settings in force (expiry, address check, list size) and those of the configuration
           settings set <expiry-minutes|probe-minutes|list-size> <n>
@@ -75,6 +76,7 @@ public static class DirectoryAdmin
             if (await PeerCli.TryRunAsync(list, api, "admin", defaultKind: "relay") is { } peerCode) return peerCode;
             switch (list[0])
             {
+                case "status": return await api.Show("admin/status");
                 case "servers": return await api.Show("admin/servers");
                 case "settings":
                     if (list.Count == 1) return await api.Show("admin/settings");

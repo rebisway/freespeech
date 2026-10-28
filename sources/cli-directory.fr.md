@@ -27,6 +27,7 @@ Sans `admin`, le même programme démarre l'annuaire (`--urls http://127.0.0.1:5
 
 | Commande | Effet |
 |---|---|
+| `status` | le nombre de relais liés, connus (battement récent) et proposés aux nouveaux comptes en ce moment, et les réglages en vigueur |
 | `servers` | les relais acceptés qui ont envoyé un battement depuis `expiry-minutes` minutes : adresse, pays, places restantes (`-1` : sans limite), accueil de nouveaux comptes, version et date du relais, adresse vérifiée (`reachable`), dernier battement, et `listed` (proposé aux clients en ce moment) |
 
 Un relais est proposé s'il est lié, a parlé récemment, répond à son adresse avec la clé acceptée, accepte de nouveaux comptes et a de la place. L'annuaire ne connaît ni le nombre d'utilisateurs d'un relais ni aucun client.
@@ -51,7 +52,7 @@ Chaque serveur a sa paire de clés (`peer-identity.json`) ; un lien n'existe que
 |---|---|
 | `peer-id` | l'empreinte de cet annuaire, à comparer avec l'autre administrateur. La clé publique affichée par `GET /peer/identity` est celle que les applications connaissent (`FsDirectories`) |
 | `add relay <url> [--fingerprint f] [--insecure]` | demande un lien à un relais ; son administrateur accepte par `accept directory <id>` |
-| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; le contact déclaré par leur administrateur est affiché entre `<` `>` |
+| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; le pays déclaré par chaque relais dans son dernier battement est affiché (`-` s'il n'en a pas déclaré) ; le contact déclaré par leur administrateur est affiché entre `<` `>` |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | demandes reçues des relais (nom, adresse, empreinte) Chaque demande indique le contact déclaré par l'expéditeur et l'adresse d'où elle est venue. |
 | `accept <id…>` ou `--all [--name t] [--older-than D] [--yes]` | accepte ; refuse si l'adresse annoncée ne présente pas la clé de la demande (code 4) |
 | `reject <id…>` ou `--all … [--ban]` | refuse ; `--ban` interdit de redemander |

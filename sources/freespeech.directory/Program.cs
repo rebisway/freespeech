@@ -76,7 +76,7 @@ app.MapGet("/health", () => Results.Ok(new { ok = true }));
 DirectoryAdmin.Map(app, registry, settings, peers);
 app.MapOpsAdmin("/admin");
 app.MapPeers();                 // public: GET /peer/identity (shows the key clients pin), POST /peer/request, POST /peer/status
-app.MapPeerAdmin("/admin");
+app.MapPeerAdmin("/admin", p => registry.CountryOf(p.Id));
 app.Use(async (c, next) => { if (c.Request.Path == "/directory/heartbeat") c.Request.EnableBuffering(); await next(); });
 
 // A relay accepted by both administrators says how it is.

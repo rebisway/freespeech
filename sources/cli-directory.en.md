@@ -27,6 +27,7 @@ Without `admin`, the same program starts the directory (`--urls http://127.0.0.1
 
 | Command | Effect |
 |---|---|
+| `status` | how many relays are linked, known (recent heartbeat) and offered to new accounts right now, and the settings in force |
 | `servers` | the accepted relays that sent a heartbeat in the last `expiry-minutes` minutes: address, country, places left (`-1`: no limit), whether they take new accounts, relay version and date, address checked (`reachable`), last heartbeat, and `listed` (offered to clients right now) |
 
 A relay is offered if it is linked, spoke recently, answers at its address with the accepted key, takes new accounts and has room. The directory knows neither a relay's number of users nor any client.
@@ -51,7 +52,7 @@ Each server has its own key pair (`peer-identity.json`); a link exists only if *
 |---|---|
 | `peer-id` | this directory's fingerprint, to compare with the other administrator. The public key shown by `GET /peer/identity` is the one the applications know (`FsDirectories`) |
 | `add relay <url> [--fingerprint f] [--insecure]` | asks a relay for a link; its administrator accepts with `accept directory <id>` |
-| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; the contact its administrator declared is shown between `<` `>` |
+| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; the country each relay declared in its last heartbeat is shown (`-` when it declared none); the contact its administrator declared is shown between `<` `>` |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | requests received from relays (name, address, fingerprint) Each request shows the contact the sender declares and the address it came from. |
 | `accept <id…>` or `--all [--name t] [--older-than D] [--yes]` | accepts; refuses if the announced address does not show the key of the request (code 4) |
 | `reject <id…>` or `--all … [--ban]` | turns down; `--ban` forbids asking again |

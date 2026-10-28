@@ -119,10 +119,13 @@ public static class PeerExtensions
     // ------------------------------------------------------------------ admin (local, secret + this machine)
 
     /// <summary>The local admin routes <c>{prefix}/peers...</c>: identity, list, add, requests, accept, reject, remove, ban, open/close the queue, refresh.</summary>
-    public static IEndpointRouteBuilder MapPeerAdmin(this IEndpointRouteBuilder app, string prefix)
+    public static IEndpointRouteBuilder MapPeerAdmin(this IEndpointRouteBuilder app, string prefix, Func<Peer, string?>? country = null)
     {
         IResult? Guard(HttpContext c) => AdminGuard.IsAuthorized(c, c.RequestServices.GetRequiredService<IConfiguration>()) ? null : Results.Unauthorized();
-        object View(Peer p) => new { id = p.Id, kind = p.Kind, name = p.Name, url = p.Url, contact = p.Contact, seen_from = p.SeenFrom, state = p.State, since = p.Since };
+        // The country is only known to a server that is told it (the directory, by the heartbeats of the relays): without it the field is left out.
+        object View(Peer p) => country == null
+            ? new { id = p.Id, kind = p.Kind, name = p.Name, url = p.Url, contact = p.Contact, seen_from = p.SeenFrom, state = p.State, since = p.Since }
+            : new { id = p.Id, kind = p.Kind, name = p.Name, url = p.Url, contact = p.Contact, seen_from = p.SeenFrom, state = p.State, since = p.Since, country = country(p) };
 
         app.MapGet($"{prefix}/peers/identity", (HttpContext c, PeerOptions options, PeerIdentity identity) =>
             Guard(c) ?? Results.Ok(new { kind = options.Kind, name = options.Name, public_url = options.PublicUrl, contact = options.Contact, fingerprint = identity.Fingerprint }));

@@ -78,6 +78,9 @@ public sealed class DirectoryRegistry(PeerStore peers, Func<TimeSpan> expiry)
     /// <summary>Whether the relay's address has been looked at yet (a relay is offered only after the first successful look).</summary>
     public bool IsProbed(string peerId) => _reachable.ContainsKey(peerId);
 
+    /// <summary>The country a relay declared in its last heartbeat (null when it declared none or has not spoken).</summary>
+    public string? CountryOf(string peerId) => _beats.TryGetValue(peerId, out var b) ? b.Country : null;
+
     public void SetReachable(string peerId, bool reachable) => _reachable[peerId] = reachable;
 
     /// <summary>The accepted relays that spoke recently, with their last heartbeat and whether their address answered.</summary>

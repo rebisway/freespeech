@@ -101,9 +101,13 @@ public static class PeerCli
         if (peers.Count == 0) Console.WriteLine($"No {kind ?? "server"} linked or asked yet.");
         else
         {
-            Console.WriteLine($"{"ID",-12}  {"KIND",-9}  {"STATE",-8}  NAME / ADDRESS / CONTACT");
+            var withCountry = peers[0].TryGetProperty("country", out _);
+            Console.WriteLine($"{"ID",-12}  {"KIND",-9}  {"STATE",-8}  " + (withCountry ? $"{"COUNTRY",-7}  " : "") + "NAME / ADDRESS / CONTACT");
             foreach (var p in peers)
-                Console.WriteLine($"{p.GetProperty("id").GetString()![..12],-12}  {p.GetProperty("kind").GetString(),-9}  {Describe(p.GetProperty("state").GetString()),-8}  {p.GetProperty("name").GetString() ?? "(no name)"}  {p.GetProperty("url").GetString()}  {Contact(p)}");
+            {
+                var country = withCountry ? $"{(p.GetProperty("country").ValueKind == JsonValueKind.String ? p.GetProperty("country").GetString() : "-"),-7}  " : "";
+                Console.WriteLine($"{p.GetProperty("id").GetString()![..12],-12}  {p.GetProperty("kind").GetString(),-9}  {Describe(p.GetProperty("state").GetString()),-8}  {country}{p.GetProperty("name").GetString() ?? "(no name)"}  {p.GetProperty("url").GetString()}  {Contact(p)}");
+            }
         }
         var waiting = root.GetProperty("pending_requests").GetInt32();
         if (waiting > 0) Console.WriteLine($"{waiting} request(s) from other servers waiting: 'requests {kind ?? "<kind>"}'.");
