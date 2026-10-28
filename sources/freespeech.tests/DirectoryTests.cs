@@ -157,4 +157,21 @@ public class DirectoryTests : IDisposable
         using (var http = new HttpClient(new Handler([])))
             Assert.Empty(await DirectoryPool.ResolveAsync(entries, null, 3, http));
     }
+
+    [Fact]
+    public void Link_status_follows_the_last_exchanges_of_a_server()
+    {
+        var links = new LinkStatus("directory");
+        Assert.True(links.Tracks("directory"));
+        Assert.False(links.Tracks("relay"));
+        Assert.Null(links.Get("d1"));
+        links.Fail("d1", "unreachable");
+        links.Fail("d1", "unreachable");
+        Assert.Equal(2, links.Get("d1")!.Failures);
+        Assert.Null(links.Get("d1")!.LastOk);
+        links.Ok("d1");
+        Assert.Equal(0, links.Get("d1")!.Failures);
+        Assert.Null(links.Get("d1")!.Reason);
+        Assert.NotNull(links.Get("d1")!.LastOk);
+    }
 }

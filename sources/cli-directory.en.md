@@ -52,7 +52,7 @@ Each server has its own key pair (`peer-identity.json`); a link exists only if *
 |---|---|
 | `peer-id` | this directory's fingerprint, to compare with the other administrator. The public key shown by `GET /peer/identity` is the one the applications know (`FsDirectories`) |
 | `add relay <url> [--fingerprint f] [--insecure]` | asks a relay for a link; its administrator accepts with `accept directory <id>` |
-| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; the country each relay declared in its last heartbeat is shown (`-` when it declared none); the contact its administrator declared is shown between `<` `>` |
+| `list [kind]` | every server linked (`linked`), asked (`asked`), refused (`refused`) or banned (`banned`), all kinds when none is given; for a relay, the `LINK` column gives the age of the last heartbeat received (`ok 35s`, `none yet` since the start; kept in memory); the country each relay declared in its last heartbeat is shown (`-` when it declared none); the contact its administrator declared is shown between `<` `>` |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | requests received from relays (name, address, fingerprint) Each request shows the contact the sender declares and the address it came from. |
 | `accept <id…>` or `--all [--name t] [--older-than D] [--yes]` | accepts; refuses if the announced address does not show the key of the request (code 4) |
 | `reject <id…>` or `--all … [--ban]` | turns down; `--ban` forbids asking again |

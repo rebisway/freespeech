@@ -52,7 +52,7 @@ Chaque serveur a sa paire de clés (`peer-identity.json`) ; un lien n'existe que
 |---|---|
 | `peer-id` | l'empreinte de cet annuaire, à comparer avec l'autre administrateur. La clé publique affichée par `GET /peer/identity` est celle que les applications connaissent (`FsDirectories`) |
 | `add relay <url> [--fingerprint f] [--insecure]` | demande un lien à un relais ; son administrateur accepte par `accept directory <id>` |
-| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; le pays déclaré par chaque relais dans son dernier battement est affiché (`-` s'il n'en a pas déclaré) ; le contact déclaré par leur administrateur est affiché entre `<` `>` |
+| `list [type]` | tous les serveurs liés (`linked`), demandés (`asked`), refusés (`refused`) ou bannis (`banned`), tous types confondus si aucun n'est donné ; pour un relais, la colonne `LINK` donne l'âge du dernier battement reçu (`ok 35s`, `none yet` depuis le démarrage ; en mémoire) ; le pays déclaré par chaque relais dans son dernier battement est affiché (`-` s'il n'en a pas déclaré) ; le contact déclaré par leur administrateur est affiché entre `<` `>` |
 | `requests [--name t] [--limit N] [--offset N] [--json]` | demandes reçues des relais (nom, adresse, empreinte) Chaque demande indique le contact déclaré par l'expéditeur et l'adresse d'où elle est venue. |
 | `accept <id…>` ou `--all [--name t] [--older-than D] [--yes]` | accepte ; refuse si l'adresse annoncée ne présente pas la clé de la demande (code 4) |
 | `reject <id…>` ou `--all … [--ban]` | refuse ; `--ban` interdit de redemander |

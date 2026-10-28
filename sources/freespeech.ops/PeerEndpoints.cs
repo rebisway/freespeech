@@ -123,21 +123,25 @@ public static class PeerExtensions
     {
         IResult? Guard(HttpContext c) => AdminGuard.IsAuthorized(c, c.RequestServices.GetRequiredService<IConfiguration>()) ? null : Results.Unauthorized();
         // The country is only known to a server that is told it (the directory, by the heartbeats of the relays): without it the field is left out.
-        object View(Peer p) => country == null
-            ? new { id = p.Id, kind = p.Kind, name = p.Name, url = p.Url, contact = p.Contact, seen_from = p.SeenFrom, state = p.State, since = p.Since }
-            : new { id = p.Id, kind = p.Kind, name = p.Name, url = p.Url, contact = p.Contact, seen_from = p.SeenFrom, state = p.State, since = p.Since, country = country(p) };
+        object View(HttpContext c, Peer p)
+        {
+            var view = new Dictionary<string, object?> { ["id"] = p.Id, ["kind"] = p.Kind, ["name"] = p.Name, ["url"] = p.Url, ["contact"] = p.Contact, ["seen_from"] = p.SeenFrom, ["state"] = p.State, ["since"] = p.Since };
+            if (country != null) view["country"] = country(p);
+            if (p.State == PeerState.Accepted && c.RequestServices.GetService<LinkStatus>() is { } links && links.Tracks(p.Kind)) view["link"] = links.View(p.Id);
+            return view;
+        }
 
         app.MapGet($"{prefix}/peers/identity", (HttpContext c, PeerOptions options, PeerIdentity identity) =>
             Guard(c) ?? Results.Ok(new { kind = options.Kind, name = options.Name, public_url = options.PublicUrl, contact = options.Contact, fingerprint = identity.Fingerprint }));
 
         app.MapGet($"{prefix}/peers", (HttpContext c, PeerStore store, string? kind) =>
-            Guard(c) ?? Results.Ok(new { requests_open = store.RequestsOpen, pending_requests = store.Requests().Count, peers = store.Peers(kind).Select(View) }));
+            Guard(c) ?? Results.Ok(new { requests_open = store.RequestsOpen, pending_requests = store.Requests().Count, peers = store.Peers(kind).Select(p => View(c, p)) }));
 
         app.MapGet($"{prefix}/peers/requests", (HttpContext c, PeerStore store, string? kind, string? name, int? older_than_days, int? limit, int? offset) =>
         {
             if (Guard(c) is { } denied) return denied;
             var all = Filter(store.Requests(kind), name, older_than_days).ToList();
-            return Results.Ok(new { open = store.RequestsOpen, total = all.Count, requests = all.Skip(Math.Max(0, offset ?? 0)).Take(Math.Clamp(limit ?? 50, 1, 500)).Select(View) });
+            return Results.Ok(new { open = store.RequestsOpen, total = all.Count, requests = all.Skip(Math.Max(0, offset ?? 0)).Take(Math.Clamp(limit ?? 50, 1, 500)).Select(p => View(c, p)) });
         });
 
         app.MapPost($"{prefix}/peers", async (HttpContext c, PeerClient client, AddPeerBody body) =>
@@ -206,7 +210,7 @@ public static class PeerExtensions
         {
             if (Guard(c) is { } denied) return denied;
             await client.RefreshAsync(includeAccepted: true, c.RequestAborted);
-            return Results.Ok(new { peers = store.Peers().Select(View) });
+            return Results.Ok(new { peers = store.Peers().Select(p => View(c, p)) });
         });
         return app;
     }

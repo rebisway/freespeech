@@ -101,17 +101,39 @@ public static class PeerCli
         if (peers.Count == 0) Console.WriteLine($"No {kind ?? "server"} linked or asked yet.");
         else
         {
-            var withCountry = peers[0].TryGetProperty("country", out _);
-            Console.WriteLine($"{"ID",-12}  {"KIND",-9}  {"STATE",-8}  " + (withCountry ? $"{"COUNTRY",-7}  " : "") + "NAME / ADDRESS / CONTACT");
+            var withCountry = peers.Any(p => p.TryGetProperty("country", out _));
+            var withLink = peers.Any(p => p.TryGetProperty("link", out _));
+            Console.WriteLine($"{"ID",-12}  {"KIND",-9}  {"STATE",-8}  " + (withLink ? $"{"LINK",-34}  " : "") + (withCountry ? $"{"COUNTRY",-7}  " : "") + "NAME / ADDRESS / CONTACT");
             foreach (var p in peers)
             {
-                var country = withCountry ? $"{(p.GetProperty("country").ValueKind == JsonValueKind.String ? p.GetProperty("country").GetString() : "-"),-7}  " : "";
-                Console.WriteLine($"{p.GetProperty("id").GetString()![..12],-12}  {p.GetProperty("kind").GetString(),-9}  {Describe(p.GetProperty("state").GetString()),-8}  {country}{p.GetProperty("name").GetString() ?? "(no name)"}  {p.GetProperty("url").GetString()}  {Contact(p)}");
+                var country = withCountry ? $"{(p.TryGetProperty("country", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : "-"),-7}  " : "";
+                var link = withLink ? $"{LinkText(p),-34}  " : "";
+                Console.WriteLine($"{p.GetProperty("id").GetString()![..12],-12}  {p.GetProperty("kind").GetString(),-9}  {Describe(p.GetProperty("state").GetString()),-8}  {link}{country}{p.GetProperty("name").GetString() ?? "(no name)"}  {p.GetProperty("url").GetString()}  {Contact(p)}");
             }
         }
         var waiting = root.GetProperty("pending_requests").GetInt32();
         if (waiting > 0) Console.WriteLine($"{waiting} request(s) from other servers waiting: 'requests {kind ?? "<kind>"}'.");
         return 0;
+    }
+
+    /// <summary>"ok 35s" while the last exchange worked, "failing 12min (reason)" after a failure, "none yet" before any exchange, "-" for a server not linked.</summary>
+    private static string LinkText(JsonElement p)
+    {
+        if (!p.TryGetProperty("link", out var l)) return "-";
+        DateTime? At(string name) => l.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String && v.TryGetDateTime(out var d) ? d.ToUniversalTime() : null;
+        var ok = At("last_ok"); var fail = At("last_fail");
+        if (fail != null && (ok == null || fail > ok))
+        {
+            var reason = l.TryGetProperty("reason", out var r) && r.ValueKind == JsonValueKind.String ? r.GetString() : "?";
+            return $"failing {Age(fail.Value)} ({reason})";
+        }
+        return ok != null ? "ok " + Age(ok.Value) : "none yet";
+    }
+
+    private static string Age(DateTime at)
+    {
+        var span = DateTime.UtcNow - at;
+        return span.TotalSeconds < 90 ? $"{Math.Max(0, (int)span.TotalSeconds)}s" : span.TotalMinutes < 90 ? $"{(int)span.TotalMinutes}min" : span.TotalHours < 48 ? $"{(int)span.TotalHours}h" : $"{(int)span.TotalDays}d";
     }
 
     private static string Contact(JsonElement p) => p.TryGetProperty("contact", out var c) && c.ValueKind == JsonValueKind.String ? "<" + c.GetString() + ">" : "";

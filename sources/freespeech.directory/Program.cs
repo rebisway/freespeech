@@ -46,6 +46,7 @@ builder.AddPeers("directory", ["relay"], c => DirectoryState.PeerDirectory(c));
 builder.AddMail();   // SMTP account and notifications to the administrator (admin smtp / notify)
 builder.Services.AddSingleton(sp => DirectoryState.Files(sp.GetRequiredService<IConfiguration>()));   // what admin export saves
 builder.Services.AddSingleton<DirectorySettings>();
+builder.Services.AddSingleton(new LinkStatus("relay"));   // when each relay last sent a heartbeat, shown by "list"
 builder.Services.AddSingleton(sp => new DirectoryRegistry(sp.GetRequiredService<PeerStore>(), () => TimeSpan.FromMinutes(sp.GetRequiredService<DirectorySettings>().Current.ExpiryMinutes)));
 builder.Services.AddSingleton<DirectoryProbe>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<DirectoryProbe>());
@@ -88,6 +89,7 @@ app.MapPost("/directory/heartbeat", async (HttpRequest request, HeartbeatBody bo
     if (outcome == PeerSigning.Outcome.Banned) return Results.StatusCode(StatusCodes.Status403Forbidden);
     if (outcome != PeerSigning.Outcome.Ok) return Results.Unauthorized();
     registry.Record(peer!.Id, body);
+    app.Services.GetRequiredService<LinkStatus>().Ok(peer.Id);
     if (!registry.IsProbed(peer.Id)) _ = probe.ProbeAsync(peer);   // the first heartbeat of a relay: look at its address now, not in half an hour
     return Results.Ok();
 });

@@ -19,7 +19,7 @@ namespace FreeSpeech.Relay.Services;
 /// <c>Directory:HeartbeatSeconds</c> (default 120) sets the rhythm.
 /// </summary>
 public sealed class DirectoryHeartbeatService(PeerStore peers, PeerIdentity identity, IHttpClientFactory http, IPresenceService presence, ISiblingRegistry siblings,
-    IClientAccess access, RelaySettings settings, IConfiguration config, ILogger<DirectoryHeartbeatService> logger) : BackgroundService
+    IClientAccess access, LinkStatus links, RelaySettings settings, IConfiguration config, ILogger<DirectoryHeartbeatService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -57,9 +57,18 @@ public sealed class DirectoryHeartbeatService(PeerStore peers, PeerIdentity iden
                 request.Content.Headers.ContentType = new("application/json");
                 PeerSigning.Sign(request, identity, "/directory/heartbeat", body);
                 using var response = await http.CreateClient("peer").SendAsync(request, ct);
-                if (!response.IsSuccessStatusCode) logger.LogWarning("Directory {Url} refused the heartbeat ({Status})", directory.Url, (int)response.StatusCode);
+                if (response.IsSuccessStatusCode) links.Ok(directory.Id);
+                else
+                {
+                    links.Fail(directory.Id, "refused " + (int)response.StatusCode);
+                    logger.LogWarning("Directory {Url} refused the heartbeat ({Status})", directory.Url, (int)response.StatusCode);
+                }
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { logger.LogDebug("Directory {Url} not reachable: {Message}", directory.Url, ex.Message); }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                links.Fail(directory.Id, "unreachable");
+                logger.LogDebug("Directory {Url} not reachable: {Message}", directory.Url, ex.Message);
+            }
         }
     }
 }
