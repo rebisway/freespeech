@@ -1,0 +1,928 @@
+Index: scripts/build-aab-release.ps1
+===================================================================
+--- scripts/build-aab-release.ps1	(revision 352)
++++ scripts/build-aab-release.ps1	(working copy)
+@@ -21,7 +21,7 @@
+ New-Item -ItemType Directory -Force $out | Out-Null
+ 
+ & dotnet publish (Join-Path $root 'v2\freespeech.mobile') -c Release -f net10.0-android36.0 `
+-    -p:AndroidPackageFormat=aab `
++    -p:AndroidPackageFormat=aab -p:FsUpdateUrl= `
+     -p:AndroidKeyStore=true "-p:AndroidSigningKeyStore=$keystore" -p:AndroidSigningKeyAlias=freespeech `
+     "-p:AndroidSigningKeyPass=$password" "-p:AndroidSigningStorePass=$password" -o $out -v q --nologo
+ if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
+Index: scripts/build-apk-release.ps1
+===================================================================
+--- scripts/build-apk-release.ps1	(revision 352)
++++ scripts/build-apk-release.ps1	(working copy)
+@@ -32,6 +32,7 @@
+     "-p:AndroidSigningKeyPass=$password", "-p:AndroidSigningStorePass=$password", '-o', $out, '-v', 'q', '--nologo')
+ 
+ # Without a restore the build is quicker; a processor family never restored before needs one, so it is retried with it.
++if ($Aab) { $publish += '-p:FsUpdateUrl=' }   # Google Play updates the app itself: no update check in the bundle
+ if (-not $AllAbis) { $publish += '-p:FsRuntimeIds=android-arm64' }
+ & dotnet publish @publish --no-restore
+ if ($LASTEXITCODE -ne 0) {
+Index: scripts/make-update-manifest.ps1
+===================================================================
+--- scripts/make-update-manifest.ps1	(nonexistent)
++++ scripts/make-update-manifest.ps1	(working copy)
+@@ -0,0 +1,30 @@
++# FreeSpeech - AGPL-3.0-or-later - Copyright (c) 2024-2026 Thomas Gourgnier
++#
++# Writes and signs the update manifest the applications check (Settings > Check for updates): latest.json and latest.json.sig, from the versions
++# in v2\version.props, into the website (freespeech-website\freespeech.website\wwwroot\update). Publish the website afterwards.
++#   scripts\make-update-manifest.ps1 -NewKey      creates the signing key once and prints the public key to put in FsUpdateKey (freespeech.defaults.props)
++#   scripts\make-update-manifest.ps1              writes the manifest (run it after raising the versions with bump-version.ps1, before publishing the site)
++# The signing key lives outside the repository: %USERPROFILE%\.freespeech\update-signing.key. Back it up: the applications trust its public half for good.
++# The site address comes from FsUpdateUrl in v2\freespeech.defaults.props (not versioned).
++param([switch] $NewKey)
++$ErrorActionPreference = 'Stop'
++
++$root = Split-Path -Parent $PSScriptRoot
++$keyFile = Join-Path (Join-Path $env:USERPROFILE '.freespeech') 'update-signing.key'
++$tool = Join-Path $root 'v2\tools\updatesign\updatesign.csproj'
++
++if ($NewKey) {
++    New-Item -ItemType Directory -Force (Split-Path $keyFile) | Out-Null
++    & dotnet run --project $tool -c Release -- newkey $keyFile
++    exit $LASTEXITCODE
++}
++
++if (-not (Test-Path $keyFile)) { throw "No signing key at $keyFile: run scripts\make-update-manifest.ps1 -NewKey first." }
++$defaults = Join-Path $root 'v2\freespeech.defaults.props'
++if (-not (Test-Path $defaults)) { throw "v2\freespeech.defaults.props is missing (FsUpdateUrl is read from it)." }
++$site = ([xml](Get-Content $defaults -Raw)).Project.PropertyGroup.FsUpdateUrl | Where-Object { $_ } | Select-Object -First 1
++if (-not $site) { throw 'FsUpdateUrl is empty in v2\freespeech.defaults.props.' }
++
++$out = Join-Path $root 'freespeech-website\freespeech.website\wwwroot\update'
++& dotnet run --project $tool -c Release -- make $keyFile (Join-Path $root 'v2\version.props') $site $out
++if ($LASTEXITCODE -ne 0) { throw 'updatesign failed' }
+Index: v2/ARCHITECTURE.en.md
+===================================================================
+--- v2/ARCHITECTURE.en.md	(revision 354)
++++ v2/ARCHITECTURE.en.md	(working copy)
+@@ -540,6 +540,25 @@
+   phone's copy but **does not revoke the identity** (the keys stay valid for whoever read them) and its delivery is "best effort" (the
+   relay stores nothing: a device cut off from the network is never reached).
+ 
++### 6.1 Update check
++
++The Android APK, Windows and Linux builds can look for a newer version; the Google Play bundle has no check, the store updates it. It is not part of the
++protocol: the check talks only to the publisher's website, whose address (`FsUpdateUrl`) and Ed25519 public key (`FsUpdateKey`) are chosen at build time
++(`v2/Directory.Build.props`, overridden by `v2/freespeech.defaults.props`). A build where `FsUpdateUrl` is empty, as every custom build is by default, has
++no check and no button.
++
++- The website serves `update/latest.json` and its detached signature `update/latest.json.sig` (base64 Ed25519 over the exact bytes of the file).
++  `scripts/make-update-manifest.ps1` writes both from `v2/version.props`; the signing key stays outside the repository
++  (`%USERPROFILE%\.freespeech\update-signing.key`).
++- The manifest holds `format` (1), `published` (date), `programs` (`android-apk` with `version`, `build`, `date`; `windows` and `linux` with `version`, `date`)
++  and `download` (an `https` address with `{lang}`). The client refuses a manifest whose signature does not verify, that is more than 400 days old, whose
++  `download` is not `https`, or that lacks its program.
++- A version is available when it is higher than the installed one, or equal with a higher build number (Android). Nothing is downloaded or installed:
++  the client only opens the download page, where the SHA-256 fingerprints are.
++- The check runs when the user presses "Check for updates" in Settings, or at start-up when the user turned that on (off by default: each check tells the
++  website that someone runs the application). A version found at start-up is announced once by a dialog.
++- Code: `FreeSpeech.Client.Update.UpdateChecker`; tests in `UpdateCheckerTests`.
++
+ ---
+ 
+ ## 7. Diagrams
+Index: v2/ARCHITECTURE.fr.md
+===================================================================
+--- v2/ARCHITECTURE.fr.md	(revision 354)
++++ v2/ARCHITECTURE.fr.md	(working copy)
+@@ -558,6 +558,25 @@
+   détruit la copie du téléphone mais **ne révoque pas l'identité** (les clés restent valides pour qui les a lues) et sa remise est « au
+   mieux » (le relais ne stocke rien : un appareil coupé du réseau n'est jamais atteint).
+ 
++### 6.1 Recherche de mise à jour
++
++Les versions APK Android, Windows et Linux peuvent chercher une version plus récente ; le bundle Google Play n'a pas de recherche, le magasin le met à jour. Elle ne fait
++pas partie du protocole : la recherche ne parle qu'au site de l'éditeur, dont l'adresse (`FsUpdateUrl`) et la clé publique Ed25519 (`FsUpdateKey`) sont choisies à la
++compilation (`v2/Directory.Build.props`, remplacées par `v2/freespeech.defaults.props`). Une version compilée avec `FsUpdateUrl` vide, comme toute version
++personnalisée par défaut, n'a ni recherche ni bouton.
++
++- Le site sert `update/latest.json` et sa signature détachée `update/latest.json.sig` (Ed25519 en base64, sur les octets exacts du fichier).
++  `scripts/make-update-manifest.ps1` écrit les deux à partir de `v2/version.props` ; la clé de signature reste hors du dépôt
++  (`%USERPROFILE%\.freespeech\update-signing.key`).
++- Le manifeste contient `format` (1), `published` (date), `programs` (`android-apk` avec `version`, `build`, `date` ; `windows` et `linux` avec `version`, `date`)
++  et `download` (une adresse `https` avec `{lang}`). Le client refuse un manifeste dont la signature ne se vérifie pas, qui a plus de 400 jours, dont `download`
++  n'est pas en `https`, ou qui ne contient pas son programme.
++- Une version est disponible quand elle est plus haute que celle installée, ou égale avec un numéro de build plus haut (Android). Rien n'est téléchargé ni installé :
++  le client ouvre seulement la page de téléchargement, où se trouvent les empreintes SHA-256.
++- La recherche se fait quand l'utilisateur appuie sur « Rechercher une mise à jour » dans les Réglages, ou au démarrage s'il l'a activé (désactivé par défaut :
++  chaque recherche indique au site que quelqu'un utilise l'application). Une version trouvée au démarrage est annoncée une seule fois par une boîte de dialogue.
++- Code : `FreeSpeech.Client.Update.UpdateChecker` ; tests dans `UpdateCheckerTests`.
++
+ ---
+ 
+ ## 7. Diagrammes
+Index: v2/Directory.Build.props
+===================================================================
+--- v2/Directory.Build.props	(revision 354)
++++ v2/Directory.Build.props	(working copy)
+@@ -8,6 +8,9 @@
+ 		<!-- Directories a new identity asks for relays: url|public key (base64, shown by GET /peer/identity of the directory), separated by semicolons. Empty: none. -->
+ 		<FsDirectories></FsDirectories>
+ 		<FsFallbackServers>https://relay.exemple.org;https://relay2.exemple.org</FsFallbackServers>
++		<!-- Update check (Settings): the publisher's website that serves update/latest.json and its signature, and the Ed25519 public key (base64) that signs them. Empty: no update check, the button is not shown. -->
++		<FsUpdateUrl></FsUpdateUrl>
++		<FsUpdateKey></FsUpdateKey>
+ 	</PropertyGroup>
+ 
+ 	<Import Project="$(MSBuildThisFileDirectory)version.props" />
+Index: v2/freespeech.client/Update/UpdateChecker.cs
+===================================================================
+--- v2/freespeech.client/Update/UpdateChecker.cs	(nonexistent)
++++ v2/freespeech.client/Update/UpdateChecker.cs	(working copy)
+@@ -0,0 +1,82 @@
++/*******************************************************************
++ * FreeSpeech - P2P Encrypted Messaging
++ * -----------------------------------------------------------------------
++ * Copyright (c) 2024-2026 Thomas Gourgnier
++ * Licensed under the GNU Affero General Public License v3.0 or later.
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ *******************************************************************/
++
++using System.Globalization;
++using System.Text.Json;
++using FreeSpeech.Client.Crypto;
++
++namespace FreeSpeech.Client.Update;
++
++public enum UpdateStatus
++{
++    /// <summary>The installed version is the latest one published.</summary>
++    UpToDate,
++    /// <summary>A newer version is published.</summary>
++    Available,
++    /// <summary>The check could not be made: no network, or an answer that is not valid.</summary>
++    Failed,
++}
++
++/// <param name="Version">The published version (for <see cref="UpdateStatus.Available"/> and <see cref="UpdateStatus.UpToDate"/>).</param>
++/// <param name="Date">Its release date, as published (yyyy-MM-dd).</param>
++/// <param name="DownloadUrl">The page to open to get it, with the language filled in.</param>
++public sealed record UpdateResult(UpdateStatus Status, string? Version = null, string? Date = null, string? DownloadUrl = null);
++
++/// <summary>
++/// Looks for a newer version of the application. The publisher's website serves <c>update/latest.json</c> and its detached Ed25519 signature
++/// <c>update/latest.json.sig</c> (base64); the public key is built into the application. A manifest whose signature does not verify is ignored, so a
++/// compromised website cannot announce a version or send people to another address. Nothing is downloaded or installed: the result only
++/// carries the address of the download page. Used on request, or at start-up when the user asked for it, never otherwise.
++/// </summary>
++public sealed class UpdateChecker(HttpClient http, string baseUrl, string publicKey)
++{
++    /// <summary>The manifest is not trusted past this age, which stops an old signed copy from hiding newer versions for ever.</summary>
++    public static readonly TimeSpan MaxAge = TimeSpan.FromDays(400);
++
++    /// <param name="program">The program id in the manifest: <c>android-apk</c>, <c>windows</c> or <c>linux</c>.</param>
++    /// <param name="currentBuild">The Android build number, or null where the program has none.</param>
++    /// <param name="language">Language code put in the download address (<c>{lang}</c>).</param>
++    public async Task<UpdateResult> CheckAsync(string program, string currentVersion, int? currentBuild, string language, CancellationToken ct = default)
++    {
++        try
++        {
++            var address = baseUrl.TrimEnd('/') + "/update/latest.json";
++            var json = await http.GetByteArrayAsync(address, ct);
++            var sig = await http.GetStringAsync(address + ".sig", ct);
++            return Evaluate(json, sig, publicKey, program, currentVersion, currentBuild, language, DateTimeOffset.UtcNow);
++        }
++        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { return new UpdateResult(UpdateStatus.Failed); }
++    }
++
++    /// <summary>Decides from a manifest and its signature. A signature, a shape or an age that is wrong gives <see cref="UpdateStatus.Failed"/>.</summary>
++    public static UpdateResult Evaluate(byte[] manifest, string signature, string publicKey, string program, string currentVersion, int? currentBuild, string language, DateTimeOffset now)
++    {
++        var failed = new UpdateResult(UpdateStatus.Failed);
++        try
++        {
++            if (!Primitives.Ed25519Verify(Convert.FromBase64String(publicKey), manifest, Convert.FromBase64String(signature.Trim()))) return failed;
++            using var doc = JsonDocument.Parse(manifest);
++            var root = doc.RootElement;
++            if (root.GetProperty("format").GetInt32() != 1) return failed;
++            var published = DateTimeOffset.Parse(root.GetProperty("published").GetString()!, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
++            if (now - published > MaxAge) return failed;
++
++            var entry = root.GetProperty("programs").GetProperty(program);
++            var version = entry.GetProperty("version").GetString() ?? "";
++            var date = entry.TryGetProperty("date", out var d) ? d.GetString() : null;
++            int? build = entry.TryGetProperty("build", out var b) && b.ValueKind == JsonValueKind.Number ? b.GetInt32() : null;
++            var url = (root.GetProperty("download").GetString() ?? "").Replace("{lang}", Uri.EscapeDataString(language));
++            if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps) return failed;
++
++            if (!Version.TryParse(version, out var latest) || !Version.TryParse(currentVersion, out var current)) return failed;
++            var newer = latest > current || (latest == current && build is { } nb && currentBuild is { } cb && nb > cb);
++            return new UpdateResult(newer ? UpdateStatus.Available : UpdateStatus.UpToDate, version, date, url);
++        }
++        catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or FormatException or ArgumentException) { return failed; }
++    }
++}
+Index: v2/freespeech.defaults.props.example
+===================================================================
+--- v2/freespeech.defaults.props.example	(revision 354)
++++ v2/freespeech.defaults.props.example	(working copy)
+@@ -3,6 +3,8 @@
+ 	<!-- Copy this file to freespeech.defaults.props (same folder, not versioned) and set the addresses your builds should start with:
+ 	       FsDefaultServer  the relay a new install connects to (the user can change it in Settings > Servers)
+ 	       FsFallbackServers  the relays a new identity draws from (one, at random) when no directory answers; semicolon-separated
++	       FsUpdateUrl, FsUpdateKey  the website that publishes update/latest.json (+ .sig) and the Ed25519 public key (base64) that signs it, made by
++	                        scripts\make-update-manifest.ps1 -NewKey; empty: no update check. Leave FsUpdateUrl empty for the Google Play bundle (the store updates it)
+ 	       FsDirectories    the directories a new identity asks for relays: url|public key (base64, shown by the directory's GET /peer/identity),
+ 	                        separated by semicolons; an entry without a key is ignored. The first relays they offer replace FsDefaultServer
+ 	     Without that file, the placeholders of Directory.Build.props are used. -->
+@@ -10,6 +12,8 @@
+ 		<FsDefaultServer>https://relay.exemple.org</FsDefaultServer>
+ 		<FsDirectories>https://directory1.exemple.org|KEY1;https://directory2.exemple.org|KEY2</FsDirectories>
+ 		<FsFallbackServers>https://relay.exemple.org;https://relay2.exemple.org</FsFallbackServers>
++		<FsUpdateUrl>https://site.exemple.org</FsUpdateUrl>
++		<FsUpdateKey>BASE64_ED25519_PUBLIC_KEY</FsUpdateKey>
+ 	</PropertyGroup>
+ 
+ </Project>
+Index: v2/freespeech.desktop/FreeSpeech.Desktop.csproj
+===================================================================
+--- v2/freespeech.desktop/FreeSpeech.Desktop.csproj	(revision 354)
++++ v2/freespeech.desktop/FreeSpeech.Desktop.csproj	(working copy)
+@@ -55,6 +55,8 @@
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>DefaultServer</_Parameter1><_Parameter2>$(FsDefaultServer)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>Directories</_Parameter1><_Parameter2>$(FsDirectories)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>FallbackServers</_Parameter1><_Parameter2>$(FsFallbackServers)</_Parameter2></AssemblyAttribute>
++		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>UpdateUrl</_Parameter1><_Parameter2>$(FsUpdateUrl)</_Parameter2></AssemblyAttribute>
++		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>UpdateKey</_Parameter1><_Parameter2>$(FsUpdateKey)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>VersionDate</_Parameter1><_Parameter2>$(FsDesktopVersionDate)</_Parameter2></AssemblyAttribute>
+ 	</ItemGroup>
+ 
+Index: v2/freespeech.desktop/Services/DesktopSession.cs
+===================================================================
+--- v2/freespeech.desktop/Services/DesktopSession.cs	(revision 354)
++++ v2/freespeech.desktop/Services/DesktopSession.cs	(working copy)
+@@ -128,6 +128,7 @@
+ 		client.SendTypingIndicator = Prefs.TypingIndicator;
+ 		await client.ConnectAsync();
+ 		State = SessionState.Ready;
++		_ = UpdateService.RunStartupCheckAsync();
+ 		ConversationsChanged?.Invoke();
+ 		ScanOffers(delayMs: 3000);   // offers that arrived while the program was closed
+ 		// A computer has room and a fast line: whatever is still only offered (a failed request, a record stored late) is asked for again every minute.
+Index: v2/freespeech.desktop/Services/UpdateService.cs
+===================================================================
+--- v2/freespeech.desktop/Services/UpdateService.cs	(nonexistent)
++++ v2/freespeech.desktop/Services/UpdateService.cs	(working copy)
+@@ -0,0 +1,58 @@
++/*******************************************************************
++ * FreeSpeech - P2P Encrypted Messaging
++ * -----------------------------------------------------------------------
++ * Copyright (c) 2024-2026 Thomas Gourgnier
++ * Licensed under the GNU Affero General Public License v3.0 or later.
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ *******************************************************************/
++using System.Diagnostics;
++using Avalonia.Threading;
++using FreeSpeech.Client.Update;
++
++namespace FreeSpeech.Desktop.Services;
++
++/// <summary>
++/// The update check of the desktop client (see <see cref="UpdateChecker"/>). The website and the key are chosen at build time (<c>FsUpdateUrl</c>,
++/// <c>FsUpdateKey</c>): a build without them has no check and no button. On request from Settings, or at start-up when the user turned that on
++/// (off by default); a version is announced once by a dialog, then only in Settings.
++/// </summary>
++public static class UpdateService
++{
++	private static readonly string Url = BuildDefaults.Get("UpdateUrl");
++	private static readonly string Key = BuildDefaults.Get("UpdateKey");
++
++	public static bool Enabled => Url.Length > 0 && Key.Length > 0;
++
++	/// <summary>Look for an update each time the program starts. Off by default: each check tells the publisher's website that someone is running the program.</summary>
++	public static bool CheckAtStartup
++	{
++		get => Prefs.Get("update_check_startup", false);
++		set => Prefs.Set("update_check_startup", value);
++	}
++
++	public static async Task<UpdateResult> CheckAsync(CancellationToken ct = default)
++	{
++		if (!Enabled) return new UpdateResult(UpdateStatus.Failed);
++		using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
++		var version = typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
++		return await new UpdateChecker(http, Url, Key).CheckAsync(OperatingSystem.IsWindows() ? "windows" : "linux", version, null, Loc.Language, ct);
++	}
++
++	public static void Open(string url)
++	{
++		try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
++		catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { Diag.Log("Cannot open the download page: " + ex.Message); }
++	}
++
++	/// <summary>The start-up check, when the user asked for it. Announces a version once.</summary>
++	public static async Task RunStartupCheckAsync()
++	{
++		if (!Enabled || !CheckAtStartup) return;
++		var result = await CheckAsync();
++		if (result.Status != UpdateStatus.Available || Prefs.Get("update_announced", "") == result.Version) return;
++		Prefs.Set("update_announced", result.Version ?? "");
++		var open = await Dispatcher.UIThread.InvokeAsync(() =>
++			Ui.ConfirmAsync(Loc.T("set_update_title"), Loc.T("set_update_available", result.Version ?? "", result.Date ?? ""), Loc.T("set_update_download"), Loc.T("cancel")));
++		if (open && result.DownloadUrl is { } url) Open(url);
++	}
++}
+Index: v2/freespeech.desktop/ViewModels/SettingsViewModel.cs
+===================================================================
+--- v2/freespeech.desktop/ViewModels/SettingsViewModel.cs	(revision 354)
++++ v2/freespeech.desktop/ViewModels/SettingsViewModel.cs	(working copy)
+@@ -187,6 +187,40 @@
+ 	public IReadOnlyList<ThemeOption> Themes => [new(ThemeService.Dark, Loc.T("theme_dark")), new(ThemeService.Light, Loc.T("theme_light")), new(ThemeService.System, Loc.T("theme_system"))];
+ 	public string ThemeTitle => Loc.T("set_theme");
+ 
++	/// <summary>The update check exists in this build.</summary>
++	public bool UpdateCheckAvailable => UpdateService.Enabled;
++	public bool CheckUpdateAtStartup
++	{
++		get => UpdateService.CheckAtStartup;
++		set { UpdateService.CheckAtStartup = value; OnPropertyChanged(); }
++	}
++	public string UpdateTitle => Loc.T("set_update_title");
++	public string UpdateCheckText => Loc.T("set_update_check");
++	public string UpdateStartupText => Loc.T("set_update_startup");
++	public string UpdateDownloadText => Loc.T("set_update_download");
++	[ObservableProperty] private string _updateText = "";
++	[ObservableProperty] private bool _updateReady;
++	private string? _updateUrl;
++
++	[RelayCommand]
++	private async Task CheckUpdateAsync()
++	{
++		UpdateReady = false;
++		UpdateText = Loc.T("set_update_checking");
++		var r = await UpdateService.CheckAsync();
++		_updateUrl = r.DownloadUrl;
++		UpdateReady = r.Status == FreeSpeech.Client.Update.UpdateStatus.Available;
++		UpdateText = r.Status switch
++		{
++			FreeSpeech.Client.Update.UpdateStatus.Available => Loc.T("set_update_available", r.Version ?? "", r.Date ?? ""),
++			FreeSpeech.Client.Update.UpdateStatus.UpToDate => Loc.T("set_update_uptodate", r.Version ?? ""),
++			_ => Loc.T("set_update_failed"),
++		};
++	}
++
++	[RelayCommand]
++	private void OpenUpdate() { if (_updateUrl is { } url) UpdateService.Open(url); }
++
+ 	public string VersionText => Loc.T("d_version", typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "", BuildDefaults.Get("VersionDate"));
+ 
+ 	public string ProfileTitle => Loc.T("set_profile");
+Index: v2/freespeech.desktop/Views/SettingsView.axaml
+===================================================================
+--- v2/freespeech.desktop/Views/SettingsView.axaml	(revision 354)
++++ v2/freespeech.desktop/Views/SettingsView.axaml	(working copy)
+@@ -155,6 +155,17 @@
+ 				<Button Grid.Column="1" Classes="icon" Command="{Binding AddServerCommand}" ToolTip.Tip="{Binding AddTip}"><PathIcon Data="{StaticResource Icon.add}" /></Button>
+ 			</Grid>
+ 
++			<StackPanel IsVisible="{Binding UpdateCheckAvailable}" Spacing="8" Margin="0,18,0,0">
++				<TextBlock Text="{Binding UpdateTitle}" Classes="section" FontSize="15" />
++				<Button Content="{Binding UpdateCheckText}" Command="{Binding CheckUpdateCommand}" HorizontalAlignment="Left" />
++				<TextBlock Text="{Binding UpdateText}" Classes="hint" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding UpdateText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
++				<Button Content="{Binding UpdateDownloadText}" Command="{Binding OpenUpdateCommand}" IsVisible="{Binding UpdateReady}" HorizontalAlignment="Left" />
++				<Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
++					<TextBlock Text="{Binding UpdateStartupText}" Classes="hint" FontSize="12" VerticalAlignment="Center" />
++					<ToggleSwitch Grid.Column="1" IsChecked="{Binding CheckUpdateAtStartup}" OnContent="" OffContent="" VerticalAlignment="Center" />
++				</Grid>
++			</StackPanel>
++
+ 			<TextBlock Text="{Binding VersionText}" Classes="hint" FontSize="12" HorizontalAlignment="Center" Margin="0,18,0,0" />
+ 			<TextBlock Text="{Binding Status}" Foreground="{DynamicResource PrimaryBrush}" TextWrapping="Wrap" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+ 		</StackPanel>
+Index: v2/freespeech.mobile/FreeSpeech.Mobile.csproj
+===================================================================
+--- v2/freespeech.mobile/FreeSpeech.Mobile.csproj	(revision 354)
++++ v2/freespeech.mobile/FreeSpeech.Mobile.csproj	(working copy)
+@@ -130,6 +130,8 @@
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>DefaultServer</_Parameter1><_Parameter2>$(FsDefaultServer)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>Directories</_Parameter1><_Parameter2>$(FsDirectories)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>FallbackServers</_Parameter1><_Parameter2>$(FsFallbackServers)</_Parameter2></AssemblyAttribute>
++		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>UpdateUrl</_Parameter1><_Parameter2>$(FsUpdateUrl)</_Parameter2></AssemblyAttribute>
++		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>UpdateKey</_Parameter1><_Parameter2>$(FsUpdateKey)</_Parameter2></AssemblyAttribute>
+ 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"><_Parameter1>VersionDate</_Parameter1><_Parameter2>$(FsMobileVersionDate)</_Parameter2></AssemblyAttribute>
+ 	</ItemGroup>
+ 
+Index: v2/freespeech.mobile/Localization/Lang/de.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/de.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/de.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Datei zu groß: {0} MB, das Limit beträgt {1} MB.",
+   "err_file_not_local": "Diese Datei ist noch nicht auf diesem Gerät.",
+   "set_version": "Version {0} von {2} (Build {1})",
++  "set_update_title": "Updates",
++  "set_update_check": "Nach Updates suchen",
++  "set_update_startup": "Beim Start der App prüfen",
++  "set_update_checking": "Suche läuft…",
++  "set_update_available": "Version {0} ({1}) ist verfügbar.",
++  "set_update_uptodate": "Version {0} ist die neueste.",
++  "set_update_failed": "Die Suche nach Updates ist fehlgeschlagen.",
++  "set_update_download": "Herunterladen",
+   "set_notifications_blocked": "Benachrichtigungen sind vom Telefon blockiert: Tippe hier, um dessen Einstellungen zu öffnen.",
+   "set_notifications_open": "Benachrichtigungseinstellungen des Telefons öffnen",
+   "group_act_ban": "Entfernen und sperren",
+Index: v2/freespeech.mobile/Localization/Lang/en.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/en.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/en.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "File too large: {0} MB, the limit is {1} MB.",
+   "err_file_not_local": "This file is not on this device yet.",
+   "set_version": "Version {0} of {2} (build {1})",
++  "set_update_title": "Updates",
++  "set_update_check": "Check for updates",
++  "set_update_startup": "Check when the app starts",
++  "set_update_checking": "Checking…",
++  "set_update_available": "Version {0} ({1}) is available.",
++  "set_update_uptodate": "Version {0} is the latest.",
++  "set_update_failed": "Could not check for updates.",
++  "set_update_download": "Download",
+   "set_notifications_blocked": "Notifications are blocked by the phone: tap here to open its settings.",
+   "set_notifications_open": "Open the phone's notification settings",
+   "group_act_ban": "Remove and ban",
+Index: v2/freespeech.mobile/Localization/Lang/es.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/es.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/es.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Archivo demasiado grande: {0} MB, el límite es de {1} MB.",
+   "err_file_not_local": "Este archivo aún no está en este dispositivo.",
+   "set_version": "Versión {0} del {2} (compilación {1})",
++  "set_update_title": "Actualizaciones",
++  "set_update_check": "Buscar actualizaciones",
++  "set_update_startup": "Comprobar al iniciar la aplicación",
++  "set_update_checking": "Buscando…",
++  "set_update_available": "La versión {0} ({1}) está disponible.",
++  "set_update_uptodate": "La versión {0} es la más reciente.",
++  "set_update_failed": "No se pudo buscar actualizaciones.",
++  "set_update_download": "Descargar",
+   "set_notifications_blocked": "El teléfono bloquea las notificaciones: toca aquí para abrir sus ajustes.",
+   "set_notifications_open": "Abrir los ajustes de notificación del teléfono",
+   "group_act_ban": "Expulsar y vetar",
+Index: v2/freespeech.mobile/Localization/Lang/fr.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/fr.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/fr.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Fichier trop gros : {0} Mo, la limite est de {1} Mo.",
+   "err_file_not_local": "Ce fichier n'est pas encore sur cet appareil.",
+   "set_version": "Version {0} du {2} (build {1})",
++  "set_update_title": "Mises à jour",
++  "set_update_check": "Rechercher une mise à jour",
++  "set_update_startup": "Vérifier au démarrage de l'application",
++  "set_update_checking": "Recherche en cours…",
++  "set_update_available": "La version {0} ({1}) est disponible.",
++  "set_update_uptodate": "La version {0} est la plus récente.",
++  "set_update_failed": "La recherche de mise à jour a échoué.",
++  "set_update_download": "Télécharger",
+   "set_notifications_blocked": "Les notifications sont bloquées par le téléphone : touchez ici pour ouvrir ses réglages.",
+   "set_notifications_open": "Ouvrir les réglages de notification du téléphone",
+   "group_act_ban": "Exclure et bannir",
+Index: v2/freespeech.mobile/Localization/Lang/it.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/it.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/it.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "File troppo grande: {0} MB, il limite è {1} MB.",
+   "err_file_not_local": "Questo file non è ancora su questo dispositivo.",
+   "set_version": "Versione {0} di {2} (build {1})",
++  "set_update_title": "Aggiornamenti",
++  "set_update_check": "Cerca aggiornamenti",
++  "set_update_startup": "Controlla all'avvio dell'app",
++  "set_update_checking": "Ricerca in corso…",
++  "set_update_available": "La versione {0} ({1}) è disponibile.",
++  "set_update_uptodate": "La versione {0} è la più recente.",
++  "set_update_failed": "Impossibile cercare aggiornamenti.",
++  "set_update_download": "Scarica",
+   "set_notifications_blocked": "Le notifiche sono bloccate dal telefono: tocca qui per aprirne le impostazioni.",
+   "set_notifications_open": "Apri le impostazioni delle notifiche del telefono",
+   "group_act_ban": "Rimuovi e banna",
+Index: v2/freespeech.mobile/Localization/Lang/nl.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/nl.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/nl.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Bestand te groot: {0} MB, de limiet is {1} MB.",
+   "err_file_not_local": "Dit bestand staat nog niet op dit apparaat.",
+   "set_version": "Versie {0} van {2} (build {1})",
++  "set_update_title": "Updates",
++  "set_update_check": "Controleren op updates",
++  "set_update_startup": "Controleren bij het starten van de app",
++  "set_update_checking": "Bezig met controleren…",
++  "set_update_available": "Versie {0} ({1}) is beschikbaar.",
++  "set_update_uptodate": "Versie {0} is de nieuwste.",
++  "set_update_failed": "Controleren op updates is mislukt.",
++  "set_update_download": "Downloaden",
+   "set_notifications_blocked": "Meldingen worden door de telefoon geblokkeerd: tik hier om de instellingen te openen.",
+   "set_notifications_open": "De meldingsinstellingen van de telefoon openen",
+   "group_act_ban": "Verwijderen en verbannen",
+Index: v2/freespeech.mobile/Localization/Lang/pl.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/pl.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/pl.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Plik zbyt duży: {0} MB, limit to {1} MB.",
+   "err_file_not_local": "Tego pliku nie ma jeszcze na tym urządzeniu.",
+   "set_version": "Wersja {0} z {2} (kompilacja {1})",
++  "set_update_title": "Aktualizacje",
++  "set_update_check": "Sprawdź aktualizacje",
++  "set_update_startup": "Sprawdzaj przy uruchomieniu aplikacji",
++  "set_update_checking": "Sprawdzanie…",
++  "set_update_available": "Dostępna jest wersja {0} ({1}).",
++  "set_update_uptodate": "Wersja {0} jest najnowsza.",
++  "set_update_failed": "Nie udało się sprawdzić aktualizacji.",
++  "set_update_download": "Pobierz",
+   "set_notifications_blocked": "Powiadomienia są zablokowane przez telefon: dotknij tutaj, aby otworzyć jego ustawienia.",
+   "set_notifications_open": "Otwórz ustawienia powiadomień telefonu",
+   "group_act_ban": "Usuń i zablokuj",
+Index: v2/freespeech.mobile/Localization/Lang/pt.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/pt.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/pt.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Arquivo grande demais: {0} MB, o limite é {1} MB.",
+   "err_file_not_local": "Este arquivo ainda não está neste dispositivo.",
+   "set_version": "Versão {0} de {2} (build {1})",
++  "set_update_title": "Atualizações",
++  "set_update_check": "Procurar atualizações",
++  "set_update_startup": "Verificar ao iniciar a aplicação",
++  "set_update_checking": "A procurar…",
++  "set_update_available": "A versão {0} ({1}) está disponível.",
++  "set_update_uptodate": "A versão {0} é a mais recente.",
++  "set_update_failed": "Não foi possível procurar atualizações.",
++  "set_update_download": "Transferir",
+   "set_notifications_blocked": "As notificações estão bloqueadas pelo telefone: toque aqui para abrir as configurações dele.",
+   "set_notifications_open": "Abrir as configurações de notificação do telefone",
+   "group_act_ban": "Remover e banir",
+Index: v2/freespeech.mobile/Localization/Lang/ru.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/ru.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/ru.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Файл слишком большой: {0} МБ, лимит — {1} МБ.",
+   "err_file_not_local": "Этого файла ещё нет на этом устройстве.",
+   "set_version": "Версия {0} от {2} (сборка {1})",
++  "set_update_title": "Обновления",
++  "set_update_check": "Проверить обновления",
++  "set_update_startup": "Проверять при запуске приложения",
++  "set_update_checking": "Проверка…",
++  "set_update_available": "Доступна версия {0} ({1}).",
++  "set_update_uptodate": "Версия {0} — последняя.",
++  "set_update_failed": "Не удалось проверить обновления.",
++  "set_update_download": "Скачать",
+   "set_notifications_blocked": "Уведомления заблокированы телефоном: нажмите здесь, чтобы открыть его настройки.",
+   "set_notifications_open": "Открыть настройки уведомлений телефона",
+   "group_act_ban": "Удалить и заблокировать",
+Index: v2/freespeech.mobile/Localization/Lang/tr.json
+===================================================================
+--- v2/freespeech.mobile/Localization/Lang/tr.json	(revision 354)
++++ v2/freespeech.mobile/Localization/Lang/tr.json	(working copy)
+@@ -362,6 +362,14 @@
+   "err_file_too_big": "Dosya çok büyük: {0} MB, sınır {1} MB.",
+   "err_file_not_local": "Bu dosya henüz bu cihazda değil.",
+   "set_version": "{0} sürümü, {2} (derleme {1})",
++  "set_update_title": "Güncellemeler",
++  "set_update_check": "Güncellemeleri denetle",
++  "set_update_startup": "Uygulama başlarken denetle",
++  "set_update_checking": "Denetleniyor…",
++  "set_update_available": "{0} sürümü ({1}) mevcut.",
++  "set_update_uptodate": "{0} sürümü en günceli.",
++  "set_update_failed": "Güncellemeler denetlenemedi.",
++  "set_update_download": "İndir",
+   "set_notifications_blocked": "Bildirimler telefon tarafından engellendi: ayarlarını açmak için buraya dokunun.",
+   "set_notifications_open": "Telefonun bildirim ayarlarını aç",
+   "group_act_ban": "Çıkar ve yasakla",
+Index: v2/freespeech.mobile/Services/ClientService.cs
+===================================================================
+--- v2/freespeech.mobile/Services/ClientService.cs	(revision 354)
++++ v2/freespeech.mobile/Services/ClientService.cs	(working copy)
+@@ -478,7 +478,8 @@
+ 		}
+ 		await client.ConnectAsync();
+ 		_ = client.Attachments.BackfillThumbnailsAsync();   // pictures received earlier get their small picture in the background
+-		State = AppState.Ready;
++		State = AppState.Ready;
++		_ = UpdateService.RunStartupCheckAsync();
+ 		_ = RegisterPushAsync(client);
+ 		_ = AnnounceRevocationAsync(client);
+ 
+Index: v2/freespeech.mobile/Services/UpdateService.cs
+===================================================================
+--- v2/freespeech.mobile/Services/UpdateService.cs	(nonexistent)
++++ v2/freespeech.mobile/Services/UpdateService.cs	(working copy)
+@@ -0,0 +1,51 @@
++/*******************************************************************
++ * FreeSpeech - P2P Encrypted Messaging
++ * -----------------------------------------------------------------------
++ * Copyright (c) 2024-2026 Thomas Gourgnier
++ * Licensed under the GNU Affero General Public License v3.0 or later.
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ *******************************************************************/
++using FreeSpeech.Client.Update;
++using FreeSpeech.Mobile.Localization;
++
++namespace FreeSpeech.Mobile.Services;
++
++/// <summary>
++/// The update check of the APK build (see <see cref="UpdateChecker"/>). The website and the key are chosen at build time (<c>FsUpdateUrl</c>, <c>FsUpdateKey</c>):
++/// a build without them, such as the Google Play bundle that the store updates, has no check and no button. On request from Settings, or at start-up when the
++/// user turned that on (off by default); a version is announced once by a dialog, then only in Settings.
++/// </summary>
++public static class UpdateService
++{
++	private static readonly string Url = BuildDefaults.Get("UpdateUrl");
++	private static readonly string Key = BuildDefaults.Get("UpdateKey");
++
++	public static bool Enabled => Url.Length > 0 && Key.Length > 0;
++
++	/// <summary>Look for an update each time the app starts. Off by default: each check tells the publisher's website that someone is running the app.</summary>
++	public static bool CheckAtStartup
++	{
++		get => Preferences.Default.Get("update_check_startup", false);
++		set => Preferences.Default.Set("update_check_startup", value);
++	}
++
++	public static async Task<UpdateResult> CheckAsync(CancellationToken ct = default)
++	{
++		if (!Enabled) return new UpdateResult(UpdateStatus.Failed);
++		using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
++		int? build = int.TryParse(AppInfo.Current.BuildString, out var b) ? b : null;
++		return await new UpdateChecker(http, Url, Key).CheckAsync("android-apk", AppInfo.Current.VersionString, build, Loc.Instance.Language, ct);
++	}
++
++	/// <summary>The start-up check, when the user asked for it. Announces a version once.</summary>
++	public static async Task RunStartupCheckAsync()
++	{
++		if (!Enabled || !CheckAtStartup) return;
++		var result = await CheckAsync();
++		if (result.Status != UpdateStatus.Available || Preferences.Default.Get("update_announced", "") == result.Version) return;
++		Preferences.Default.Set("update_announced", result.Version ?? "");
++		var open = await MainThread.InvokeOnMainThreadAsync(() =>
++			Dialogs.AlertAsync(Loc.T("set_update_title"), Loc.T("set_update_available", result.Version ?? "", result.Date ?? ""), Loc.T("set_update_download"), Loc.T("cancel")));
++		if (open && result.DownloadUrl is { } url) await Launcher.Default.OpenAsync(url);
++	}
++}
+Index: v2/freespeech.mobile/ViewModels/SettingsViewModel.cs
+===================================================================
+--- v2/freespeech.mobile/ViewModels/SettingsViewModel.cs	(revision 354)
++++ v2/freespeech.mobile/ViewModels/SettingsViewModel.cs	(working copy)
+@@ -283,6 +283,36 @@
+ 	/// <summary>"Version 0.1 (build 1)", from the app package.</summary>
+ 	public string VersionText => Loc.T("set_version", AppInfo.Current.VersionString, AppInfo.Current.BuildString, BuildDefaults.Get("VersionDate"));
+ 
++	/// <summary>The update check exists in this build (not in the Google Play bundle, which the store updates).</summary>
++	public bool UpdateCheckAvailable => UpdateService.Enabled;
++	public bool CheckUpdateAtStartup
++	{
++		get => UpdateService.CheckAtStartup;
++		set { UpdateService.CheckAtStartup = value; OnPropertyChanged(); }
++	}
++	[ObservableProperty] private string _updateText = "";
++	[ObservableProperty] private bool _updateReady;
++	private string? _updateUrl;
++
++	[RelayCommand]
++	private async Task CheckUpdateAsync()
++	{
++		UpdateReady = false;
++		UpdateText = Loc.T("set_update_checking");
++		var r = await UpdateService.CheckAsync();
++		_updateUrl = r.DownloadUrl;
++		UpdateReady = r.Status == FreeSpeech.Client.Update.UpdateStatus.Available;
++		UpdateText = r.Status switch
++		{
++			FreeSpeech.Client.Update.UpdateStatus.Available => Loc.T("set_update_available", r.Version ?? "", r.Date ?? ""),
++			FreeSpeech.Client.Update.UpdateStatus.UpToDate => Loc.T("set_update_uptodate", r.Version ?? ""),
++			_ => Loc.T("set_update_failed"),
++		};
++	}
++
++	[RelayCommand]
++	private Task OpenUpdateAsync() => _updateUrl is { } url ? Launcher.Default.OpenAsync(url) : Task.CompletedTask;
++
+ 	public ObservableCollection<ServerRow> Servers { get; } = [];
+ 	[ObservableProperty] private IReadOnlyList<LanguageInfo> _languages = Loc.Instance.Available;   // one list: the picker compares by reference
+ 
+Index: v2/freespeech.mobile/Views/SettingsPage.xaml
+===================================================================
+--- v2/freespeech.mobile/Views/SettingsPage.xaml	(revision 354)
++++ v2/freespeech.mobile/Views/SettingsPage.xaml	(working copy)
+@@ -178,6 +178,17 @@
+             </Grid>
+ 
+ 
++            <VerticalStackLayout IsVisible="{Binding UpdateCheckAvailable}" Spacing="8" Margin="0,18,0,0">
++                <Label Text="{loc:Tr set_update_title}" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource Primary}" />
++                <Button Text="{loc:Tr set_update_check}" Command="{Binding CheckUpdateCommand}" />
++                <Label Text="{Binding UpdateText}" IsVisible="{Binding UpdateText, Converter={StaticResource StringNotEmptyConverter}}" TextColor="{StaticResource Gray200}" FontSize="13" />
++                <Button Text="{loc:Tr set_update_download}" Command="{Binding OpenUpdateCommand}" IsVisible="{Binding UpdateReady}" />
++                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
++                    <Label Text="{loc:Tr set_update_startup}" TextColor="{StaticResource Gray200}" FontSize="13" VerticalOptions="Center" />
++                    <Switch Grid.Column="1" IsToggled="{Binding CheckUpdateAtStartup}" OnColor="{StaticResource Primary}" VerticalOptions="Center" />
++                </Grid>
++            </VerticalStackLayout>
++
+             <Label Text="{Binding VersionText}" TextColor="{StaticResource Gray300}" FontSize="12" HorizontalTextAlignment="Center" Margin="0,18,0,0" />
+             <Label Text="{Binding Status}" TextColor="{StaticResource Secondary}" IsVisible="{Binding Status, Converter={StaticResource StringNotEmptyConverter}}" />
+         </VerticalStackLayout>
+Index: v2/freespeech.tests/UpdateCheckerTests.cs
+===================================================================
+--- v2/freespeech.tests/UpdateCheckerTests.cs	(nonexistent)
++++ v2/freespeech.tests/UpdateCheckerTests.cs	(working copy)
+@@ -0,0 +1,80 @@
++/*******************************************************************
++ * FreeSpeech - P2P Encrypted Messaging
++ * -----------------------------------------------------------------------
++ * Copyright (c) 2024-2026 Thomas Gourgnier
++ * Licensed under the GNU Affero General Public License v3.0 or later.
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ *******************************************************************/
++
++using System.Security.Cryptography;
++using System.Text;
++using FreeSpeech.Client.Crypto;
++using FreeSpeech.Client.Update;
++using Xunit;
++
++namespace FreeSpeech.Tests;
++
++public class UpdateCheckerTests
++{
++    private static readonly byte[] Seed = SHA256.HashData(Encoding.UTF8.GetBytes("freespeech-update-test"));
++    private static readonly string Key = Convert.ToBase64String(Primitives.Ed25519PublicKey(Seed));
++    private static readonly DateTimeOffset Now = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
++
++    private static (byte[] Manifest, string Sig) Make(string published = "2026-10-30", string mobile = "1.3.6", int build = 311, string download = "https://site.example/{lang}/download/")
++    {
++        var json = Encoding.UTF8.GetBytes(
++            "{\"format\":1,\"published\":\"" + published + "\",\"programs\":{" +
++            "\"android-apk\":{\"version\":\"" + mobile + "\",\"build\":" + build + ",\"date\":\"2026-10-30\"}," +
++            "\"windows\":{\"version\":\"1.3.4\",\"date\":\"2026-10-30\"}}," +
++            "\"download\":\"" + download + "\"}");
++        return (json, Convert.ToBase64String(Primitives.Ed25519Sign(Seed, json)));
++    }
++
++    [Fact]
++    public void A_newer_version_is_available_with_the_language_in_the_address()
++    {
++        var (m, s) = Make();
++        var r = UpdateChecker.Evaluate(m, s, Key, "android-apk", "1.3.5", 310, "fr", Now);
++        Assert.Equal(UpdateStatus.Available, r.Status);
++        Assert.Equal("1.3.6", r.Version);
++        Assert.Equal("https://site.example/fr/download/", r.DownloadUrl);
++    }
++
++    [Fact]
++    public void Same_version_is_up_to_date_unless_the_build_is_higher()
++    {
++        var (m, s) = Make(mobile: "1.3.5", build: 311);
++        Assert.Equal(UpdateStatus.Available, UpdateChecker.Evaluate(m, s, Key, "android-apk", "1.3.5", 310, "en", Now).Status);
++        Assert.Equal(UpdateStatus.UpToDate, UpdateChecker.Evaluate(m, s, Key, "android-apk", "1.3.5", 311, "en", Now).Status);
++        Assert.Equal(UpdateStatus.UpToDate, UpdateChecker.Evaluate(m, s, Key, "windows", "1.3.4", null, "en", Now).Status);
++    }
++
++    [Fact]
++    public void A_version_ahead_of_the_published_one_is_up_to_date()
++    {
++        var (m, s) = Make();
++        Assert.Equal(UpdateStatus.UpToDate, UpdateChecker.Evaluate(m, s, Key, "windows", "2.0.0", null, "en", Now).Status);
++    }
++
++    [Fact]
++    public void A_wrong_signature_or_a_changed_manifest_is_refused()
++    {
++        var (m, s) = Make();
++        var other = Convert.ToBase64String(Primitives.Ed25519PublicKey(SHA256.HashData(Encoding.UTF8.GetBytes("other"))));
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(m, s, other, "windows", "1.0.0", null, "en", Now).Status);
++        var tampered = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(m).Replace("site.example", "evil.example"));
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(tampered, s, Key, "windows", "1.0.0", null, "en", Now).Status);
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(m, "not base64!", Key, "windows", "1.0.0", null, "en", Now).Status);
++    }
++
++    [Fact]
++    public void An_old_manifest_an_unknown_program_or_a_non_https_address_is_refused()
++    {
++        var (old, oldSig) = Make(published: "2025-01-01");
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(old, oldSig, Key, "windows", "1.0.0", null, "en", Now).Status);
++        var (m, s) = Make();
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(m, s, Key, "linux", "1.0.0", null, "en", Now).Status);
++        var (http, httpSig) = Make(download: "http://site.example/{lang}/download/");
++        Assert.Equal(UpdateStatus.Failed, UpdateChecker.Evaluate(http, httpSig, Key, "windows", "1.0.0", null, "en", Now).Status);
++    }
++}
+Index: v2/tools/updatesign/Program.cs
+===================================================================
+--- v2/tools/updatesign/Program.cs	(nonexistent)
++++ v2/tools/updatesign/Program.cs	(working copy)
+@@ -0,0 +1,72 @@
++/*******************************************************************
++ * FreeSpeech - P2P Encrypted Messaging
++ * -----------------------------------------------------------------------
++ * Copyright (c) 2024-2026 Thomas Gourgnier
++ * Licensed under the GNU Affero General Public License v3.0 or later.
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ *******************************************************************/
++
++// Makes and signs the update manifest the applications check (see scripts/make-update-manifest.ps1).
++//   updatesign newkey <key-file>                                  creates the Ed25519 key (32-byte seed, base64) and prints its public key
++//   updatesign publickey <key-file>                               prints the public key (base64) to put in FsUpdateKey
++//   updatesign make <key-file> <version.props> <site> <out-dir>   writes <out-dir>/latest.json and latest.json.sig
++using System.Security.Cryptography;
++using System.Text;
++using System.Text.Json;
++using System.Xml.Linq;
++using FreeSpeech.Client.Crypto;
++
++static string PublicKey(string keyFile) => Convert.ToBase64String(Primitives.Ed25519PublicKey(Convert.FromBase64String(File.ReadAllText(keyFile).Trim())));
++
++try
++{
++    switch (args.FirstOrDefault())
++    {
++        case "newkey" when args.Length == 2:
++            if (File.Exists(args[1])) throw new InvalidOperationException($"{args[1]} already exists: a key is never replaced (the applications carry its public half).");
++            File.WriteAllText(args[1], Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
++            Console.WriteLine("Public key (FsUpdateKey): " + PublicKey(args[1]));
++            Console.WriteLine("Keep " + args[1] + " outside the repository and back it up: the applications trust this key for good.");
++            return 0;
++
++        case "publickey" when args.Length == 2:
++            Console.WriteLine(PublicKey(args[1]));
++            return 0;
++
++        case "make" when args.Length == 5:
++        {
++            var props = XDocument.Load(args[2]).Descendants().Where(e => !e.HasElements).ToDictionary(e => e.Name.LocalName, e => e.Value.Trim());
++            string P(string k) => props.TryGetValue(k, out var v) && v.Length > 0 ? v : throw new InvalidOperationException($"{k} is missing in {args[2]}");
++
++            var programs = new Dictionary<string, object>
++            {
++                ["android-apk"] = new { version = P("FsMobileVersion"), build = int.Parse(P("FsMobileBuild")), date = P("FsMobileVersionDate") },
++                ["windows"] = new { version = P("FsDesktopVersion"), date = P("FsDesktopVersionDate") },
++                ["linux"] = new { version = P("FsDesktopVersion"), date = P("FsDesktopVersionDate") },
++            };
++            var manifest = new
++            {
++                format = 1,
++                published = DateTime.UtcNow.ToString("yyyy-MM-dd"),
++                programs,
++                download = args[3].TrimEnd('/') + "/{lang}/download/",
++            };
++            var json = JsonSerializer.SerializeToUtf8Bytes(manifest, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
++            var seed = Convert.FromBase64String(File.ReadAllText(args[1]).Trim());
++            Directory.CreateDirectory(args[4]);
++            File.WriteAllBytes(Path.Combine(args[4], "latest.json"), json);
++            File.WriteAllText(Path.Combine(args[4], "latest.json.sig"), Convert.ToBase64String(Primitives.Ed25519Sign(seed, json)));
++            Console.WriteLine("Written " + Path.Combine(args[4], "latest.json") + " (+ .sig), signed with the key " + PublicKey(args[1]));
++            return 0;
++        }
++
++        default:
++            Console.Error.WriteLine("Usage: updatesign newkey <key-file> | publickey <key-file> | make <key-file> <version.props> <site> <out-dir>");
++            return 2;
++    }
++}
++catch (Exception ex) when (ex is IOException or InvalidOperationException or FormatException or UnauthorizedAccessException)
++{
++    Console.Error.WriteLine(ex.Message);
++    return 1;
++}
+Index: v2/tools/updatesign/updatesign.csproj
+===================================================================
+--- v2/tools/updatesign/updatesign.csproj	(nonexistent)
++++ v2/tools/updatesign/updatesign.csproj	(working copy)
+@@ -0,0 +1,16 @@
++<Project Sdk="Microsoft.NET.Sdk">
++
++  <!-- Makes and signs the update manifest (latest.json) from version.props: see scripts/make-update-manifest.ps1. Run on the publisher's PC, never shipped. -->
++  <PropertyGroup>
++    <OutputType>Exe</OutputType>
++    <TargetFramework>net10.0</TargetFramework>
++    <RootNamespace>FreeSpeech.UpdateSign</RootNamespace>
++    <ImplicitUsings>enable</ImplicitUsings>
++    <Nullable>enable</Nullable>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <ProjectReference Include="..\..\freespeech.client\FreeSpeech.Client.csproj" />
++  </ItemGroup>
++
++</Project>
+Index: v2/tools/updatesign
+===================================================================
+--- v2/tools/updatesign	(nonexistent)
++++ v2/tools/updatesign	(working copy)
+
+Property changes on: v2/tools/updatesign
+___________________________________________________________________
+Added: svn:ignore
+## -0,0 +1,2 ##
++bin
++obj

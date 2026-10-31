@@ -65,7 +65,7 @@ A common use is to run a private server for close contacts and to stay reachable
    (no access to the private one)
 ```
 
-You are registered on both servers and you receive what arrives on either. Your card says which servers are restricted (the `restricted` property) and lists the open servers first. A restricted server on which the reader of the card is not allowed is never contacted: the application does not try the connection and the server's administrator sees no refusal.
+You are registered on both servers and you receive what arrives on either. Your card says which servers are restricted (the `restricted` property) and lists the open servers first. A restricted server on which the reader of the card is not allowed is never contacted: the application does not try the connection and the server's administrator sees no refusal. The card does not give the address of a restricted server, only an identifier that the members of that server recognise: someone who receives your card without being a member does not learn it, and a member who adds that server recognises all their contacts on it at once.
 
 When two contacts share a restricted server, they write to each other only through that server, or through all those they share, in the order of the card. If the server does not answer, the message waits in the send queue with the mention "waiting for the private server". It does not go through an open server without the agreement of both. With a plain acquaintance, who shares no restricted server with you, sending follows the order of their card, through their open servers.
 

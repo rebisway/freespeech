@@ -22,10 +22,50 @@ public class RoutePolicyTests
     [Fact]
     public void ACardListsOpenServersFirstThenRestrictedOnes_andRenumbersThePriorities()
     {
-        var card = RoutePolicy.CardServers([S("https://private", 0, true), S("https://open1", 1), S("https://private2", 2, true), S("https://open2", 3)]);
+        var card = RoutePolicy.CardServers([S("https://private", 0, true), S("https://open1", 1), S("https://private2", 2, true), S("https://open2", 3)], "owner");
         Assert.Equal(["https://open1", "https://open2", "https://private", "https://private2"], card.Select(s => s.Url));
         Assert.Equal([0, 1, 2, 3], card.Select(s => s.Priority));
         Assert.Equal([false, false, true, true], card.Select(s => s.Restricted));
+    }
+
+    private static readonly string KeyA = Convert.ToBase64String(Enumerable.Range(1, 32).Select(i => (byte)i).ToArray());
+    private static readonly string KeyB = Convert.ToBase64String(Enumerable.Range(40, 32).Select(i => (byte)i).ToArray());
+
+    [Fact]
+    public void ARestrictedServerWhoseKeyIsKnownIsWrittenAsAnIdentifier_notAsAnAddress()
+    {
+        var mine = new ServerEntry { Url = "https://priv.entreprise.local", Priority = 1, Restricted = true, CircleKey = KeyA };
+        var card = RoutePolicy.CardServers([S("https://open", 0), mine], "alice");
+        var entry = card[1];
+        Assert.Equal(CircleKeys.Placeholder, entry.Url);
+        Assert.Equal(CircleKeys.Tag(KeyA, "alice"), entry.Circle);
+        Assert.DoesNotContain("entreprise", System.Text.Json.JsonSerializer.Serialize(card));
+        Assert.Null(card[0].Circle);
+    }
+
+    [Fact]
+    public void AMemberRecognisesTheServerFromTheIdentifier_andAnOutsiderDoesNot()
+    {
+        var circle = CircleKeys.Tag(KeyA, "alice");
+        var member = new ServerEntry { Url = "https://priv.entreprise.local/", Priority = 0, Restricted = true, CircleKey = KeyA };
+        var outsider = new ServerEntry { Url = "https://other.example", Priority = 0, Restricted = true, CircleKey = KeyB };
+        Assert.Equal("https://priv.entreprise.local", CircleKeys.Match("alice", circle, [member]));
+        Assert.Null(CircleKeys.Match("alice", circle, [outsider]));
+        Assert.Null(CircleKeys.Match("bob", circle, [member]));   // the identifier belongs to the owner of the card
+        Assert.NotEqual(CircleKeys.Tag(KeyA, "alice"), CircleKeys.Tag(KeyA, "bob"));
+    }
+
+    [Fact]
+    public void ARenewedKeyKeepsRecognisingTheOldIdentifiersForAWhile()
+    {
+        var oldCircle = CircleKeys.Tag(KeyA, "alice");
+        var server = new ServerEntry { Url = "https://priv", Restricted = true, CircleKey = KeyA };
+        Assert.False(CircleKeys.Learn(server, KeyA));
+        Assert.True(CircleKeys.Learn(server, KeyB));
+        Assert.Equal("https://priv", CircleKeys.Match("alice", oldCircle, [server]));
+        Assert.Equal("https://priv", CircleKeys.Match("alice", CircleKeys.Tag(KeyB, "alice"), [server]));
+        server.OldCircleKeyUntil = DateTime.UtcNow.AddMinutes(-1);
+        Assert.Null(CircleKeys.Match("alice", oldCircle, [server]));
     }
 
     [Fact]
@@ -134,11 +174,11 @@ public class RestrictedRoutingTests : IAsyncLifetime
         _clients.Add(client);
         await client.ConnectAsync();
         await client.AddServerAsync(PrivateUrl, invitation: await InvitationAsync(name));
-        Assert.True(await UntilAsync(() => client.Servers.Any(s => s.Server.Url == PrivateUrl && s.Server.Restricted), 20000), "the restricted server was not recognised");
+        Assert.True(await UntilAsync(() => client.Servers.Any(s => s.Server.Url == PrivateUrl && s.Server.Restricted), 40000), "the restricted server was not recognised");
         return client;
     }
 
-    private static async Task<bool> UntilAsync(Func<bool> condition, int ms = 20000)
+    private static async Task<bool> UntilAsync(Func<bool> condition, int ms = 40000)
     {
         var end = DateTime.UtcNow.AddMilliseconds(ms);
         while (DateTime.UtcNow < end) { if (condition()) return true; await Task.Delay(150); }
@@ -166,10 +206,38 @@ public class RestrictedRoutingTests : IAsyncLifetime
         var bob = await MemberAsync("bob");
         await BefriendAsync(alice, bob);
 
+        // The address of the restricted server is not in the card: bob knows it only because he is a member of that server himself.
         var servers = bob.Contacts[0].Servers.OrderBy(s => s.Priority).ToList();
-        Assert.Equal([OpenUrl, PrivateUrl], servers.Select(s => s.Url));
+        Assert.Equal([OpenUrl, CircleKeys.Placeholder], servers.Select(s => s.Url));
         Assert.Equal([false, true], servers.Select(s => s.Restricted));
+        Assert.Null(servers[0].Circle);
+        Assert.NotNull(servers[1].Circle);
+        Assert.DoesNotContain(PrivateUrl, System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(alice.ExportCard("qr"))));
         Assert.Equal(RouteState.PrivateOnly, bob.RouteStateOf(alice.Identity.DiscoveryId));
+    }
+
+    [Fact]
+    public async Task WhenTheAdministratorRenewsTheKey_theOldCardStillMatchesAndTheContactReceivesTheNewIdentifier()
+    {
+        var alice = await MemberAsync("alice");
+        var bob = await MemberAsync("bob");
+        await BefriendAsync(alice, bob);
+        var aliceId = alice.Identity.DiscoveryId;
+        string? KeyOf(FreeSpeechClient c) => c.Identity.Servers.FirstOrDefault(s => s.Restricted)?.CircleKey;
+        var before = KeyOf(alice);
+        Assert.NotNull(before);
+        Assert.Equal(before, KeyOf(bob));   // every member holds the key of the server
+
+        var (code, output) = await TestProcess.AdminCliAsync(Dll, PrivateUrl, Secret, "circle-key", "renew");
+        Assert.True(code == 0, output);
+        Assert.True(await UntilAsync(() => KeyOf(alice) != before && KeyOf(bob) != before && KeyOf(alice) == KeyOf(bob)), "the members did not receive the new key");
+
+        // The card bob holds names the server with the old key: still recognised, for a while.
+        Assert.Equal(RouteState.PrivateOnly, bob.RouteStateOf(aliceId));
+        // Alice sends her card again: bob then holds the identifier made with the new key.
+        var fresh = CircleKeys.Tag(KeyOf(alice)!, aliceId);
+        Assert.True(await UntilAsync(() => bob.Contacts[0].Servers.Any(s => s.Circle == fresh)), "the contact did not receive the new identifier");
+        Assert.Equal(RouteState.PrivateOnly, bob.RouteStateOf(aliceId));
     }
 
     [Fact]

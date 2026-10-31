@@ -98,6 +98,12 @@ public interface IClientAccess
     string CreateInvitation(string? note, TimeSpan validFor);
     bool RevokeInvitation(string id);
 
+    /// <summary>The key members of this server hold to recognise it in the cards of their contacts without its address being written there; null while the server is open.</summary>
+    string? CircleKey { get; }
+
+    /// <summary>Draws a new circle key (the members receive it at once).</summary>
+    string RenewCircleKey();
+
     /// <summary>Whether an unknown identity may leave an access request (on by default; the administrator can close the queue).</summary>
     bool RequestsOpen { get; }
     void SetRequestsOpen(bool on);
@@ -182,6 +188,28 @@ public sealed class ClientAccessService : IClientAccess
             return AccessDecision.PrivateServer;
         }
     }
+
+    public string? CircleKey
+    {
+        get
+        {
+            lock (_lock)
+            {
+                if (_state.Mode != AllowList) return null;
+                if (string.IsNullOrEmpty(_state.CircleKey)) { _state.CircleKey = NewCircleKey(); Save(); }
+                return _state.CircleKey;
+            }
+        }
+    }
+
+    public string RenewCircleKey()
+    {
+        lock (_lock) { _state.CircleKey = NewCircleKey(); Save(); }
+        _logger.LogInformation("Circle key renewed");
+        return _state.CircleKey!;
+    }
+
+    private static string NewCircleKey() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
     public bool RequestsOpen { get { lock (_lock) return _state.RequestsOpen; } }
 
@@ -429,5 +457,6 @@ public sealed class ClientAccessService : IClientAccess
         [JsonPropertyName("requests_open")] public bool RequestsOpen { get; set; } = true;
         [JsonPropertyName("requests")] public List<AccessRequest> Requests { get; set; } = [];
         [JsonPropertyName("provisioners")] public List<string> Provisioners { get; set; } = [];
+        [JsonPropertyName("circle_key")] public string? CircleKey { get; set; }
     }
 }

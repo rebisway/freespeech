@@ -83,6 +83,9 @@ public class RelayClient : IAsyncDisposable
     /// <summary>The server told who may sign up on it (registration, or the administrator changed it): "open", "allowlist", or null.</summary>
     public event Action<string?>? OnAccessChanged;
 
+    /// <summary>The server gave (or renewed) the key of its circle.</summary>
+    public event Action<string>? OnCircleKey;
+
     /// <summary>False after the relay connection drops, until <see cref="TryReconnectAsync"/> succeeds again.</summary>
     public bool IsConnected => _connected;
 
@@ -178,6 +181,7 @@ public class RelayClient : IAsyncDisposable
 
         HttpToken = response.HttpToken;
         ServerAccess = response.Access;
+        if (response.CircleKey != null) OnCircleKey?.Invoke(response.CircleKey);   // before the access: a card is never sent with the server named by its address and marked restricted
         OnAccessChanged?.Invoke(ServerAccess);
         DailyQuota = response.DailyQuota;
         QuotaLeft = response.DailyQuota;
@@ -300,6 +304,7 @@ public class RelayClient : IAsyncDisposable
                 {
                     // The administrator changed who may sign up: what this server is shown as follows at once (the top bar reads it within seconds).
                     ServerAccess = msg.Access;
+                    if (msg.CircleKey != null) OnCircleKey?.Invoke(msg.CircleKey);
                     OnAccessChanged?.Invoke(ServerAccess);
                     if (msg.Provisioners != null) ServerProvisioners = ValidProvisioners(msg.Provisioners);   // the administrator tools now named (an empty list: none)
                     ClientLog.Info("relay", $"{ClientLog.Host(_wsUrl ?? "")}: the server now says it is {msg.Access}");

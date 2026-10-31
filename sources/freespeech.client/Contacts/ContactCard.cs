@@ -18,6 +18,17 @@ public class ServerEntry
 
     /// <summary>True for a server that restricts who may sign up (a private server): nobody tries it who is not let in on it. Omitted when false.</summary>
     [JsonPropertyName("restricted")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool Restricted { get; set; }
+
+    /// <summary>In a card: the identifier of a restricted server in place of its address (<see cref="Relay.CircleKeys.Tag"/>); the members of that server recognise it, nobody else learns the address. Omitted for an open server.</summary>
+    [JsonPropertyName("circle")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Circle { get; set; }
+
+    /// <summary>My own restricted server: the key its administrator gave the members (never written in a card), the one before it for a while after a renewal, and until when.</summary>
+    [JsonPropertyName("circle_key")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CircleKey { get; set; }
+    [JsonPropertyName("old_circle_key")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? OldCircleKey { get; set; }
+    [JsonPropertyName("old_circle_key_until")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateTime? OldCircleKeyUntil { get; set; }
+
+    /// <summary>A copy of an own server entry, circle keys included (the copy of a card entry has none).</summary>
+    public ServerEntry Copy() => new() { Url = Url, Priority = Priority, Restricted = Restricted, Circle = Circle, CircleKey = CircleKey, OldCircleKey = OldCircleKey, OldCircleKeyUntil = OldCircleKeyUntil };
 }
 
 /// <summary>

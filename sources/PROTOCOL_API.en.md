@@ -178,6 +178,7 @@ Layer: frame, server to client. The connection is now registered under the ident
 | `http_token` | string | to present in the `X-Flag-Token` header of the HTTP calls of section 4; valid while this connection lives |
 | `access` | string | `"open"` or `"allowlist"`: who may register on this server |
 | `provisioners` | list | identities that the administrator of a private server names as its administration tools, each `{ id, enc_key, sign_key }`; left out when there are none |
+| `circle_key` | string | base64, 32 bytes: on a restricted server (`access` is `allowlist`), the key that lets its members recognise it in a contact's card (see [PROTOCOL.en.md](PROTOCOL.en.md) § 8, "Restricted servers"); left out on an open server |
 | `daily_quota` | number | bytes an identity may send per 24 hours on this server (see "Volume limits"); left out when there is no quota |
 
 <!-- schema: WsMessage -->
@@ -209,7 +210,7 @@ An invitation (`invitation` in `register`) is spent only after the proof succeed
 
 Layer: frame, server to client, without `request_id`. The server may send them at any time on a registered connection.
 
-`server_state` says that the sign-up rule changed while the client is connected: `access` and `provisioners` as in `registered`.
+`server_state` says that the sign-up rule changed while the client is connected: `access`, `provisioners` and `circle_key` as in `registered`; `circle_key` changes when the administrator renews it.
 
 `server_redirect` suggests other servers: `servers` is a list of addresses, best first, and `reason` is `"load"` (this server is full) or `"admin"` (its administrator is draining it).
 
@@ -278,7 +279,7 @@ A card is a JSON object. Alice exports hers with a one-time code; the relay neve
 | `discovery_id` | string | yes | the identifier |
 | `encryption_public_key` | string | yes | X25519, base64 |
 | `signing_public_key` | string | yes | Ed25519, base64 |
-| `servers` | list | no | the relays the person is on, best first, each `{ url, priority }` plus `restricted: true` for a server that restricts who signs up (the open ones are listed before the restricted ones) |
+| `servers` | list | no | the relays the person is on, best first, each `{ url, priority }` plus `restricted: true` for a server that restricts who signs up (the open ones are listed before the restricted ones); a restricted server whose key is known is written `{ url: "https://circle.invalid", priority, restricted: true, circle }` (`circle`: `base64(HMAC-SHA256(circle key, "freespeech-circle|" + discovery id of the owner))`) |
 | `revocation_public_key` | string | no | Ed25519 key used to check a migration notice (section 3, `identity_moved`) |
 | `enable_push` | boolean | no | the person can be woken by a notification |
 | `otc` | string | first card only | the one-time code, 16 characters |

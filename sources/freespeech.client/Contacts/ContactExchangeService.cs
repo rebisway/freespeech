@@ -277,7 +277,7 @@ public class ContactExchangeService
             Ts = DateTime.UtcNow.Ticks,
         };
         // Relay has no store-and-forward — an undelivered send is simply retried on the next tick.
-        await _relay.SendAsync(_relay.Candidates(pc.TheirCard.Servers), envelope);
+        await _relay.SendAsync(_relay.Candidates(pc.TheirCard.Servers, pc.TheirCard.DiscoveryId), envelope);
         _pendingContacts.TouchLastAttempt(pc.Id);
     }
 
@@ -296,7 +296,7 @@ public class ContactExchangeService
             Msg = encrypted,
             Ts = DateTime.UtcNow.Ticks,
         };
-        await _relay.SendAsync(_relay.Candidates(theirCard.Servers), envelope);
+        await _relay.SendAsync(_relay.Candidates(theirCard.Servers, theirCard.DiscoveryId), envelope);
     }
 
     private bool IsOtcStillValid(OtcEntry entry)
@@ -320,7 +320,7 @@ public class ContactExchangeService
         EncryptionPublicKey = Convert.ToBase64String(_identity.EncryptionPublicKey),
         SigningPublicKey = Convert.ToBase64String(_identity.SigningPublicKey),
         RevocationPublicKey = _identity.RevocationPublicKey == null ? null : Convert.ToBase64String(_identity.RevocationPublicKey),
-        Servers = Relay.RoutePolicy.CardServers(_identity.Servers),
+        Servers = Relay.RoutePolicy.CardServers(_identity.Servers, _identity.DiscoveryId),
         EnablePush = false,
         CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
     };

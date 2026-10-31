@@ -57,6 +57,7 @@ Le relais ne distingue pas un morceau de fichier d'un message : les limites comp
 | Commande | Effet |
 |---|---|
 | `access open` / `access allowlist` | tout le monde sauf les bannis / seulement les identités autorisées ou invitées |
+| `circle-key renew` | tire une nouvelle clé du cercle (`allowlist` seulement) : les membres la reçoivent tout de suite et renvoient leur fiche à leurs contacts ; l'ancienne reste reconnue 30 jours par les clients. Cette clé n'a aucun rapport avec la clé d'identité du serveur : les liens avec les autres serveurs ne changent pas |
 | `clients` | autorisés, bannis, invitations en attente |
 | `connected` | les identités connectées **maintenant** (en mémoire seulement : rien n'est gardé de celles qui se sont connectées avant), avec leur état ici : autorisée, bannie ou ni l'un ni l'autre |
 | `allow-connected` | autorise toutes les identités connectées maintenant (sauf les bannies) : à lancer avant `access allowlist`, pour que personne de présent ne soit refusé à sa prochaine connexion |

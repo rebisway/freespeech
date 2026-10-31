@@ -373,7 +373,7 @@ Distincte de la sauvegarde : elle sort les **fichiers téléchargés** de l'appa
   "signing_public_key": "...",
   "servers": [                          // liste ORDONNÉE par préférence
     { "url": "https://public.freespeech.org", "priority": 0 },
-    { "url": "https://priv.entreprise.local", "priority": 1, "restricted": true }
+    { "url": "https://circle.invalid", "priority": 1, "restricted": true, "circle": "base64" }
   ],
   "enable_push": false,                 // capacité annoncée, pas le token
   "created_at": ...,
@@ -1143,6 +1143,8 @@ entrent dans le journal et le rattrapage p2p les sert comme les autres. Règles 
 Un serveur dont le mode d'accès est `allowlist` (§ 10, « Contrôle d'accès des clients ») est dit restreint : seules les identités que son administrateur a autorisées s'y inscrivent. Il ne faut pas le confondre avec le statut privé entre serveurs, qui interdit les appels d'un autre serveur et qu'un client ne voit pas.
 
 Chaque entrée de `servers` dans la fiche porte `restricted`, un booléen absent quand il est faux, vrai pour un serveur restreint. Le propriétaire connaît le mode de ses serveurs, car le serveur l'annonce à l'inscription et chaque fois que l'administrateur le change. Il envoie sa fiche à ses contacts quand le mode change. Les serveurs ouverts sont listés avant les serveurs restreints, chaque groupe dans l'ordre de préférence du propriétaire, et les `priority` sont renumérotées en conséquence. Un client qui ne connaît pas `restricted` ignore le champ et suit l'ordre de la liste.
+
+Un serveur restreint ne figure pas dans la fiche par son adresse. À son premier besoin, le serveur tire une clé de 32 octets, la **clé du cercle**, et la donne à chaque identité qui s'y inscrit (`circle_key` dans `registered`, puis dans `server_state` quand l'administrateur la renouvelle). La fiche porte, à la place de l'adresse, `circle = base64(HMAC-SHA256(clé du cercle, "freespeech-circle|" + identité du propriétaire de la fiche))`, avec `url` valant `https://circle.invalid`, une adresse qui ne se résout jamais. Un destinataire qui est membre du même serveur calcule la même valeur pour chacun de ses serveurs restreints : une correspondance désigne un serveur commun, qu'il joint à sa propre adresse. Sans correspondance, l'entrée désigne un serveur restreint inconnu et n'est jamais contactée. L'identifiant dépend du propriétaire de la fiche, si bien que deux fiches du même serveur ne se rapprochent pas. Le contact garde l'identifiant tel quel, et la correspondance est calculée à chaque envoi, donc un serveur ajouté plus tard reconnaît d'un coup tous les contacts déjà importés. Après un renouvellement, le client garde l'ancienne clé 30 jours pour reconnaître les fiches déjà envoyées, et le propriétaire renvoie sa fiche à ses contacts avec l'identifiant de la nouvelle clé. Un serveur dont la clé n'est pas encore connue du client est écrit par son adresse. Les serveurs de l'état d'un groupe suivent la même règle.
 
 Un serveur restreint sur lequel je ne suis pas autorisé n'est jamais contacté : ni connexion, ni refus chez l'administrateur, ni marqueur d'attente. Une fiche qui marque à tort un serveur comme restreint ne gêne que son auteur.
 

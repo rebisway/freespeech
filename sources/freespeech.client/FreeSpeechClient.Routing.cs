@@ -47,11 +47,24 @@ public sealed partial class FreeSpeechClient
 
     private IReadOnlyList<string> CandidatesFor(string peerId) => RouteFor(peerId).Urls;
 
+    /// <summary>The address of my restricted server that an identifier in the card of <paramref name="ownerId"/> names, or null.</summary>
+    private string? ResolveCircle(string ownerId, string circle) => CircleKeys.Match(ownerId, circle, _identity.Servers.Where(s => s.Restricted));
+
+    /// <summary>An own server gave the key of its circle: remembered, and the contacts get my card again (it names that server by the new identifier).</summary>
+    private void OnOwnCircleKey(string url, string key)
+    {
+        var entry = _identity.Servers.FirstOrDefault(s => RelayPool.Normalize(s.Url) == url);
+        if (entry == null || !CircleKeys.Learn(entry, key)) return;
+        _identityStorage.Save(_identity);
+        if (_connectStarted && entry.Restricted) _ = NotifyContactsAsync();   // a server not yet known as restricted is announced when its access is learnt, with this key
+    }
+
     /// <summary>The servers to try to write to someone, in order (see <see cref="RoutePolicy"/>).</summary>
     private RoutePolicy.Route RouteFor(string peerId)
     {
         var contact = _confirmedContacts.FindById(peerId);
         var theirs = contact?.Servers ?? _groups.FindMember(peerId)?.Servers;
+        if (theirs != null) theirs = _relay.Resolved(theirs, peerId).ToList();
         var ownOpen = _relay.OwnUrls.Where(u => !_identity.Servers.Any(s => s.Restricted && RelayPool.Normalize(s.Url) == u));
         return RoutePolicy.Choose(theirs, InRestricted, contact != null && OpenFallbackNow(contact), ownOpen, strictApplies: contact != null);
     }

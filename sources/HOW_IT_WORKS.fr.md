@@ -65,7 +65,7 @@ Un usage courant consiste à ouvrir un serveur privé pour ses proches et à res
    (sans accès au privé)
 ```
 
-Vous êtes inscrit sur les deux serveurs et vous recevez ce qui arrive sur l'un comme sur l'autre. Votre fiche indique quels serveurs sont restreints (propriété `restricted`), en listant les serveurs ouverts d'abord. Un serveur restreint sur lequel le lecteur de la fiche n'est pas autorisé n'est jamais contacté : l'application ne tente pas la connexion et l'administrateur du serveur ne voit aucun refus.
+Vous êtes inscrit sur les deux serveurs et vous recevez ce qui arrive sur l'un comme sur l'autre. Votre fiche indique quels serveurs sont restreints (propriété `restricted`), en listant les serveurs ouverts d'abord. Un serveur restreint sur lequel le lecteur de la fiche n'est pas autorisé n'est jamais contacté : l'application ne tente pas la connexion et l'administrateur du serveur ne voit aucun refus. La fiche ne donne pas l'adresse d'un serveur restreint, seulement un identifiant que les membres de ce serveur reconnaissent : une personne qui reçoit votre fiche sans en être membre ne l'apprend pas, et un membre qui ajoute ce serveur reconnaît d'un coup tous ses contacts qui y sont.
 
 Quand deux contacts ont un serveur restreint en commun, ils ne s'écrivent que par ce serveur, ou par tous ceux qu'ils ont en commun, dans l'ordre de la fiche. Si le serveur ne répond pas, le message attend dans la file d'envoi avec la mention « en attente du serveur privé ». Il ne passe pas par un serveur ouvert sans l'accord des deux. Avec une simple connaissance, qui n'a aucun serveur restreint en commun avec vous, l'envoi suit l'ordre de sa fiche, par ses serveurs ouverts.
 

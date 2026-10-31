@@ -98,6 +98,10 @@ public class WsMessage
     [JsonPropertyName("access")]
     public string? Access { get; set; }
 
+    /// <summary>"registered" and "server_state": on a server that restricts who signs up, the key its members use to recognise it in a contact's card (base64, 32 bytes).</summary>
+    [JsonPropertyName("circle_key")]
+    public string? CircleKey { get; set; }
+
     /// <summary>"registered": the identities of the server's administrator tools (the console), whose group invitations this client may accept without having them as a contact.</summary>
     [JsonPropertyName("provisioners")]
     public List<ProvisionerInfo>? Provisioners { get; set; }

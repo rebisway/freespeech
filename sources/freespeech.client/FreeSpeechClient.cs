@@ -211,6 +211,7 @@ public sealed partial class FreeSpeechClient : IGroupTransport, IAsyncDisposable
         }
 
         _relay = new RelayPool(_identity.DiscoveryId, new RegisterAuth(_identity.EncryptionPublicKey, _identity.SigningPublicKey, _identity.SigningPrivateKey));
+        _relay.CircleResolver = ResolveCircle;   // an identifier in a contact's card names one of my restricted servers
         _attachments = new AttachmentService(new AttachmentStore(_options.ProfileDir, _db), SendLetterOnceAsync, RaiseNotice, chunkDelay: _options.ChunkDelay,
             authorize: AuthorizeAttachmentRequest, holders: HoldersOf,
             isGroupPeer: (rec, from) => rec.GroupId != null && _groups.IsMember(rec.GroupId, from) && from != _identity.DiscoveryId,
@@ -241,6 +242,7 @@ public sealed partial class FreeSpeechClient : IGroupTransport, IAsyncDisposable
     {
         _relay.OnMessage += HandleIncomingEnvelope;
         _relay.OnServerAccess += OnOwnServerAccess;
+        _relay.OnServerCircleKey += OnOwnCircleKey;
         _relay.OnDisconnected += url => ServerConnectionChanged?.Invoke(url, false);
         _relay.OnReconnected += url => ServerConnectionChanged?.Invoke(url, true);
         _relay.OnAccessGranted += url => RaiseNotice($"[+] The administrator of {url} accepted your access request: you are connected.");

@@ -375,7 +375,7 @@ public sealed partial class FreeSpeechClient
             if (pm.RecipientEncKey != null)
             {
                 recipientEncPub = Convert.FromBase64String(pm.RecipientEncKey);
-                candidates = _relay.Candidates(pm.RecipientServers);
+                candidates = _relay.Candidates(pm.RecipientServers, pm.To);
             }
             else
             {
@@ -559,7 +559,7 @@ public sealed partial class FreeSpeechClient
     {
         var from = ResolveContact(fromNameOrId);
         var to = ResolveContact(toNameOrId);
-        var urls = _relay.Candidates(_confirmedContacts.FindById(from)?.Servers ?? _confirmedContacts.FindById(to)?.Servers);
+        var urls = _confirmedContacts.FindById(from) is { } fromContact ? _relay.Candidates(fromContact.Servers, from) : _relay.Candidates(_confirmedContacts.FindById(to)?.Servers, to);
         return ToFlagResults(await _relay.HttpAsync(urls, h => h.DeleteAsync($"/api/flags/{from}/{to}")));
     }
 

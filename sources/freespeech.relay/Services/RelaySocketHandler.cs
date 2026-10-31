@@ -198,7 +198,7 @@ public class RelaySocketHandler
             // Development switch only (Server:AllowAnonymousRegister): the old, unauthenticated registration.
             if (_access.Check(msg.DiscoveryId, msg.Invitation) != AccessDecision.Allowed) return await Refuse("access_refused");
             await _presence.RegisterAsync(msg.DiscoveryId, connectionId);
-            await SendAsync(socket, new WsMessage { Type = "registered", RequestId = msg.RequestId, HttpToken = _http.Issue(msg.DiscoveryId, connectionId), Access = _access.Mode }, ct);
+            await SendAsync(socket, new WsMessage { Type = "registered", RequestId = msg.RequestId, HttpToken = _http.Issue(msg.DiscoveryId, connectionId), Access = _access.Mode, CircleKey = _access.CircleKey }, ct);
             await NotifySendersAsync(msg.DiscoveryId, ct);
             return (msg.DiscoveryId, null);
         }
@@ -249,7 +249,7 @@ public class RelaySocketHandler
         if (pending.EncKeyB64 != null && pending.SignKeyB64 != null) _access.RememberKeys(pending.DiscoveryId, pending.EncKeyB64, pending.SignKeyB64);
 
         await _presence.RegisterAsync(pending.DiscoveryId, connectionId);
-        await SendAsync(socket, new WsMessage { Type = "registered", RequestId = msg.RequestId, HttpToken = _http.Issue(pending.DiscoveryId, connectionId), Access = _access.Mode, Provisioners = ProvisionerList(), DailyQuota = _traffic.DailyQuota > 0 ? _traffic.DailyQuota : null }, ct);
+        await SendAsync(socket, new WsMessage { Type = "registered", RequestId = msg.RequestId, HttpToken = _http.Issue(pending.DiscoveryId, connectionId), Access = _access.Mode, CircleKey = _access.CircleKey, Provisioners = ProvisionerList(), DailyQuota = _traffic.DailyQuota > 0 ? _traffic.DailyQuota : null }, ct);
 
         await NotifySendersAsync(pending.DiscoveryId, ct);
         await RedirectIfFullAsync(socket, ct);
@@ -267,8 +267,8 @@ public class RelaySocketHandler
     }
 
     /// <summary>Sends "server_state" (§10 "Access control") to one connection: the sign-up rule changed while the client is connected.</summary>
-    public static Task SendStateAsync(WebSocket socket, string access, List<ProvisionerInfo> provisioners, CancellationToken ct) =>
-        SendAsync(socket, new WsMessage { Type = "server_state", Access = access, Provisioners = provisioners }, ct);
+    public static Task SendStateAsync(WebSocket socket, string access, List<ProvisionerInfo> provisioners, string? circleKey, CancellationToken ct) =>
+        SendAsync(socket, new WsMessage { Type = "server_state", Access = access, Provisioners = provisioners, CircleKey = circleKey }, ct);
 
     /// <summary>Tells every connected client the rule and the administrator tools now in force (an empty list means none).</summary>
     public async Task BroadcastStateAsync(CancellationToken ct)
@@ -277,7 +277,7 @@ public class RelaySocketHandler
         foreach (var id in _sockets.ConnectionIds)
             if (_sockets.Get(id) is { State: WebSocketState.Open } socket)
             {
-                try { await SendStateAsync(socket, _access.Mode, provisioners, ct); }
+                try { await SendStateAsync(socket, _access.Mode, provisioners, _access.CircleKey, ct); }
                 catch (WebSocketException) { /* gone meanwhile */ }
             }
     }
