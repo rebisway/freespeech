@@ -15,11 +15,39 @@ l'administration (§12). Une fois installé, tout se règle **sans redémarrer**
 | Service | `freespeech-relay.service`, utilisateur `www-data` |
 | Dépôt des fichiers à installer | `~/ftp/relay/publish` et `~/ftp/relay/deploy` (dans le dossier personnel de l'utilisateur qui administre) |
 
+## Installation à partir de l'archive téléchargée
+
+Ce parcours fait en une commande ce que décrivent les § 2 à 6 ; le reste du guide détaille chaque étape, pour qui préfère installer à la main ou veut comprendre ce que fait le script. Les deux parcours donnent le même résultat.
+
+1. Télécharger sur la machine, depuis la page des releases du dépôt (https://git.rebisway.com/rebisway/freespeech/releases), l'archive `freespeech-relay-<version>.tar.gz` et le fichier `SHA256SUMS`.
+2. Vérifier l'archive : `sha256sum -c --ignore-missing SHA256SUMS` doit répondre `OK`.
+3. Extraire et lancer le script, avec le nom de domaine déjà pointé vers la machine (§ 1) :
+
+```bash
+tar -xzf freespeech-relay-<version>.tar.gz
+cd freespeech-relay-<version>
+sudo bash install.sh relay.exemple.org --email admin@exemple.org
+```
+
+Le script installe les paquets et le runtime, ouvre le pare-feu (SSH, 80, 443), copie le programme dans `/var/www/freespeech_relay`, installe le service, écrit `appsettings.Local.json` avec un secret d'administration tiré au hasard, configure nginx, demande le certificat, lance `check` et ne démarre le service que si `check` passe. `--email` est l'adresse que Let's Encrypt garde pour les avis d'expiration : la donner vaut acceptation de l'accord d'abonné de Let's Encrypt. Options : `--contact <texte>` (comment un autre administrateur peut vous joindre, écrit dans `Peer:Contact`), `--no-certificate` (pas de demande de certificat : serveur sur un réseau local, voir la fin du § 5, ou certificat obtenu autrement) et `--no-firewall`.
+
+Lancer le script avec une archive plus récente met le programme à jour : `appsettings.Local.json` n'est jamais réécrit.
+
 ## 1. Avant de commencer
 
-- Une machine Debian ou Ubuntu avec un utilisateur disposant de `sudo` (les commandes « machine » se lancent avec cet utilisateur) ; ports **80 et 443** joignables depuis internet.
+- Une machine Debian ou Ubuntu avec un utilisateur disposant de `sudo` (les commandes « machine » se lancent avec cet utilisateur) ; ports **80 et 443** joignables depuis internet (pour un serveur qui ne sort pas du réseau local, voir la fin du § 5).
 - Un nom de domaine dont l'enregistrement DNS (A, et AAAA si la machine a une IPv6) pointe vers la machine. Certbot (§5) échoue tant que le DNS n'est pas propagé.
-- Sur le poste de développement : le SDK .NET 10, le dépôt du projet et `scp`.
+- Sur le poste de développement (celui qui compile) :
+  - le **SDK .NET 10** : sous Windows `winget install Microsoft.DotNet.SDK.10`, sous Ubuntu `sudo apt install -y dotnet-sdk-10.0` (après avoir ajouté le dépôt `ppa:dotnet/backports`, § 2). `dotnet --version` doit afficher `10.x` ;
+  - **Git** (sous Windows `winget install Git.Git`, sous Ubuntu `sudo apt install -y git`) et les **sources du projet** :
+
+    ```bash
+    git clone https://git.rebisway.com/rebisway/freespeech
+    cd freespeech
+    ```
+
+    `git clone` télécharge tout le dépôt dans un dossier `freespeech` ; `cd` s'y place. Toutes les commandes `sources/…` de ce guide se lancent depuis ce dossier, la racine du dépôt. Le même dépôt est publié en miroir sur https://github.com/rebisway/freespeech, à utiliser si le premier ne répond pas. Pour mettre à jour plus tard : `git pull` ;
+  - `scp` et `ssh` (clients OpenSSH, fournis avec Windows 10 et suivants, Linux et macOS).
 
 ## 2. Préparer la machine
 
@@ -37,9 +65,15 @@ sudo ufw allow OpenSSH && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
 
+Ce que font ces commandes :
+
+- `apt update && apt upgrade -y` : met à jour la liste des paquets, puis installe les mises à jour de sécurité de la machine ;
+- `nginx` reçoit les connexions HTTPS d'internet et les transmet au relais (§ 5) ; `certbot` obtient et renouvelle le certificat gratuit de Let's Encrypt, et son module `python3-certbot-nginx` écrit lui-même la partie TLS dans la configuration de nginx ; `ufw` est le pare-feu ; `curl` sert aux vérifications ;
+- `ufw allow OpenSSH` garde l'accès SSH ouvert, d'où l'ordre : activer le pare-feu d'abord couperait la session. `80` sert à la validation du certificat et à la redirection vers HTTPS, `443` au trafic des clients.
+
 Le port 5290 reste local : ne jamais l'ouvrir.
 
-**Runtime ASP.NET Core 10** (`dotnet --list-runtimes` doit montrer `Microsoft.AspNetCore.App 10.x`) :
+**Runtime ASP.NET Core 10** : le relais est un programme .NET que la machine exécute avec `dotnet`. Elle n'a besoin que du runtime, pas du SDK (`dotnet --list-runtimes` doit montrer `Microsoft.AspNetCore.App 10.x`) :
 
 ```bash
 # Ubuntu
@@ -50,13 +84,20 @@ sudo dpkg -i packages-microsoft-prod.deb && sudo apt update && sudo apt install 
 dotnet --list-runtimes
 ```
 
-**Dossier de dépôt** (là où l'on dépose les fichiers à installer) :
+**Dossier de dépôt** (là où l'on dépose les fichiers à installer ; `mkdir -p` crée les dossiers s'ils n'existent pas) :
 
 ```bash
 mkdir -p ~/ftp/relay/publish ~/ftp/relay/deploy
 ```
 
 ## 3. Publier et copier (poste de développement)
+
+`dotnet publish` compile le projet et rassemble, dans un dossier, tout ce que la machine doit exécuter :
+
+- `sources/freespeech.relay/FreeSpeech.Relay.csproj` : le projet à compiler ;
+- `-c Release` : la configuration de production ;
+- `-o sources/deploy/relay/publish` : le dossier de sortie. Il contient `FreeSpeech.Relay.dll`, ses bibliothèques et `appsettings.json`, jamais `appsettings.Local.json` (§ 4) ;
+- `scp -r` copie un dossier vers la machine par SSH ; `utilisateur@machine:ftp/relay/publish/` est un chemin relatif au dossier personnel de `utilisateur`. Les trois copies déposent le programme, les fichiers de déploiement (service systemd, exemple nginx, scripts de mise à jour et modèle de configuration) et le script des raccourcis `fsrelay`, `fspush`, `fsdir`.
 
 ```bash
 dotnet publish sources/freespeech.relay/FreeSpeech.Relay.csproj -c Release -o sources/deploy/relay/publish
@@ -106,6 +147,23 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Certbot modifie le fichier (bloc TLS, redirection http → https) et installe le renouvellement automatique (`systemctl list-timers | grep certbot`). **Ne jamais recopier `nginx-freespeech-relay` par-dessus** après certbot :
 on perdrait le certificat ; pour ajouter un bloc, éditer le fichier en place. Réparation : `sudo certbot --nginx -d relay.exemple.org --reinstall`. Sur une machine vierge, `/etc/nginx/sites-enabled/default` peut rester ou être supprimé.
+
+### Sur un réseau local (serveur non exposé à internet)
+
+Un serveur privé destiné à un réseau d'entreprise, d'association ou de famille n'a pas à être joignable depuis internet. Les applications exigent toutefois un certificat HTTPS **valide** : elles refusent un certificat auto-signé, et Android n'accepte le HTTP en clair que vers `127.0.0.1`. La voie qui fonctionne sans rien changer aux applications est un vrai nom de domaine, avec un certificat obtenu par validation **DNS** :
+
+1. Chez le fournisseur du domaine, créer l'enregistrement `A` de `relay.exemple.org` avec l'adresse **privée** de la machine (par exemple `192.168.1.20`). Certaines box bloquent les réponses DNS qui pointent vers une adresse privée : dans ce cas, déclarer le nom dans le résolveur de la box.
+2. Obtenir le certificat par validation DNS, qui ne demande aucun accès depuis internet. Avec le module certbot du fournisseur (par exemple `python3-certbot-dns-cloudflare`, avec un fichier d'identifiants en droits `600`), le renouvellement est automatique :
+
+```bash
+sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials /root/cloudflare.ini -d relay.exemple.org
+sudo certbot install --nginx --cert-name relay.exemple.org
+```
+
+3. Au pare-feu, n'ouvrir le 443 qu'au réseau local (le 80 est inutile) : `sudo ufw allow from 192.168.1.0/24 to any port 443 proto tcp`.
+4. Régler le relais en `private` et `access allowlist` (§ 8).
+
+Seuls les appareils qui sont sur le réseau local atteignent le serveur ; les autres serveurs de la liste du contact prennent le relais (voir [HOW_IT_WORKS.fr.md](HOW_IT_WORKS.fr.md) § 4).
 
 ### Si la machine héberge déjà d'autres serveurs web
 

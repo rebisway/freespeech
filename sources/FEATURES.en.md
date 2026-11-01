@@ -95,6 +95,7 @@ This document lists what the mobile (Android) and desktop (Windows, Linux; the c
 | Private server: use an invitation, or ask for access (with a check code to give to the administrator) | yes | yes |
 | A full server can advise a move (three times a day at most) | yes | yes |
 | "Server limit" banner when the daily volume is reached | yes | yes |
+| A private server is not written in the contact card by its address: an identifier only its members recognise | yes | yes |
 | Shared restricted server with a contact: the only path used by default; per-contact setting "If the private server does not answer" (wait, ask me, use an open server); "Send through an open server" in "Sends in progress" | yes | yes |
 
 ## Notifications and wake-up

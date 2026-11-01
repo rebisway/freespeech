@@ -6,7 +6,7 @@
 
 ![Licence AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-C89A4B) ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4) ![Android 7 et plus](https://img.shields.io/badge/Android-7%2B-3DDC84)
 
-[Site](https://freespeech.rebisway.com) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [Protocole](sources/PROTOCOL.fr.md) · [Architecture](sources/ARCHITECTURE.fr.md) · [English](README.md)
+[Site](https://freespeech.rebisway.com) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [Miroir GitHub](https://github.com/rebisway/freespeech) · [Protocole](sources/PROTOCOL.fr.md) · [Architecture](sources/ARCHITECTURE.fr.md) · [English](README.md)
 
 ---
 
@@ -48,6 +48,14 @@ Le serveur n'intervient qu'à l'envoi. L'application signe le message, le chiffr
 ```
 
 Une nouvelle application qui ne connaît encore aucun relais interroge un annuaire une seule fois, à sa toute première connexion, pour savoir quels relais publics acceptent de nouveaux comptes. L’annuaire répond par une liste signée et ne conserve rien sur les clients. Ensuite, il n’intervient plus. Deux serveurs publics deviennent voisins quand leurs deux administrateurs acceptent le lien. Les schémas sont dans [sources/diagrams/](sources/diagrams/) ; les fichiers en `-fr` sont en français.
+## Choisir ses serveurs
+
+Quand Alice écrit à Bob, son application se connecte au serveur de Bob et y dépose l'enveloppe. Bob répond de la même façon, sur un serveur d'Alice. Chaque serveur ne voit donc que ce que reçoivent ses propres utilisateurs, et jamais la conversation entière, sauf si les deux correspondants sont sur le même.
+
+Choisir son serveur revient ainsi à contrôler sa moitié des échanges. Un VPS d'entrée de gamme suffit pour héberger le sien, et l'installation suit un guide pas à pas sur Debian ou Ubuntu ([INSTALL_RELAY.fr.md](sources/INSTALL_RELAY.fr.md)). Pour des échanges sensibles, un serveur privé limité à une liste d'identités les garde entre ses membres. Il peut coexister avec un serveur public : la fiche de contact liste les deux, et l'adresse du serveur privé n'y figure pas, seulement un identifiant que ses membres reconnaissent.
+
+Les limites : le serveur de Bob voit l'adresse IP d'Alice quand elle s'y connecte, et un serveur privé ne vaut que par la confiance que l'on accorde à son administrateur. Ce fonctionnement réduit ce que les serveurs savent, mais ne protège pas contre le vol d'une clé après coup (voir Limites).
+
 ## Cryptographie
 
 | Usage | Primitive |

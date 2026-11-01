@@ -14,11 +14,39 @@ This guide installs it on a **blank** machine (Debian 12 or 13, Ubuntu 22.04 or 
 | Service | `freespeech-directory.service`, user `www-data` |
 | Deposit folder for the files to install | `~/ftp/directory/publish` and `~/ftp/directory/deploy` |
 
+## Installing from the downloaded archive
+
+This path does in one command what § 2 to 6 describe; the rest of the guide details every step, for those who prefer to install by hand or want to understand what the script does. Both paths give the same result.
+
+1. Download to the machine, from the releases page of the repository (https://git.rebisway.com/rebisway/freespeech/releases), the archive `freespeech-directory-<version>.tar.gz` and the `SHA256SUMS` file.
+2. Check the archive: `sha256sum -c --ignore-missing SHA256SUMS` must answer `OK`.
+3. Extract and run the script, with the domain name already pointing to the machine (§ 1):
+
+```bash
+tar -xzf freespeech-directory-<version>.tar.gz
+cd freespeech-directory-<version>
+sudo bash install.sh directory1.example.org --email admin@example.org
+```
+
+The script installs the packages and the runtime, opens the firewall (SSH, 80, 443), copies the program to `/var/www/freespeech_directory`, installs the service, writes `appsettings.Local.json` with a randomly drawn admin secret, configures nginx, requests the certificate, runs `check` and starts the service only if `check` passes. `--email` is the address Let's Encrypt keeps for expiry notices: giving it accepts the Let's Encrypt subscriber agreement. Options: `--contact <text>` (how another administrator can reach you, written in `Peer:Contact`), `--no-certificate` (no certificate request: a server on a local network, see the end of § 5, or a certificate obtained otherwise) and `--no-firewall`.
+
+Running the script with a newer archive updates the program: `appsettings.Local.json` is never rewritten.
+
 ## 1. Before starting
 
 - A Debian or Ubuntu machine with a user that has `sudo`; ports **80 and 443** reachable from the internet.
 - A domain name whose DNS record (A, and AAAA if the machine has an IPv6 address) points to the machine. **The domain belongs to you and does not depend on the host**: the directory's identity is its key and its address, which the applications know; to move it, copy the key and change the DNS.
-- On the development computer: the .NET 10 SDK, the project repository and `scp`.
+- On the development computer (the one that builds):
+  - the **.NET 10 SDK**: on Windows `winget install Microsoft.DotNet.SDK.10`, on Ubuntu `sudo apt install -y dotnet-sdk-10.0` (after adding the `ppa:dotnet/backports` repository, § 2). `dotnet --version` must show `10.x`;
+  - **Git** (on Windows `winget install Git.Git`, on Ubuntu `sudo apt install -y git`) and the **project sources**:
+
+    ```bash
+    git clone https://git.rebisway.com/rebisway/freespeech
+    cd freespeech
+    ```
+
+    `git clone` downloads the whole repository into a `freespeech` folder; `cd` moves into it. Every `sources/…` command in this guide is run from that folder, the root of the repository. The same repository is published as a mirror at https://github.com/rebisway/freespeech, to use if the first does not answer. To update later: `git pull`;
+  - `scp` and `ssh` (OpenSSH clients, included in Windows 10 and later, Linux and macOS).
 - **Several directories**: follow this guide on another machine, in another country if possible, with its own domain (`directory2.example.org`) and its own key. Directories do not synchronise: each relay links to each of them.
 
 ## 2. Prepare the machine
@@ -36,6 +64,12 @@ sudo apt install -y nginx certbot python3-certbot-nginx ufw curl
 sudo ufw allow OpenSSH && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
+
+What these commands do:
+
+- `apt update && apt upgrade -y` refreshes the package list, then installs the machine's security updates;
+- `nginx` receives the HTTPS connections from the internet and passes them to the server; `certbot` obtains and renews the free Let's Encrypt certificate, and its `python3-certbot-nginx` module writes the TLS part of the nginx configuration itself; `ufw` is the firewall; `curl` is used for the checks;
+- `ufw allow OpenSSH` keeps SSH access open, hence the order: enabling the firewall first would cut the session. `80` is used for the certificate validation and the redirect to HTTPS, `443` for the clients' traffic.
 
 Port 5294 stays local: never open it.
 
@@ -57,6 +91,13 @@ mkdir -p ~/ftp/directory/publish ~/ftp/directory/deploy
 ```
 
 ## 3. Publish and copy (development computer)
+
+`dotnet publish` builds the project and gathers, in one folder, everything the machine has to run:
+
+- `sources/freespeech.directory/FreeSpeech.Directory.csproj` is the project to build;
+- `-c Release` is the production configuration;
+- `-o sources/deploy/directory/publish` is the output folder. It holds the program, its libraries and `appsettings.json`, never `appsettings.Local.json`;
+- `scp -r` copies a folder to the machine over SSH; `user@machine:ftp/directory/publish/` is a path relative to the home folder of `user`. The three copies drop the program, the deployment files (systemd service, nginx example, update script and configuration template) and the script of the `fsrelay`, `fspush`, `fsdir` shortcuts.
 
 ```bash
 dotnet publish sources/freespeech.directory/FreeSpeech.Directory.csproj -c Release -o sources/deploy/directory/publish

@@ -6,7 +6,7 @@
 
 ![Licence AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-C89A4B) ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4) ![Android 7 and later](https://img.shields.io/badge/Android-7%2B-3DDC84)
 
-[Website](https://freespeech.rebisway.com/en/) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [Protocol](sources/PROTOCOL.en.md) · [Architecture](sources/ARCHITECTURE.en.md) · [Français](README.fr.md)
+[Website](https://freespeech.rebisway.com/en/) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [GitHub mirror](https://github.com/rebisway/freespeech) · [Protocol](sources/PROTOCOL.en.md) · [Architecture](sources/ARCHITECTURE.en.md) · [Français](README.fr.md)
 
 ---
 
@@ -48,6 +48,14 @@ The server only comes in when you send something. The app signs the message, enc
 ```
 
 A new app that knows no relay yet asks a directory once, on its very first connection, which public relays accept new accounts. The directory answers with a signed list and keeps nothing about clients. After that it is no longer involved. Two public servers become neighbours when both of their administrators accept the link. The diagrams are in [sources/diagrams/](sources/diagrams/); the files ending in `-en` are in English.
+## Choosing your servers
+
+When Alice writes to Bob, her app connects to Bob's server and drops the envelope there. Bob answers the same way, on one of Alice's servers. Each server therefore sees only what its own users receive, never the whole conversation, unless both correspondents are on the same one.
+
+Choosing a server thus means controlling your half of the exchanges. An entry-level VPS is enough to host your own, and the installation follows a step-by-step guide on Debian or Ubuntu ([INSTALL_RELAY.en.md](sources/INSTALL_RELAY.en.md)). For sensitive conversations, a private server limited to a list of identities keeps them among its members. It can sit next to a public server: the contact card lists both, and the private server's address is not in it, only an identifier its members recognise.
+
+The limits: Bob's server sees Alice's IP address when she connects to it, and a private server is only as trustworthy as its administrator. This reduces what the servers know, but does not protect against a key stolen after the fact (see Limits).
+
 ## Cryptography
 
 | Use | Primitive |
