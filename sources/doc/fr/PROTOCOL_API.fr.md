@@ -1,8 +1,8 @@
 # Référence de l'API du protocole
 
-*English version: [PROTOCOL_API.en.md](PROTOCOL_API.en.md).*
+*English version: [PROTOCOL_API.en.md](../en/PROTOCOL_API.en.md).*
 
-Cette référence s'adresse à qui écrit un client ou un serveur. Elle liste chaque appel, regroupé selon son usage, avec ses champs, ce qu'il fait et un exemple. Les règles et leurs raisons sont dans [PROTOCOL.fr.md](PROTOCOL.fr.md) ; chaque section renvoie à la partie qui l'explique. Les diagrammes de classes sont dans [diagrams/uml/](diagrams/uml/).
+Cette référence s'adresse à qui écrit un client ou un serveur. Elle liste chaque appel, regroupé selon son usage, avec ses champs, ce qu'il fait et un exemple. Les règles et leurs raisons sont dans [PROTOCOL.fr.md](PROTOCOL.fr.md) ; chaque section renvoie à la partie qui l'explique. Les diagrammes de classes sont dans [diagrams/uml/](../diagrams/uml/).
 
 Sont couverts ici : la connexion à un relais, l'échange de contact, les messages 1-à-1, la présence et la livraison hors ligne, les fichiers, les groupes, l'enregistrement push et les appareils multiples. L'administration et les appels entre serveurs sont décrits dans [PROTOCOL.fr.md](PROTOCOL.fr.md) §10.
 

@@ -1,6 +1,6 @@
 # Installer un serveur relais FreeSpeech (Debian / Ubuntu vierge)
 
-*English version: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md). Autres serveurs : [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md).*
+*English version: [INSTALL_RELAY.en.md](../en/INSTALL_RELAY.en.md). Autres serveurs : [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md).*
 
 Ce guide installe **un** serveur relais sur une machine **vierge** (Debian 12 ou 13, Ubuntu 22.04 ou 24.04), pour n'importe quel domaine (ci-dessous `relay.exemple.org`). Le relais ne stocke
 aucun message : il met en relation des clients connectés et garde en mémoire seulement qui est en ligne et quelques marqueurs d'attente. Les deux seuls fichiers à sauvegarder sont ceux de

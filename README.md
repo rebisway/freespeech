@@ -6,7 +6,7 @@
 
 ![Licence AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-C89A4B) ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4) ![Android 7 and later](https://img.shields.io/badge/Android-7%2B-3DDC84)
 
-[Website](https://freespeech.rebisway.com/en/) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [GitHub mirror](https://github.com/rebisway/freespeech) · [Protocol](sources/PROTOCOL.en.md) · [Architecture](sources/ARCHITECTURE.en.md) · [Français](README.fr.md)
+[Website](https://freespeech.rebisway.com/en/) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [GitHub mirror](https://github.com/rebisway/freespeech) · [Protocol](sources/doc/en/PROTOCOL.en.md) · [Architecture](sources/doc/en/ARCHITECTURE.en.md) · [Français](README.fr.md)
 
 ---
 
@@ -47,12 +47,12 @@ The server only comes in when you send something. The app signs the message, enc
    keeps nothing                                keeps nothing
 ```
 
-A new app that knows no relay yet asks a directory once, on its very first connection, which public relays accept new accounts. The directory answers with a signed list and keeps nothing about clients. After that it is no longer involved. Two public servers become neighbours when both of their administrators accept the link. The diagrams are in [sources/diagrams/](sources/diagrams/); the files ending in `-en` are in English.
+A new app that knows no relay yet asks a directory once, on its very first connection, which public relays accept new accounts. The directory answers with a signed list and keeps nothing about clients. After that it is no longer involved. Two public servers become neighbours when both of their administrators accept the link. The diagrams are in [sources/doc/diagrams/](sources/doc/diagrams/); the files ending in `-en` are in English.
 ## Choosing your servers
 
 When Alice writes to Bob, her app connects to Bob's server and drops the envelope there. Bob answers the same way, on one of Alice's servers. Each server therefore sees only what its own users receive, never the whole conversation, unless both correspondents are on the same one.
 
-Choosing a server thus means controlling your half of the exchanges. An entry-level VPS is enough to host your own, and the installation follows a step-by-step guide on Debian or Ubuntu ([INSTALL_RELAY.en.md](sources/INSTALL_RELAY.en.md)). For sensitive conversations, a private server limited to a list of identities keeps them among its members. It can sit next to a public server: the contact card lists both, and the private server's address is not in it, only an identifier its members recognise.
+Choosing a server thus means controlling your half of the exchanges. An entry-level VPS is enough to host your own, and the installation follows a step-by-step guide on Debian or Ubuntu ([INSTALL_RELAY.en.md](sources/doc/en/INSTALL_RELAY.en.md)). For sensitive conversations, a private server limited to a list of identities keeps them among its members. It can sit next to a public server: the contact card lists both, and the private server's address is not in it, only an identifier its members recognise.
 
 The limits: Bob's server sees Alice's IP address when she connects to it, and a private server is only as trustworthy as its administrator. This reduces what the servers know, but does not protect against a key stolen after the fact (see Limits).
 
@@ -81,7 +81,7 @@ The primitives come from BouncyCastle, which is managed code and runs on Android
 - Received files are not encrypted by the app. On Android they sit in the app's private storage, which the system encrypts; on the desktop they are plain files in the app's data folder.
 - The PIN protects the screen, not the encryption.
 
-The security model is described in full in [ARCHITECTURE.en.md](sources/ARCHITECTURE.en.md), section "Security model and known limits".
+The security model is described in full in [ARCHITECTURE.en.md](sources/doc/en/ARCHITECTURE.en.md), section "Security model and known limits".
 
 ## Repository layout
 
@@ -97,14 +97,14 @@ The security model is described in full in [ARCHITECTURE.en.md](sources/ARCHITEC
 | `sources/freespeech.ops` | Code shared by the relay and the gateway: administration command line, linking of servers, logs |
 | `sources/freespeech.tests` | xunit tests |
 | `sources/deploy/` | Service files, nginx files and configuration examples |
-| `sources/diagrams/` | Diagrams, in French and English |
+| `sources/doc/diagrams/` | Diagrams, in French and English |
 | `scripts/` | End-to-end scenarios with real clients and real servers |
 
 ## Getting started
 
 **Use the app.** Join the open test on [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). You can also download the APK from [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) and compare the SHA-256 fingerprint shown on that page with the file you got. In Settings > Servers, `https://fs.rebisway.com` is the reference server, and you can add your own.
 
-**Run a relay.** [INSTALL_RELAY.en.md](sources/INSTALL_RELAY.en.md) goes step by step through Ubuntu 24, nginx, systemd and the certificate. The administration commands are in [cli-relay.en.md](sources/cli-relay.en.md).
+**Run a relay.** [INSTALL_RELAY.en.md](sources/doc/en/INSTALL_RELAY.en.md) goes step by step through Ubuntu 24, nginx, systemd and the certificate. The administration commands are in [cli-relay.en.md](sources/doc/en/cli-relay.en.md).
 
 **Build and test.** You need the .NET 10 SDK.
 
@@ -136,25 +136,25 @@ dotnet build sources/FreeSpeech.Mobile.slnx -f net10.0-windows10.0.19041.0   # r
 
 | | Français | English |
 |---|---|---|
-| How it works: servers, clients, waking a phone | [HOW_IT_WORKS.fr.md](sources/HOW_IT_WORKS.fr.md) | [HOW_IT_WORKS.en.md](sources/HOW_IT_WORKS.en.md) |
-| One message in every case (contact, group) | [MESSAGE_FLOWS.fr.md](sources/MESSAGE_FLOWS.fr.md) | [MESSAGE_FLOWS.en.md](sources/MESSAGE_FLOWS.en.md) |
-| Mobile and desktop features | [FEATURES.fr.md](sources/FEATURES.fr.md) | [FEATURES.en.md](sources/FEATURES.en.md) |
-| Protocol | [PROTOCOL.fr.md](sources/PROTOCOL.fr.md) | [PROTOCOL.en.md](sources/PROTOCOL.en.md) |
-| Protocol API reference | [PROTOCOL_API.fr.md](sources/PROTOCOL_API.fr.md) | [PROTOCOL_API.en.md](sources/PROTOCOL_API.en.md) |
-| Architecture, encryption, storage | [ARCHITECTURE.fr.md](sources/ARCHITECTURE.fr.md) | [ARCHITECTURE.en.md](sources/ARCHITECTURE.en.md) |
-| Installing a relay | [INSTALL_RELAY.fr.md](sources/INSTALL_RELAY.fr.md) | [INSTALL_RELAY.en.md](sources/INSTALL_RELAY.en.md) |
-| Administering your servers | [ADMINISTRATION.fr.md](sources/ADMINISTRATION.fr.md) | [ADMINISTRATION.en.md](sources/ADMINISTRATION.en.md) |
-| Relay command line | [cli-relay.fr.md](sources/cli-relay.fr.md) | [cli-relay.en.md](sources/cli-relay.en.md) |
-| Push gateway command line | [cli-push.fr.md](sources/cli-push.fr.md) | [cli-push.en.md](sources/cli-push.en.md) |
-| Installing the push gateway | [INSTALL_PUSH.fr.md](sources/INSTALL_PUSH.fr.md) | [INSTALL_PUSH.en.md](sources/INSTALL_PUSH.en.md) |
-| Installing a relay directory | [INSTALL_DIRECTORY.fr.md](sources/INSTALL_DIRECTORY.fr.md) | [INSTALL_DIRECTORY.en.md](sources/INSTALL_DIRECTORY.en.md) |
-| Several servers on one machine | [INSTALL_HOST.fr.md](sources/INSTALL_HOST.fr.md) | [INSTALL_HOST.en.md](sources/INSTALL_HOST.en.md) |
-| Diagrams | [sources/diagrams/](sources/diagrams/) (`-fr`) | [sources/diagrams/](sources/diagrams/) (`-en`) |
-| Class and database diagrams | [uml/](sources/diagrams/uml/), [db/](sources/diagrams/db/) | [uml/](sources/diagrams/uml/), [db/](sources/diagrams/db/) |
+| How it works: servers, clients, waking a phone | [HOW_IT_WORKS.fr.md](sources/doc/fr/HOW_IT_WORKS.fr.md) | [HOW_IT_WORKS.en.md](sources/doc/en/HOW_IT_WORKS.en.md) |
+| One message in every case (contact, group) | [MESSAGE_FLOWS.fr.md](sources/doc/fr/MESSAGE_FLOWS.fr.md) | [MESSAGE_FLOWS.en.md](sources/doc/en/MESSAGE_FLOWS.en.md) |
+| Mobile and desktop features | [FEATURES.fr.md](sources/doc/fr/FEATURES.fr.md) | [FEATURES.en.md](sources/doc/en/FEATURES.en.md) |
+| Protocol | [PROTOCOL.fr.md](sources/doc/fr/PROTOCOL.fr.md) | [PROTOCOL.en.md](sources/doc/en/PROTOCOL.en.md) |
+| Protocol API reference | [PROTOCOL_API.fr.md](sources/doc/fr/PROTOCOL_API.fr.md) | [PROTOCOL_API.en.md](sources/doc/en/PROTOCOL_API.en.md) |
+| Architecture, encryption, storage | [ARCHITECTURE.fr.md](sources/doc/fr/ARCHITECTURE.fr.md) | [ARCHITECTURE.en.md](sources/doc/en/ARCHITECTURE.en.md) |
+| Installing a relay | [INSTALL_RELAY.fr.md](sources/doc/fr/INSTALL_RELAY.fr.md) | [INSTALL_RELAY.en.md](sources/doc/en/INSTALL_RELAY.en.md) |
+| Administering your servers | [ADMINISTRATION.fr.md](sources/doc/fr/ADMINISTRATION.fr.md) | [ADMINISTRATION.en.md](sources/doc/en/ADMINISTRATION.en.md) |
+| Relay command line | [cli-relay.fr.md](sources/doc/fr/cli-relay.fr.md) | [cli-relay.en.md](sources/doc/en/cli-relay.en.md) |
+| Push gateway command line | [cli-push.fr.md](sources/doc/fr/cli-push.fr.md) | [cli-push.en.md](sources/doc/en/cli-push.en.md) |
+| Installing the push gateway | [INSTALL_PUSH.fr.md](sources/doc/fr/INSTALL_PUSH.fr.md) | [INSTALL_PUSH.en.md](sources/doc/en/INSTALL_PUSH.en.md) |
+| Installing a relay directory | [INSTALL_DIRECTORY.fr.md](sources/doc/fr/INSTALL_DIRECTORY.fr.md) | [INSTALL_DIRECTORY.en.md](sources/doc/en/INSTALL_DIRECTORY.en.md) |
+| Several servers on one machine | [INSTALL_HOST.fr.md](sources/doc/fr/INSTALL_HOST.fr.md) | [INSTALL_HOST.en.md](sources/doc/en/INSTALL_HOST.en.md) |
+| Diagrams | [sources/doc/diagrams/](sources/doc/diagrams/) (`-fr`) | [sources/doc/diagrams/](sources/doc/diagrams/) (`-en`) |
+| Class and database diagrams | [uml/](sources/doc/diagrams/uml/), [db/](sources/doc/diagrams/db/) | [uml/](sources/doc/diagrams/uml/), [db/](sources/doc/diagrams/db/) |
 
 ## Contributing
 
-Bug reports, reviews of the cryptography and of the protocol, tests and fixes are all welcome. Please read the [protocol](sources/PROTOCOL.en.md) and the [architecture](sources/ARCHITECTURE.en.md) before proposing a change. Code comments are in English, every source file carries the licence header, and each document comes in French and in English (a `.fr.md` file and a `.en.md` file).
+Bug reports, reviews of the cryptography and of the protocol, tests and fixes are all welcome. Please read the [protocol](sources/doc/en/PROTOCOL.en.md) and the [architecture](sources/doc/en/ARCHITECTURE.en.md) before proposing a change. Code comments are in English, every source file carries the licence header, and each document comes in French and in English (a `.fr.md` file and a `.en.md` file).
 
 To report a vulnerability, write to <contact@rebisway.com>.
 

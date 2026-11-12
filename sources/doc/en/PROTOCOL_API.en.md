@@ -1,8 +1,8 @@
 # Protocol API reference
 
-*Version française : [PROTOCOL_API.fr.md](PROTOCOL_API.fr.md).*
+*Version française : [PROTOCOL_API.fr.md](../fr/PROTOCOL_API.fr.md).*
 
-This is the reference for anyone who writes a client or a server. It lists every call, grouped by what it is for, with its fields, what it does and an example. The rules and the reasons behind them are in [PROTOCOL.en.md](PROTOCOL.en.md); each section below points to the part that explains it. The class diagrams are in [diagrams/uml/](diagrams/uml/).
+This is the reference for anyone who writes a client or a server. It lists every call, grouped by what it is for, with its fields, what it does and an example. The rules and the reasons behind them are in [PROTOCOL.en.md](PROTOCOL.en.md); each section below points to the part that explains it. The class diagrams are in [diagrams/uml/](../diagrams/uml/).
 
 Covered here: the connection to a relay, contact exchange, one-to-one messages, presence and offline delivery, files, groups, push registration and several devices. Administration and the calls between servers are in [PROTOCOL.en.md](PROTOCOL.en.md) §10.
 

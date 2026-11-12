@@ -4,11 +4,11 @@
 
 ## English
 
-The payloads of the Letters about files (section 5 of [PROTOCOL_API.en.md](../../PROTOCOL_API.en.md)), groups (section 6) and several devices (section 8). A `group_state` Letter carries the state as a string; the state itself is a `GroupStateData`. A group message is a `GroupMessageLetter` sealed with the group key.
+The payloads of the Letters about files (section 5 of [PROTOCOL_API.en.md](../../en/PROTOCOL_API.en.md)), groups (section 6) and several devices (section 8). A `group_state` Letter carries the state as a string; the state itself is a `GroupStateData`. A group message is a `GroupMessageLetter` sealed with the group key.
 
 ## Français
 
-Les contenus des lettres sur les fichiers (section 5 de [PROTOCOL_API.fr.md](../../PROTOCOL_API.fr.md)), les groupes (section 6) et les appareils multiples (section 8). Une lettre `group_state` porte l'état sous forme de chaîne ; l'état lui-même est un `GroupStateData`. Un message de groupe est un `GroupMessageLetter` scellé avec la clé de groupe.
+Les contenus des lettres sur les fichiers (section 5 de [PROTOCOL_API.fr.md](../../fr/PROTOCOL_API.fr.md)), les groupes (section 6) et les appareils multiples (section 8). Une lettre `group_state` porte l'état sous forme de chaîne ; l'état lui-même est un `GroupStateData`. Un message de groupe est un `GroupMessageLetter` scellé avec la clé de groupe.
 
 ```mermaid
 classDiagram

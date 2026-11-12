@@ -1,6 +1,6 @@
 # Several servers on one machine
 
-*Version française : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). One guide per server, each complete for a blank machine: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md), [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md), [INSTALL_DIRECTORY.en.md](INSTALL_DIRECTORY.en.md).*
+*Version française : [INSTALL_HOST.fr.md](../fr/INSTALL_HOST.fr.md). One guide per server, each complete for a blank machine: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md), [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md), [INSTALL_DIRECTORY.en.md](INSTALL_DIRECTORY.en.md).*
 
 Several FreeSpeech servers (relay, push gateway, website…) and other software can share one Debian or Ubuntu machine. Each installation guide stands on its own; this document gathers what must stay
 **consistent between them**.

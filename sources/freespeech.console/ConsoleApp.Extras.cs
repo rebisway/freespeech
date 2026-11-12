@@ -126,7 +126,7 @@ public partial class ConsoleApp
         };
         foreach (var e in examples.Where(e => type == null || e.Type.Contains(type, StringComparison.OrdinalIgnoreCase)))
             Print($"  {e.Type,-16} raw send {e.Json}");
-        Print("  The complete list of frames, with their fields: PROTOCOL_API.en.md.");
+        Print("  The complete list of frames, with their fields: doc/en/PROTOCOL_API.en.md.");
     }
 
     private string TitleOf(Conversation c) => c.Group?.Name ?? _client.FindContact(c.ContactId ?? "")?.DisplayName ?? c.HistoryKey;

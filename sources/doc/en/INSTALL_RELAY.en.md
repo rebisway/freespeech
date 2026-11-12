@@ -1,6 +1,6 @@
 # Installing a FreeSpeech relay server (blank Debian / Ubuntu)
 
-*Version française : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md). Other servers: [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md).*
+*Version française : [INSTALL_RELAY.fr.md](../fr/INSTALL_RELAY.fr.md). Other servers: [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md).*
 
 This guide installs **one** relay server on a **blank** machine (Debian 12 or 13, Ubuntu 22.04 or 24.04), for any domain (below `fs.example.org`). The relay stores no message: it connects clients that are online and
 keeps in memory only who is online and a few waiting markers. The only files worth a backup are the administration ones (§12). Once installed, everything is set **without restarting** with the `admin` command

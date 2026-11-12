@@ -1,6 +1,6 @@
 # Installer un annuaire FreeSpeech (Debian / Ubuntu vierge)
 
-*English version: [INSTALL_DIRECTORY.en.md](INSTALL_DIRECTORY.en.md). Autres serveurs : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md), [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §10 « Annuaire ». Commandes : [cli-directory.fr.md](cli-directory.fr.md).*
+*English version: [INSTALL_DIRECTORY.en.md](../en/INSTALL_DIRECTORY.en.md). Autres serveurs : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md), [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §10 « Annuaire ». Commandes : [cli-directory.fr.md](cli-directory.fr.md).*
 
 Un annuaire (`freespeech.directory`) indique à un client qui ne connaît aucun relais quels relais acceptent de nouveaux comptes, et répartit les nouveaux arrivants entre eux. Il ne stocke rien sur les clients et ne voit passer aucun message.
 Ce guide l'installe sur une machine **vierge** (Debian 12 ou 13, Ubuntu 22.04 ou 24.04), pour n'importe quel domaine (ci-dessous `directory1.exemple.org`).

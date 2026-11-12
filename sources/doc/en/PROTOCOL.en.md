@@ -1,6 +1,6 @@
 ﻿# FreeSpeech protocol
 
-*Version française : [PROTOCOL.fr.md](PROTOCOL.fr.md). Call-by-call reference: [PROTOCOL_API.en.md](PROTOCOL_API.en.md). Architecture, cryptography and local storage: [ARCHITECTURE.en.md](ARCHITECTURE.en.md).*
+*Version française : [PROTOCOL.fr.md](../fr/PROTOCOL.fr.md). Call-by-call reference: [PROTOCOL_API.en.md](PROTOCOL_API.en.md). Architecture, cryptography and local storage: [ARCHITECTURE.en.md](ARCHITECTURE.en.md).*
 
 Design document of the protocol.
 The server never knows the content — only the routing metadata that is strictly
@@ -307,7 +307,7 @@ moves to a **new identity** (new phrases) and tells contacts and group moderator
   memory). A single base64 JSON blob also remains restorable.
 - Implemented: `backup [path] [none|6m|all]` / `restore <path>` in the console,
   logic in `Backup/BackupService.cs` (no console I/O, reusable), primitives in
-  [BackupCrypto.cs](freespeech.client/Backup/BackupCrypto.cs).
+  [BackupCrypto.cs](../../freespeech.client/Backup/BackupCrypto.cs).
 
 ### Archive of attachment files (free space)
 
@@ -544,8 +544,8 @@ if updated.encryption_public_key != existing.encryption_public_key
 then REJECT (key change = potential impersonation)
 else: nickname / photo / servers may change freely
 ```
-**Wired in the client library** ([FreeSpeechClient.cs](freespeech.client/FreeSpeechClient.cs)
-`HandleIncomingIdentityUpdate`, [FreeSpeechClient.Account.cs](freespeech.client/FreeSpeechClient.Account.cs)
+**Wired in the client library** ([FreeSpeechClient.cs](../../freespeech.client/FreeSpeechClient.cs)
+`HandleIncomingIdentityUpdate`, [FreeSpeechClient.Account.cs](../../freespeech.client/FreeSpeechClient.Account.cs)
 `SendIdentityUpdateAsync`): any change of the server list (`server add|remove`,
 §8) or of the profile (`profile name|about|photo`) sends an `identity_update` to
 every confirmed contact — each send goes through the normal path (live, or queued in the outbox like a chat message; the most recent card replaces the one still waiting).
@@ -1437,7 +1437,7 @@ A directory tells a client that knows no relay which relays take new accounts, a
 
 - **Public/private status, candidates and banned addresses** persisted in `siblings.json`
   (configurable path, `Server:SiblingsFilePath`) —
-  [Services/SiblingRegistryService.cs](freespeech.relay/Services/SiblingRegistryService.cs).
+  [Services/SiblingRegistryService.cs](../../freespeech.relay/Services/SiblingRegistryService.cs).
   A sibling = a relay linked by keys (`{ url }`, see "Linking servers by mutual consent").
 - **Candidates — never auto-promoted** (explicit decision taken during design,
   counter-proposal to "learning through clients", judged too risky: private server
@@ -1445,7 +1445,7 @@ A directory tells a client that knows no relay which relays take new accounts, a
   `POST /s2s/siblings/sync`; they land in a queue (`GET /api/admin/candidates`)
   for admin review — never promoted on their own. Clients cannot suggest a sibling
   at all.
-- **Admin** ([Controllers/AdminController.cs](freespeech.relay/Controllers/AdminController.cs)):
+- **Admin** ([Controllers/AdminController.cs](../../freespeech.relay/Controllers/AdminController.cs)):
   plain JSON/HTTP (portable, no web UI for now), protected by the `X-Admin-Secret`
   header (config `Admin:Secret`, empty = everything refused by default):
   `GET/POST /api/admin/status` (public/private),
@@ -1454,7 +1454,7 @@ A directory tells a client that knows no relay which relays take new accounts, a
   `GET/POST/DELETE /api/admin/blacklist` (a ban also removes from the
   whitelist/candidates; the ban itself remains manual or triggered by throttling —
   only the throttling remains to be wired, out of scope for this session).
-- **Incoming S2S** ([Controllers/S2SController.cs](freespeech.relay/Controllers/S2SController.cs)),
+- **Incoming S2S** ([Controllers/S2SController.cs](../../freespeech.relay/Controllers/S2SController.cs)),
   protected by a **request signature** (see "S2S authentication" below) — a
   refusal (invalid or stale signature, replay, private server, banned URL,
   oversized body) systematically returns a generic `404`, never any detail:
@@ -1470,7 +1470,7 @@ A directory tells a client that knows no relay which relays take new accounts, a
   `POST /s2s/flag` (WAITING/READY propagation — trust is at the level of the
   whitelisted sibling, not re-verified at the level of the client `from`),
   `POST /s2s/siblings/sync` (reception of suggestions, see above).
-- **Outgoing S2S** ([Services/S2SClient.cs](freespeech.relay/Services/S2SClient.cs)):
+- **Outgoing S2S** ([Services/S2SClient.cs](../../freespeech.relay/Services/S2SClient.cs)):
   each call is best-effort (5 s timeout, errors swallowed) — a dead sibling must
   never block the send/flag that triggered the attempt. Triggered from
   `RelaySocketHandler.HandleSendAsync` (cascade on `send` without a local

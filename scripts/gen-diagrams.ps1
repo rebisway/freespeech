@@ -6,10 +6,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # *******************************************************************
 #
-# Regenerates diagrams 11-14 (sources\diagrams, -fr and -en): signed registration, server move,
+# Regenerates diagrams 11-14 (sources\doc\diagrams, -fr and -en): signed registration, server move,
 # multi-gateway push, Argon2id derivation. Edit the texts here, then run: scripts\gen-diagrams.ps1
 # (file saved as UTF-8 with BOM: Windows PowerShell 5.1 needs it for the accents)
-$out = Join-Path (Split-Path -Parent $PSScriptRoot) 'sources\diagrams'
+$out = Join-Path (Split-Path -Parent $PSScriptRoot) 'sources\doc\diagrams'
 function Esc($s) { $s.Replace('~',[string][char]0x2019).Replace('&', '&amp;').Replace('<', '&lt;').Replace('>', '&gt;') }
 $script:b = ''
 function Add($s) { $script:b += "  $s`n" }

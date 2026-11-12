@@ -6,7 +6,7 @@
 
 ![Licence AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-C89A4B) ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4) ![Android 7 et plus](https://img.shields.io/badge/Android-7%2B-3DDC84)
 
-[Site](https://freespeech.rebisway.com) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [Miroir GitHub](https://github.com/rebisway/freespeech) · [Protocole](sources/PROTOCOL.fr.md) · [Architecture](sources/ARCHITECTURE.fr.md) · [English](README.md)
+[Site](https://freespeech.rebisway.com) · [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile) · [Miroir GitHub](https://github.com/rebisway/freespeech) · [Protocole](sources/doc/fr/PROTOCOL.fr.md) · [Architecture](sources/doc/fr/ARCHITECTURE.fr.md) · [English](README.md)
 
 ---
 
@@ -47,12 +47,12 @@ Le serveur n'intervient qu'à l'envoi. L'application signe le message, le chiffr
    ne garde rien                                ne garde rien
 ```
 
-Une nouvelle application qui ne connaît encore aucun relais interroge un annuaire une seule fois, à sa toute première connexion, pour savoir quels relais publics acceptent de nouveaux comptes. L’annuaire répond par une liste signée et ne conserve rien sur les clients. Ensuite, il n’intervient plus. Deux serveurs publics deviennent voisins quand leurs deux administrateurs acceptent le lien. Les schémas sont dans [sources/diagrams/](sources/diagrams/) ; les fichiers en `-fr` sont en français.
+Une nouvelle application qui ne connaît encore aucun relais interroge un annuaire une seule fois, à sa toute première connexion, pour savoir quels relais publics acceptent de nouveaux comptes. L’annuaire répond par une liste signée et ne conserve rien sur les clients. Ensuite, il n’intervient plus. Deux serveurs publics deviennent voisins quand leurs deux administrateurs acceptent le lien. Les schémas sont dans [sources/doc/diagrams/](sources/doc/diagrams/) ; les fichiers en `-fr` sont en français.
 ## Choisir ses serveurs
 
 Quand Alice écrit à Bob, son application se connecte au serveur de Bob et y dépose l'enveloppe. Bob répond de la même façon, sur un serveur d'Alice. Chaque serveur ne voit donc que ce que reçoivent ses propres utilisateurs, et jamais la conversation entière, sauf si les deux correspondants sont sur le même.
 
-Choisir son serveur revient ainsi à contrôler sa moitié des échanges. Un VPS d'entrée de gamme suffit pour héberger le sien, et l'installation suit un guide pas à pas sur Debian ou Ubuntu ([INSTALL_RELAY.fr.md](sources/INSTALL_RELAY.fr.md)). Pour des échanges sensibles, un serveur privé limité à une liste d'identités les garde entre ses membres. Il peut coexister avec un serveur public : la fiche de contact liste les deux, et l'adresse du serveur privé n'y figure pas, seulement un identifiant que ses membres reconnaissent.
+Choisir son serveur revient ainsi à contrôler sa moitié des échanges. Un VPS d'entrée de gamme suffit pour héberger le sien, et l'installation suit un guide pas à pas sur Debian ou Ubuntu ([INSTALL_RELAY.fr.md](sources/doc/fr/INSTALL_RELAY.fr.md)). Pour des échanges sensibles, un serveur privé limité à une liste d'identités les garde entre ses membres. Il peut coexister avec un serveur public : la fiche de contact liste les deux, et l'adresse du serveur privé n'y figure pas, seulement un identifiant que ses membres reconnaissent.
 
 Les limites : le serveur de Bob voit l'adresse IP d'Alice quand elle s'y connecte, et un serveur privé ne vaut que par la confiance que l'on accorde à son administrateur. Ce fonctionnement réduit ce que les serveurs savent, mais ne protège pas contre le vol d'une clé après coup (voir Limites).
 
@@ -81,7 +81,7 @@ Les primitives viennent de BouncyCastle, du code managé qui fonctionne sur Andr
 - Les fichiers reçus ne sont pas chiffrés par l'application. Sur Android, ils sont dans l'espace privé de l'application, que le système chiffre ; sur le bureau, ce sont de simples fichiers dans le dossier de données de l'application.
 - Le code PIN protège l'écran, pas le chiffrement.
 
-Le modèle de sécurité est décrit en détail dans [ARCHITECTURE.fr.md](sources/ARCHITECTURE.fr.md), section « Modèle de sécurité et limites connues ».
+Le modèle de sécurité est décrit en détail dans [ARCHITECTURE.fr.md](sources/doc/fr/ARCHITECTURE.fr.md), section « Modèle de sécurité et limites connues ».
 
 ## Organisation du dépôt
 
@@ -97,14 +97,14 @@ Le modèle de sécurité est décrit en détail dans [ARCHITECTURE.fr.md](source
 | `sources/freespeech.ops` | Le code commun au relais et à la passerelle : ligne de commande d'administration, liaison des serveurs, journaux |
 | `sources/freespeech.tests` | Les tests xunit |
 | `sources/deploy/` | Fichiers de service, fichiers nginx et exemples de configuration |
-| `sources/diagrams/` | Les schémas, en français et en anglais |
+| `sources/doc/diagrams/` | Les schémas, en français et en anglais |
 | `scripts/` | Des scénarios de bout en bout avec de vrais clients et de vrais serveurs |
 
 ## Pour commencer
 
 **Utiliser l'application.** Rejoignez le test ouvert sur [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). Vous pouvez aussi télécharger l'APK sur [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) et comparez l'empreinte SHA-256 affichée sur cette page avec celle de votre fichier. Dans Réglages > Serveurs, `https://fs.rebisway.com` est le serveur de référence, et vous pouvez ajouter le vôtre.
 
-**Héberger un relais.** [INSTALL_RELAY.fr.md](sources/INSTALL_RELAY.fr.md) détaille pas à pas Ubuntu 24, nginx, systemd et le certificat. Les commandes d'administration sont dans [cli-relay.fr.md](sources/cli-relay.fr.md).
+**Héberger un relais.** [INSTALL_RELAY.fr.md](sources/doc/fr/INSTALL_RELAY.fr.md) détaille pas à pas Ubuntu 24, nginx, systemd et le certificat. Les commandes d'administration sont dans [cli-relay.fr.md](sources/doc/fr/cli-relay.fr.md).
 
 **Compiler et tester.** Il faut le SDK .NET 10.
 
@@ -136,25 +136,25 @@ dotnet build sources/FreeSpeech.Mobile.slnx -f net10.0-windows10.0.19041.0   # l
 
 | | Français | English |
 |---|---|---|
-| Fonctionnement : serveurs, clients, réveil du mobile | [HOW_IT_WORKS.fr.md](sources/HOW_IT_WORKS.fr.md) | [HOW_IT_WORKS.en.md](sources/HOW_IT_WORKS.en.md) |
-| Un message dans tous les cas (contact, groupe) | [MESSAGE_FLOWS.fr.md](sources/MESSAGE_FLOWS.fr.md) | [MESSAGE_FLOWS.en.md](sources/MESSAGE_FLOWS.en.md) |
-| Fonctionnalités du mobile et du bureau | [FEATURES.fr.md](sources/FEATURES.fr.md) | [FEATURES.en.md](sources/FEATURES.en.md) |
-| Protocole | [PROTOCOL.fr.md](sources/PROTOCOL.fr.md) | [PROTOCOL.en.md](sources/PROTOCOL.en.md) |
-| Référence de l'API du protocole | [PROTOCOL_API.fr.md](sources/PROTOCOL_API.fr.md) | [PROTOCOL_API.en.md](sources/PROTOCOL_API.en.md) |
-| Architecture, chiffrement, stockage | [ARCHITECTURE.fr.md](sources/ARCHITECTURE.fr.md) | [ARCHITECTURE.en.md](sources/ARCHITECTURE.en.md) |
-| Installer un relais | [INSTALL_RELAY.fr.md](sources/INSTALL_RELAY.fr.md) | [INSTALL_RELAY.en.md](sources/INSTALL_RELAY.en.md) |
-| Administrer ses serveurs | [ADMINISTRATION.fr.md](sources/ADMINISTRATION.fr.md) | [ADMINISTRATION.en.md](sources/ADMINISTRATION.en.md) |
-| Ligne de commande du relais | [cli-relay.fr.md](sources/cli-relay.fr.md) | [cli-relay.en.md](sources/cli-relay.en.md) |
-| Ligne de commande de la passerelle push | [cli-push.fr.md](sources/cli-push.fr.md) | [cli-push.en.md](sources/cli-push.en.md) |
-| Installer la passerelle push | [INSTALL_PUSH.fr.md](sources/INSTALL_PUSH.fr.md) | [INSTALL_PUSH.en.md](sources/INSTALL_PUSH.en.md) |
-| Installer un annuaire de relais | [INSTALL_DIRECTORY.fr.md](sources/INSTALL_DIRECTORY.fr.md) | [INSTALL_DIRECTORY.en.md](sources/INSTALL_DIRECTORY.en.md) |
-| Plusieurs serveurs sur une machine | [INSTALL_HOST.fr.md](sources/INSTALL_HOST.fr.md) | [INSTALL_HOST.en.md](sources/INSTALL_HOST.en.md) |
-| Schémas | [sources/diagrams/](sources/diagrams/) (`-fr`) | [sources/diagrams/](sources/diagrams/) (`-en`) |
-| Diagrammes de classes et de base de données | [uml/](sources/diagrams/uml/), [db/](sources/diagrams/db/) | [uml/](sources/diagrams/uml/), [db/](sources/diagrams/db/) |
+| Fonctionnement : serveurs, clients, réveil du mobile | [HOW_IT_WORKS.fr.md](sources/doc/fr/HOW_IT_WORKS.fr.md) | [HOW_IT_WORKS.en.md](sources/doc/en/HOW_IT_WORKS.en.md) |
+| Un message dans tous les cas (contact, groupe) | [MESSAGE_FLOWS.fr.md](sources/doc/fr/MESSAGE_FLOWS.fr.md) | [MESSAGE_FLOWS.en.md](sources/doc/en/MESSAGE_FLOWS.en.md) |
+| Fonctionnalités du mobile et du bureau | [FEATURES.fr.md](sources/doc/fr/FEATURES.fr.md) | [FEATURES.en.md](sources/doc/en/FEATURES.en.md) |
+| Protocole | [PROTOCOL.fr.md](sources/doc/fr/PROTOCOL.fr.md) | [PROTOCOL.en.md](sources/doc/en/PROTOCOL.en.md) |
+| Référence de l'API du protocole | [PROTOCOL_API.fr.md](sources/doc/fr/PROTOCOL_API.fr.md) | [PROTOCOL_API.en.md](sources/doc/en/PROTOCOL_API.en.md) |
+| Architecture, chiffrement, stockage | [ARCHITECTURE.fr.md](sources/doc/fr/ARCHITECTURE.fr.md) | [ARCHITECTURE.en.md](sources/doc/en/ARCHITECTURE.en.md) |
+| Installer un relais | [INSTALL_RELAY.fr.md](sources/doc/fr/INSTALL_RELAY.fr.md) | [INSTALL_RELAY.en.md](sources/doc/en/INSTALL_RELAY.en.md) |
+| Administrer ses serveurs | [ADMINISTRATION.fr.md](sources/doc/fr/ADMINISTRATION.fr.md) | [ADMINISTRATION.en.md](sources/doc/en/ADMINISTRATION.en.md) |
+| Ligne de commande du relais | [cli-relay.fr.md](sources/doc/fr/cli-relay.fr.md) | [cli-relay.en.md](sources/doc/en/cli-relay.en.md) |
+| Ligne de commande de la passerelle push | [cli-push.fr.md](sources/doc/fr/cli-push.fr.md) | [cli-push.en.md](sources/doc/en/cli-push.en.md) |
+| Installer la passerelle push | [INSTALL_PUSH.fr.md](sources/doc/fr/INSTALL_PUSH.fr.md) | [INSTALL_PUSH.en.md](sources/doc/en/INSTALL_PUSH.en.md) |
+| Installer un annuaire de relais | [INSTALL_DIRECTORY.fr.md](sources/doc/fr/INSTALL_DIRECTORY.fr.md) | [INSTALL_DIRECTORY.en.md](sources/doc/en/INSTALL_DIRECTORY.en.md) |
+| Plusieurs serveurs sur une machine | [INSTALL_HOST.fr.md](sources/doc/fr/INSTALL_HOST.fr.md) | [INSTALL_HOST.en.md](sources/doc/en/INSTALL_HOST.en.md) |
+| Schémas | [sources/doc/diagrams/](sources/doc/diagrams/) (`-fr`) | [sources/doc/diagrams/](sources/doc/diagrams/) (`-en`) |
+| Diagrammes de classes et de base de données | [uml/](sources/doc/diagrams/uml/), [db/](sources/doc/diagrams/db/) | [uml/](sources/doc/diagrams/uml/), [db/](sources/doc/diagrams/db/) |
 
 ## Contribuer
 
-Les signalements, les relectures de la cryptographie et du protocole, les tests et les corrections sont les bienvenus. Lisez le [protocole](sources/PROTOCOL.fr.md) et l'[architecture](sources/ARCHITECTURE.fr.md) avant de proposer un changement. Les commentaires de code sont en anglais, chaque fichier source porte l'en-tête de licence, et chaque document est fourni en français et en anglais (un fichier `.fr.md` et un fichier `.en.md`).
+Les signalements, les relectures de la cryptographie et du protocole, les tests et les corrections sont les bienvenus. Lisez le [protocole](sources/doc/fr/PROTOCOL.fr.md) et l'[architecture](sources/doc/fr/ARCHITECTURE.fr.md) avant de proposer un changement. Les commentaires de code sont en anglais, chaque fichier source porte l'en-tête de licence, et chaque document est fourni en français et en anglais (un fichier `.fr.md` et un fichier `.en.md`).
 
 Pour signaler une faille, écrivez à <contact@rebisway.com>.
 

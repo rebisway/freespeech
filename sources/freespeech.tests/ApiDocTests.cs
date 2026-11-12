@@ -36,8 +36,12 @@ public class ApiDocTests
         return dir?.FullName ?? throw new DirectoryNotFoundException("folder holding freespeech.mobile");
     }
 
+    // Documents live in doc/fr or doc/en according to the language suffix of the file name.
+    private static string DocPath(string file) =>
+        Path.Combine(DocsDir(), "doc", file.EndsWith(".fr.md") ? "fr" : "en", file);
+
     private static List<(string Schema, string Json)> Examples(string file) =>
-        ExampleRx.Matches(File.ReadAllText(Path.Combine(DocsDir(), file))).Select(m => (m.Groups[1].Value, m.Groups[2].Value)).ToList();
+        ExampleRx.Matches(File.ReadAllText(DocPath(file))).Select(m => (m.Groups[1].Value, m.Groups[2].Value)).ToList();
 
     private static Type Resolve(string name)
     {
@@ -178,15 +182,15 @@ public class ApiDocTests
         Assert.Equal(en, fr);
 
         static int Diagrams(string text) => Regex.Matches(text, "```mermaid").Count;
-        var textEn = File.ReadAllText(Path.Combine(DocsDir(), "PROTOCOL_API.en.md"));
-        var textFr = File.ReadAllText(Path.Combine(DocsDir(), "PROTOCOL_API.fr.md"));
+        var textEn = File.ReadAllText(DocPath("PROTOCOL_API.en.md"));
+        var textFr = File.ReadAllText(DocPath("PROTOCOL_API.fr.md"));
         Assert.Equal(Diagrams(textEn), Diagrams(textFr));
     }
 
     [Fact]
     public void Database_diagram_lists_exactly_the_tables_and_columns_the_library_creates()
     {
-        var diagram = File.ReadAllText(Path.Combine(DocsDir(), "diagrams", "db", "client-database.md"));
+        var diagram = File.ReadAllText(Path.Combine(DocsDir(), "doc", "diagrams", "db", "client-database.md"));
         var block = Regex.Match(diagram, @"```mermaid\s*erDiagram(.*?)```", RegexOptions.Singleline).Groups[1].Value;
         var documented = new Dictionary<string, (HashSet<string> Columns, HashSet<string> Keys)>();
         foreach (Match entity in Regex.Matches(block, @"(\w+)\s*\{([^}]*)\}"))
@@ -229,7 +233,7 @@ public class ApiDocTests
         Assert.Equal("40127c9c5755b5d6", GroupCrypto.TagHex(DocGroupKey));
         foreach (var file in new[] { "PROTOCOL_API.en.md", "PROTOCOL_API.fr.md" })
         {
-            var text = File.ReadAllText(Path.Combine(DocsDir(), file));
+            var text = File.ReadAllText(DocPath(file));
             Assert.Contains("bksratIeJiWrP4qaRWqckLYRbRofygvzjnNMU25UpbA=", text);
             Assert.Contains("40127c9c5755b5d6", text);
         }

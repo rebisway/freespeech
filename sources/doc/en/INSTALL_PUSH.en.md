@@ -1,6 +1,6 @@
 # Installing a FreeSpeech push gateway (blank Debian / Ubuntu)
 
-*Version française : [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Other servers: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §9.*
+*Version française : [INSTALL_PUSH.fr.md](../fr/INSTALL_PUSH.fr.md). Other servers: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §9.*
 
 The gateway (`freespeech.push`) is the only component that holds the Firebase (FCM) and Apple (APNs) keys. Relay servers call it to "wake" a phone; it receives neither identity nor content.
 This guide installs it on a **blank** machine (Debian 12 or 13, Ubuntu 22.04 or 24.04), for any domain (below `push.example.org`).

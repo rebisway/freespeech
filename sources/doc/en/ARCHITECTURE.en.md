@@ -3,8 +3,8 @@
 This document explains **how FreeSpeech is built and why**: the components, the
 technologies, the cryptography, the local storage and its table schema. The wire
 protocol itself (message formats, rules) is specified in
-[PROTOCOL.en.md](PROTOCOL.en.md). The role of each component and the path of a message are explained in [HOW_IT_WORKS.en.md](HOW_IT_WORKS.en.md) and [MESSAGE_FLOWS.en.md](MESSAGE_FLOWS.en.md), the features of the applications in [FEATURES.en.md](FEATURES.en.md). Diagrams live in [diagrams/](diagrams/), each in French
-(`-fr`) and English (`-en`). French version: [ARCHITECTURE.fr.md](ARCHITECTURE.fr.md).
+[PROTOCOL.en.md](PROTOCOL.en.md). The role of each component and the path of a message are explained in [HOW_IT_WORKS.en.md](HOW_IT_WORKS.en.md) and [MESSAGE_FLOWS.en.md](MESSAGE_FLOWS.en.md), the features of the applications in [FEATURES.en.md](FEATURES.en.md). Diagrams live in [diagrams/](../diagrams/), each in French
+(`-fr`) and English (`-en`). French version: [ARCHITECTURE.fr.md](../fr/ARCHITECTURE.fr.md).
 
 FreeSpeech is free software (AGPL-3.0-or-later). The design goal is that everything
 stays **re-implementable in any language**: no proprietary framework is part of the
@@ -29,7 +29,7 @@ protocol, only open standards and well-known primitives.
                          Servers (stateless relays) ── server-to-server cascade
 ```
 
-![client architecture](diagrams/08-client-architecture-en.svg)
+![client architecture](../diagrams/08-client-architecture-en.svg)
 
 | Project | Role |
 |---|---|
@@ -116,7 +116,7 @@ Groups can exceed 20 members, so a message is encrypted **once** with a shared
 **group key** (ChaCha20-Poly1305), prefixed by a tag derived from the key so a
 member knows which key to try.
 
-![group key rotation](diagrams/06-group-key-rotation-en.svg)
+![group key rotation](../diagrams/06-group-key-rotation-en.svg)
 
 - The composition lives in a **signed `GroupState`** per *epoch*: members, roles,
   and a `key_check` (proof of the key, never the key). History and keys are **not**
@@ -148,7 +148,7 @@ member knows which key to try.
   know that moderator, accepts the invitation of a non-contact if the proof comes from a member who is **their**
   contact and covers this group and themselves.
 
-![group invitation](diagrams/10-group-invitation-en.svg)
+![group invitation](../diagrams/10-group-invitation-en.svg)
 
 ### 3.4 bis Read / unread, read receipts
 A **read mark** per conversation (position `ts` + `message_id`) gives the unread count and where to open a chat. In
@@ -172,7 +172,7 @@ the moderators, that are not in `Heard`; Group info shows them dimmed with "Pend
 feature (`Heard` absent) shows nobody as pending.
 
 ### 3.5 Attachments — Merkle tree and swarm download (§6)
-![attachments](diagrams/07-attachments-merkle-en.svg)
+![attachments](../diagrams/07-attachments-merkle-en.svg)
 
 - A file is cut into **48 KiB chunks**. Leaf = `SHA256(0x00 ‖ chunk)`, node =
   `SHA256(0x01 ‖ left ‖ right)` (an odd node is promoted). The content identity is
@@ -267,7 +267,7 @@ when there is no translation. Purely technical errors (inconsistent keys, networ
 - **Profile update**: if the contact is offline, the `identity_update` stays in the outbox (the newest replaces
   the previous ones).
 - **Deployment**: `sources/deploy/` (systemd service, nginx sites, update scripts, APK download page),
-  `sources/INSTALL_RELAY.en.md`, `scripts/build-apk-release.ps1` (signed APK for phones, arm64; `-AllAbis` for arm64 + x86_64; `-Aab` produces the App Bundle `org.freespeech.mobile-Signed.aab` for Google Play; version, date and build number: `sources/version.props`), `scripts/build-desktop-msi.ps1` (Windows installer) and `scripts/build-apk-debug.ps1` (Debug x86_64 APK for the emulators).
+  `sources/doc/en/INSTALL_RELAY.en.md`, `scripts/build-apk-release.ps1` (signed APK for phones, arm64; `-AllAbis` for arm64 + x86_64; `-Aab` produces the App Bundle `org.freespeech.mobile-Signed.aab` for Google Play; version, date and build number: `sources/version.props`), `scripts/build-desktop-msi.ps1` (Windows installer) and `scripts/build-apk-debug.ps1` (Debug x86_64 APK for the emulators).
 - **One-tap identity creation**: `PhraseGenerator` draws the three phrases (a public-domain book passage + 3 random
   words, ≈ 150 bits; books `fr/en/es.txt.gz` in `Resources/Raw/books`, `scripts/prepare-books.ps1`, `SOURCES.md`,
   ≈ 1.3 MB compressed in the APK). "Advanced" mode: choosing the server. Creation in three steps: name → **saving the
@@ -378,7 +378,7 @@ simple `Label`); desktop: the `MarkupText` control (a `SelectableTextBlock` with
 
 ## 4. Multi-server (§8, §10)
 
-![multi-server](diagrams/05-multiserver-en.svg)
+![multi-server](../diagrams/05-multiserver-en.svg)
 
 - An identity advertises an ordered list of servers (private, public, any number)
   and stays **connected and registered on all of them at once**. A dropped one is
@@ -408,7 +408,7 @@ aside (`freespeech.db.legacy`), a new database is created. Attachment files stay
 `attachments/` (a deliberate choice): on Android this folder is in the app's private storage, which the system encrypts. The small pictures of images are the exception: they
 are in the database, in table `thumbnails` (section 5.1 quinquies).
 
-![database schema](diagrams/09-database-schema-en.svg)
+![database schema](../diagrams/09-database-schema-en.svg)
 
 ### 5.1 Table `messages` — the history
 | Column | Type | Meaning |
@@ -544,21 +544,21 @@ phrases again regenerates the key and unlocks the profile. A wrong key is refuse
 
 ## 7. Diagrams
 
-Class diagrams (protocol messages, client library, relay server) and the client database schema, in Mermaid: [diagrams/uml/](diagrams/uml/) and [diagrams/db/](diagrams/db/). The diagrams below are images, in French and in English.
+Class diagrams (protocol messages, client library, relay server) and the client database schema, in Mermaid: [diagrams/uml/](../diagrams/uml/) and [diagrams/db/](../diagrams/db/). The diagrams below are images, in French and in English.
 
 | # | Topic | FR | EN |
 |---|---|---|---|
-| 1 | Identity, multi-device | [fr](diagrams/01-identity-multidevice-fr.svg) | [en](diagrams/01-identity-multidevice-en.svg) |
-| 2 | Multi-device sync | [fr](diagrams/02-multidevice-sync-fr.svg) | [en](diagrams/02-multidevice-sync-en.svg) |
-| 3 | Contact exchange (OTC) | [fr](diagrams/03-contact-otc-fr.svg) | [en](diagrams/03-contact-otc-en.svg) |
-| 4 | Rendezvous WAITING/READY | [fr](diagrams/04-rendezvous-fr.svg) | [en](diagrams/04-rendezvous-en.svg) |
-| 5 | Multi-server | [fr](diagrams/05-multiserver-fr.svg) | [en](diagrams/05-multiserver-en.svg) |
-| 6 | Group key rotation | [fr](diagrams/06-group-key-rotation-fr.svg) | [en](diagrams/06-group-key-rotation-en.svg) |
-| 7 | Attachments, Merkle tree, swarm | [fr](diagrams/07-attachments-merkle-fr.svg) | [en](diagrams/07-attachments-merkle-en.svg) |
-| 8 | Client architecture | [fr](diagrams/08-client-architecture-fr.svg) | [en](diagrams/08-client-architecture-en.svg) |
-| 9 | Database schema | [fr](diagrams/09-database-schema-fr.svg) | [en](diagrams/09-database-schema-en.svg) |
-| 10 | Group invitation (approval, sponsoring) | [fr](diagrams/10-group-invitation-fr.svg) | [en](diagrams/10-group-invitation-en.svg) |
-| 11 | Registration with proof of identity (§11) | [fr](diagrams/11-signed-registration-fr.svg) | [en](diagrams/11-signed-registration-en.svg) |
-| 12 | Moving a client to a sibling server | [fr](diagrams/12-server-move-fr.svg) | [en](diagrams/12-server-move-en.svg) |
-| 13 | Multi-gateway push and circuit breaker (§9) | [fr](diagrams/13-push-multi-gateway-fr.svg) | [en](diagrams/13-push-multi-gateway-en.svg) |
-| 14 | Identity derivation (Argon2id, HKDF) | [fr](diagrams/14-argon2id-derivation-fr.svg) | [en](diagrams/14-argon2id-derivation-en.svg) |
+| 1 | Identity, multi-device | [fr](../diagrams/01-identity-multidevice-fr.svg) | [en](../diagrams/01-identity-multidevice-en.svg) |
+| 2 | Multi-device sync | [fr](../diagrams/02-multidevice-sync-fr.svg) | [en](../diagrams/02-multidevice-sync-en.svg) |
+| 3 | Contact exchange (OTC) | [fr](../diagrams/03-contact-otc-fr.svg) | [en](../diagrams/03-contact-otc-en.svg) |
+| 4 | Rendezvous WAITING/READY | [fr](../diagrams/04-rendezvous-fr.svg) | [en](../diagrams/04-rendezvous-en.svg) |
+| 5 | Multi-server | [fr](../diagrams/05-multiserver-fr.svg) | [en](../diagrams/05-multiserver-en.svg) |
+| 6 | Group key rotation | [fr](../diagrams/06-group-key-rotation-fr.svg) | [en](../diagrams/06-group-key-rotation-en.svg) |
+| 7 | Attachments, Merkle tree, swarm | [fr](../diagrams/07-attachments-merkle-fr.svg) | [en](../diagrams/07-attachments-merkle-en.svg) |
+| 8 | Client architecture | [fr](../diagrams/08-client-architecture-fr.svg) | [en](../diagrams/08-client-architecture-en.svg) |
+| 9 | Database schema | [fr](../diagrams/09-database-schema-fr.svg) | [en](../diagrams/09-database-schema-en.svg) |
+| 10 | Group invitation (approval, sponsoring) | [fr](../diagrams/10-group-invitation-fr.svg) | [en](../diagrams/10-group-invitation-en.svg) |
+| 11 | Registration with proof of identity (§11) | [fr](../diagrams/11-signed-registration-fr.svg) | [en](../diagrams/11-signed-registration-en.svg) |
+| 12 | Moving a client to a sibling server | [fr](../diagrams/12-server-move-fr.svg) | [en](../diagrams/12-server-move-en.svg) |
+| 13 | Multi-gateway push and circuit breaker (§9) | [fr](../diagrams/13-push-multi-gateway-fr.svg) | [en](../diagrams/13-push-multi-gateway-en.svg) |
+| 14 | Identity derivation (Argon2id, HKDF) | [fr](../diagrams/14-argon2id-derivation-fr.svg) | [en](../diagrams/14-argon2id-derivation-en.svg) |

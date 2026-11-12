@@ -1,6 +1,6 @@
 # Installing a FreeSpeech directory (blank Debian / Ubuntu)
 
-*Version française : [INSTALL_DIRECTORY.fr.md](INSTALL_DIRECTORY.fr.md). Other servers: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md), [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §10 "Directory". Commands: [cli-directory.en.md](cli-directory.en.md).*
+*Version française : [INSTALL_DIRECTORY.fr.md](../fr/INSTALL_DIRECTORY.fr.md). Other servers: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md), [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Several servers on one machine: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §10 "Directory". Commands: [cli-directory.en.md](cli-directory.en.md).*
 
 A directory (`freespeech.directory`) tells a client that knows no relay which relays take new accounts, and spreads newcomers over them. It stores nothing about clients and sees no message.
 This guide installs it on a **blank** machine (Debian 12 or 13, Ubuntu 22.04 or 24.04), for any domain (below `directory1.example.org`).

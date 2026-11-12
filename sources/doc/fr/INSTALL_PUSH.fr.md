@@ -1,6 +1,6 @@
 # Installer une passerelle push FreeSpeech (Debian / Ubuntu vierge)
 
-*English version: [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Autres serveurs : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §9.*
+*English version: [INSTALL_PUSH.en.md](../en/INSTALL_PUSH.en.md). Autres serveurs : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md). Plusieurs serveurs sur une machine : [INSTALL_HOST.fr.md](INSTALL_HOST.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §9.*
 
 La passerelle (`freespeech.push`) est le seul composant qui détient la clé Firebase (FCM) et la clé Apple (APNs). Les serveurs relais l'appellent pour « réveiller » un téléphone ; elle ne reçoit ni identité ni contenu.
 Ce guide l'installe sur une machine **vierge** (Debian 12 ou 13, Ubuntu 22.04 ou 24.04), pour n'importe quel domaine (ci-dessous `push.exemple.org`).

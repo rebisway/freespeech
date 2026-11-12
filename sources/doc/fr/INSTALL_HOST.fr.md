@@ -1,6 +1,6 @@
 # Plusieurs serveurs sur une même machine
 
-*English version: [INSTALL_HOST.en.md](INSTALL_HOST.en.md). Un guide par serveur, chacun complet pour une machine vierge : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md), [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md), [INSTALL_DIRECTORY.fr.md](INSTALL_DIRECTORY.fr.md).*
+*English version: [INSTALL_HOST.en.md](../en/INSTALL_HOST.en.md). Un guide par serveur, chacun complet pour une machine vierge : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md), [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md), [INSTALL_DIRECTORY.fr.md](INSTALL_DIRECTORY.fr.md).*
 
 Plusieurs serveurs FreeSpeech (relais, passerelle push, site web…) et d'autres logiciels peuvent partager une machine Debian ou Ubuntu. Chaque guide d'installation se suffit à lui-même ; ce document réunit ce qui doit rester
 **cohérent entre eux**.

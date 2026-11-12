@@ -1,6 +1,6 @@
 # Administrer ses serveurs FreeSpeech (relais et passerelle push)
 
-*English version: [ADMINISTRATION.en.md](ADMINISTRATION.en.md). Installation : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md) et [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Lignes de commande : [cli-relay.fr.md](cli-relay.fr.md) et [cli-push.fr.md](cli-push.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §10.*
+*English version: [ADMINISTRATION.en.md](../en/ADMINISTRATION.en.md). Installation : [INSTALL_RELAY.fr.md](INSTALL_RELAY.fr.md) et [INSTALL_PUSH.fr.md](INSTALL_PUSH.fr.md). Lignes de commande : [cli-relay.fr.md](cli-relay.fr.md) et [cli-push.fr.md](cli-push.fr.md). Protocole : [PROTOCOL.fr.md](PROTOCOL.fr.md) §10.*
 
 Ce document décrit **la configuration actuelle** et comment la changer **sans interface web et sans redémarrer** : une
 commande `admin` livrée avec chaque serveur. Elle suffit pour tenir un serveur public, un serveur privé ou une passerelle push.

@@ -1,6 +1,6 @@
 # Administering your FreeSpeech servers (relay and push gateway)
 
-*Version française : [ADMINISTRATION.fr.md](ADMINISTRATION.fr.md). Installation: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md) and [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Command lines: [cli-relay.en.md](cli-relay.en.md) and [cli-push.en.md](cli-push.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §10.*
+*Version française : [ADMINISTRATION.fr.md](../fr/ADMINISTRATION.fr.md). Installation: [INSTALL_RELAY.en.md](INSTALL_RELAY.en.md) and [INSTALL_PUSH.en.md](INSTALL_PUSH.en.md). Command lines: [cli-relay.en.md](cli-relay.en.md) and [cli-push.en.md](cli-push.en.md). Protocol: [PROTOCOL.en.md](PROTOCOL.en.md) §10.*
 
 This document describes **the current configuration** and how to change it **without a web interface and without restarting**:
 an `admin` command shipped with every server. It is enough to run a public server, a private server or a push gateway.

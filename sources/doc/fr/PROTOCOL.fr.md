@@ -1,6 +1,6 @@
 ﻿# Protocole FreeSpeech
 
-*English version: [PROTOCOL.en.md](PROTOCOL.en.md). Référence appel par appel : [PROTOCOL_API.fr.md](PROTOCOL_API.fr.md). Architecture, cryptographie et stockage local : [ARCHITECTURE.fr.md](ARCHITECTURE.fr.md).*
+*English version: [PROTOCOL.en.md](../en/PROTOCOL.en.md). Référence appel par appel : [PROTOCOL_API.fr.md](PROTOCOL_API.fr.md). Architecture, cryptographie et stockage local : [ARCHITECTURE.fr.md](ARCHITECTURE.fr.md).*
 
 Document de conception du protocole.
 Le serveur ne connaît jamais le contenu — seulement des métadonnées de routage
@@ -331,7 +331,7 @@ passe donc à une **nouvelle identité** (nouvelles phrases) et prévient ses co
   restaurable.
 - Implémenté : `backup [path] [none|6m|all]` / `restore <path>` côté console,
   logique dans `Backup/BackupService.cs` (sans E/S console, réutilisable),
-  primitives dans [BackupCrypto.cs](freespeech.client/Backup/BackupCrypto.cs).
+  primitives dans [BackupCrypto.cs](../../freespeech.client/Backup/BackupCrypto.cs).
 
 ### Archive des fichiers joints (libérer de la place)
 
@@ -578,8 +578,8 @@ si updated.encryption_public_key != existing.encryption_public_key
 alors REJET (changement de clé = usurpation potentielle)
 sinon: nickname / photo / servers peuvent changer librement
 ```
-**Câblé dans la bibliothèque cliente** ([FreeSpeechClient.cs](freespeech.client/FreeSpeechClient.cs)
-`HandleIncomingIdentityUpdate`, [FreeSpeechClient.Account.cs](freespeech.client/FreeSpeechClient.Account.cs)
+**Câblé dans la bibliothèque cliente** ([FreeSpeechClient.cs](../../freespeech.client/FreeSpeechClient.cs)
+`HandleIncomingIdentityUpdate`, [FreeSpeechClient.Account.cs](../../freespeech.client/FreeSpeechClient.Account.cs)
 `SendIdentityUpdateAsync`) : tout changement de la liste de serveurs
 (`server add|remove`, §8) ou du profil (`profile name|about|photo`) envoie un
 `identity_update` à chaque contact confirmé — chaque envoi passe par le chemin
@@ -1515,7 +1515,7 @@ Un annuaire indique à un client qui ne connaît aucun relais quels relais accep
 
 - **Statut public/privé, candidats et adresses bannies** persistés dans
   `siblings.json` (chemin configurable, `Server:SiblingsFilePath`) —
-  [Services/SiblingRegistryService.cs](freespeech.relay/Services/SiblingRegistryService.cs).
+  [Services/SiblingRegistryService.cs](../../freespeech.relay/Services/SiblingRegistryService.cs).
   Un sibling = un relais lié par clés (`{ url }`, voir « Liaison entre serveurs »).
 - **Candidats — jamais auto-promus** (décision explicite prise pendant la
   conception, contre-proposition à "apprentissage via les clients" jugé trop
@@ -1524,7 +1524,7 @@ Un annuaire indique à un client qui ne connaît aucun relais quels relais accep
   atterrissent en file d'attente (`GET /api/admin/candidates`) pour revue
   admin — jamais promues seules. Les clients ne peuvent pas suggérer de
   sibling du tout.
-- **Admin** ([Controllers/AdminController.cs](freespeech.relay/Controllers/AdminController.cs)) :
+- **Admin** ([Controllers/AdminController.cs](../../freespeech.relay/Controllers/AdminController.cs)) :
   JSON/HTTP simple (portable, pas d'UI web pour l'instant), protégé par le
   header `X-Admin-Secret` (config `Admin:Secret`, vide = tout refusé par
   défaut) :
@@ -1534,7 +1534,7 @@ Un annuaire indique à un client qui ne connaît aucun relais quels relais accep
   `GET/POST/DELETE /api/admin/blacklist` (ban retire aussi du whitelist/
   candidats ; le ban lui-même reste manuel ou déclenché par throttling —
   seul le throttling reste à câbler, hors scope de cette session).
-- **S2S entrant** ([Controllers/S2SController.cs](freespeech.relay/Controllers/S2SController.cs)),
+- **S2S entrant** ([Controllers/S2SController.cs](../../freespeech.relay/Controllers/S2SController.cs)),
   protégé par une **signature de requête** (voir « Authentification S2S »
   ci-dessous) — un refus (signature invalide ou périmée, rejeu, serveur
   privé, URL bannie, corps trop gros) renvoie systématiquement `404`
@@ -1551,7 +1551,7 @@ Un annuaire indique à un client qui ne connaît aucun relais quels relais accep
   `POST /s2s/flag` (propagation WAITING/READY — la confiance est au niveau
   du sibling whitelisté, pas revérifiée au niveau du client `from`),
   `POST /s2s/siblings/sync` (réception de suggestions, cf. ci-dessus).
-- **S2S sortant** ([Services/S2SClient.cs](freespeech.relay/Services/S2SClient.cs)) :
+- **S2S sortant** ([Services/S2SClient.cs](../../freespeech.relay/Services/S2SClient.cs)) :
   chaque appel est best-effort (timeout 5s, erreurs avalées) — un sibling
   mort ne doit jamais bloquer l'envoi/le flag qui a déclenché la tentative.
   Déclenché depuis `RelaySocketHandler.HandleSendAsync` (cascade sur `send`
