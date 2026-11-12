@@ -275,6 +275,17 @@ public class AdminController : ControllerBase
         return Ok();
     }
 
+    /// <summary>A new circle key: the members receive it at once and the cards they send from then on carry the new identifiers.</summary>
+    [HttpPost("access/circle-key/renew")]
+    public async Task<IActionResult> RenewCircleKey(CancellationToken ct)
+    {
+        if (!IsAuthorized()) return Unauthorized();
+        if (_access.Mode != ClientAccessService.AllowList) return BadRequest(new { error = "the server is open: it has no circle key" });
+        _access.RenewCircleKey();
+        await TellClientsAsync(ct);
+        return Ok();
+    }
+
     /// <summary>Tells every connected client the sign-up rule now in force, so what they show follows the server's setting at once.</summary>
     private Task TellClientsAsync(CancellationToken ct) => _handler.BroadcastStateAsync(ct);
 

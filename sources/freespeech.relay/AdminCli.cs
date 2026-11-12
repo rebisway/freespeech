@@ -24,6 +24,7 @@ public static class AdminCli
           status                                    mode, counters
           public | private                          take part in server-to-server traffic or not
           access open | allowlist                   who may register: everybody not banned, or only allowed/invited identities
+          circle-key renew                          draw a new key for the members to recognise this server in their contacts' cards (allowlist only)
           clients                                   list allowed and banned identities and pending invitations
           connected                                 the identities connected right now (memory only), allowed or banned or neither
           allow-connected                           allow every identity connected right now (before switching to "allowlist")
@@ -79,6 +80,7 @@ public static class AdminCli
                 "public" => await api.Post("api/admin/status", new { is_public = true }),
                 "private" => await api.Post("api/admin/status", new { is_public = false }),
                 "access" => await api.Post("api/admin/access/mode", new { mode = Arg(1, "mode (open|allowlist)") }),
+                "circle-key" => Arg(1, "renew") == "renew" ? await api.Post("api/admin/access/circle-key/renew", new { }) : throw new ArgumentException("circle-key renew"),
                 "clients" => await api.Show("api/admin/access"),
                 "connected" => await api.Show("api/admin/connected"),
                 "allow-connected" => await api.ShowPost("api/admin/clients/allow-connected", new { }),

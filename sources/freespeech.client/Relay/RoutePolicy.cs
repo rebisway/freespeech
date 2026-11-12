@@ -41,10 +41,12 @@ public enum RouteState
 /// </summary>
 public static class RoutePolicy
 {
-    /// <summary>The servers of a card: the open ones first, then the restricted ones, each group in the owner's order of preference; the priorities are renumbered to say so.</summary>
-    public static List<ServerEntry> CardServers(IEnumerable<ServerEntry> own) =>
+    /// <summary>The servers of a card: the open ones first, then the restricted ones, each group in the owner's order of preference; the priorities are renumbered to say so. A restricted server whose key is known is written as an identifier, not as an address.</summary>
+    public static List<ServerEntry> CardServers(IEnumerable<ServerEntry> own, string ownerId) =>
         own.OrderBy(s => s.Restricted ? 1 : 0).ThenBy(s => s.Priority)
-            .Select((s, i) => new ServerEntry { Url = s.Url, Priority = i, Restricted = s.Restricted }).ToList();
+            .Select((s, i) => s.Restricted && !string.IsNullOrEmpty(s.CircleKey)
+                ? new ServerEntry { Url = CircleKeys.Placeholder, Priority = i, Restricted = true, Circle = CircleKeys.Tag(s.CircleKey, ownerId) }
+                : new ServerEntry { Url = s.Url, Priority = i, Restricted = s.Restricted }).ToList();
 
     /// <param name="Urls">The addresses to try, in order.</param>
     /// <param name="Shared">Those among them that are restricted servers I am let in on.</param>

@@ -57,6 +57,7 @@ The relay cannot tell a file chunk from a message, so the limits count **bytes s
 | Command | Effect |
 |---|---|
 | `access open` / `access allowlist` | everybody not banned / only allowed or invited identities |
+| `circle-key renew` | draws a new circle key (`allowlist` only): the members receive it at once and send their card again to their contacts; clients keep recognising the old one for 30 days. This key has nothing to do with the server's identity key: the links with other servers do not change |
 | `clients` | allowed, banned, pending invitations |
 | `connected` | the identities connected **right now** (memory only: nothing is kept about those that connected earlier), with their state here: allowed, banned, or neither |
 | `allow-connected` | allows every identity connected right now (except banned ones): run it before `access allowlist`, so nobody who is here is refused at their next connection |

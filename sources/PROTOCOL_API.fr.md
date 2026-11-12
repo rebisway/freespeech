@@ -178,6 +178,7 @@ Couche : trame, du serveur vers le client. La connexion est maintenant inscrite 
 | `http_token` | chaîne | à présenter dans l'en-tête `X-Flag-Token` des appels HTTP de la section 4 ; valable tant que cette connexion vit |
 | `access` | chaîne | `"open"` ou `"allowlist"` : qui peut s'inscrire sur ce serveur |
 | `provisioners` | liste | identités que l'administrateur d'un serveur privé désigne comme ses outils d'administration, chacune `{ id, enc_key, sign_key }` ; omise quand il n'y en a pas |
+| `circle_key` | chaîne | base64, 32 octets : sur un serveur restreint (`access` vaut `allowlist`), la clé qui permet aux membres de le reconnaître dans la fiche d'un contact (voir [PROTOCOL.fr.md](PROTOCOL.fr.md) § 8, « Serveurs restreints ») ; omise sur un serveur ouvert |
 | `daily_quota` | nombre | octets qu'une identité peut envoyer par période de 24 heures sur ce serveur (voir « Limites de volume ») ; omis quand il n'y a pas de quota |
 
 <!-- schema: WsMessage -->
@@ -209,7 +210,7 @@ Une invitation (`invitation` dans `register`) n'est consommée qu'une fois la pr
 
 Couche : trame, du serveur vers le client, sans `request_id`. Le serveur peut les envoyer à tout moment sur une connexion inscrite.
 
-`server_state` signale que la règle d'inscription a changé pendant que le client est connecté : `access` et `provisioners` comme dans `registered`.
+`server_state` signale que la règle d'inscription a changé pendant que le client est connecté : `access`, `provisioners` et `circle_key` comme dans `registered` ; `circle_key` change quand l'administrateur la renouvelle.
 
 `server_redirect` propose d'autres serveurs : `servers` est une liste d'adresses, la meilleure d'abord, et `reason` vaut `"load"` (ce serveur est plein) ou `"admin"` (son administrateur le vide).
 
@@ -278,7 +279,7 @@ Une fiche est un objet JSON. Alice exporte la sienne avec un code à usage uniqu
 | `discovery_id` | chaîne | oui | l'identifiant |
 | `encryption_public_key` | chaîne | oui | X25519, base64 |
 | `signing_public_key` | chaîne | oui | Ed25519, base64 |
-| `servers` | liste | non | les relais de la personne, le meilleur d'abord, chacun `{ url, priority }` plus `restricted: true` pour un serveur qui restreint les inscriptions (les serveurs ouverts sont listés avant les restreints) |
+| `servers` | liste | non | les relais de la personne, le meilleur d'abord, chacun `{ url, priority }` plus `restricted: true` pour un serveur qui restreint les inscriptions (les serveurs ouverts sont listés avant les restreints) ; un serveur restreint dont la clé est connue s'écrit `{ url: "https://circle.invalid", priority, restricted: true, circle }` (`circle` : `base64(HMAC-SHA256(clé du cercle, "freespeech-circle|" + identité du propriétaire))`) |
 | `revocation_public_key` | chaîne | non | clé Ed25519 qui sert à vérifier un avis de migration (section 3, `identity_moved`) |
 | `enable_push` | booléen | non | la personne peut être réveillée par une notification |
 | `otc` | chaîne | première fiche seulement | le code à usage unique, 16 caractères |

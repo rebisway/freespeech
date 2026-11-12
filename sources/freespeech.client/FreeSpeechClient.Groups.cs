@@ -88,7 +88,7 @@ public sealed partial class FreeSpeechClient
         var ts = NextTs();
         var cipher = MessageCrypto.Encrypt(_identity.DiscoveryId, to.DiscoveryId, type, payload, ts, Convert.FromBase64String(to.EncryptionPublicKey), _identity.SigningPrivateKey);
         var envelope = new Envelope { From = _identity.DiscoveryId, To = to.DiscoveryId, Crypto = 1, Msg = cipher, Ts = ts };
-        var result = await _relay.SendAsync(_relay.Candidates(to.Servers), envelope);
+        var result = await _relay.SendAsync(_relay.Candidates(to.Servers, to.DiscoveryId), envelope);
 
         if (!result.Delivered && queue)
         {
@@ -105,6 +105,6 @@ public sealed partial class FreeSpeechClient
     async Task<bool> IGroupTransport.SendGroupMessageAsync(GroupMember to, string sealedMsg, long ts)
     {
         var envelope = new Envelope { From = _identity.DiscoveryId, To = to.DiscoveryId, Crypto = 2, Msg = sealedMsg, Ts = ts };
-        return (await _relay.SendAsync(_relay.Candidates(to.Servers), envelope)).Delivered;
+        return (await _relay.SendAsync(_relay.Candidates(to.Servers, to.DiscoveryId), envelope)).Delivered;
     }
 }

@@ -99,6 +99,9 @@ public class RelayPool : IAsyncDisposable
     /// <summary>An own server told who may sign up on it: its URL and "open" or "allowlist".</summary>
     public event Action<string, string?>? OnServerAccess;
 
+    /// <summary>A server gave the key of its circle (at registration, or when its administrator renewed it): address, key.</summary>
+    public event Action<string, string>? OnServerCircleKey;
+
     /// <summary>A private server that had my access request waiting now lets me in (the administrator accepted it): the URL.</summary>
     public event Action<string>? OnAccessGranted;
 
@@ -124,13 +127,26 @@ public class RelayPool : IAsyncDisposable
     /// priority (§8), then our own servers as a last resort — a public own
     /// server can still reach them through the S2S cascade (§10).
     /// </summary>
-    public IReadOnlyList<string> Candidates(IEnumerable<ServerEntry>? theirServers)
+    public IReadOnlyList<string> Candidates(IEnumerable<ServerEntry>? theirServers, string? ownerId = null)
     {
         var list = new List<string>();
         if (theirServers != null)
-            list.AddRange(theirServers.OrderBy(s => s.Priority).Select(s => Normalize(s.Url)));
+            list.AddRange(Resolved(theirServers, ownerId).OrderBy(s => s.Priority).Select(s => Normalize(s.Url)));
         list.AddRange(OwnUrls);
         return list.Distinct().ToList();
+    }
+
+    /// <summary>Finds the address of one of my restricted servers behind an identifier in a card (owner of the card, identifier); null when none of mine matches. Set by the client.</summary>
+    public Func<string, string, string?>? CircleResolver { get; set; }
+
+    /// <summary>The servers of a card with the identifiers turned into my own addresses; an identifier no server of mine matches is left out.</summary>
+    public IEnumerable<ServerEntry> Resolved(IEnumerable<ServerEntry> servers, string? ownerId)
+    {
+        foreach (var s in servers)
+        {
+            if (s.Circle == null) { yield return s; continue; }
+            if (ownerId != null && CircleResolver?.Invoke(ownerId, s.Circle) is { } url) yield return new ServerEntry { Url = url, Priority = s.Priority, Restricted = true };
+        }
     }
 
     // ------------------------------------------------------------------
@@ -384,6 +400,7 @@ public class RelayPool : IAsyncDisposable
         };
         client.OnDisconnected += () => OnDisconnected?.Invoke(url);
         client.OnAccessChanged += access => OnServerAccess?.Invoke(url, access);
+        client.OnCircleKey += key => OnServerCircleKey?.Invoke(url, key);
         client.OnPeerOnline += id => OnPeerOnline?.Invoke(id);
         client.OnFrame += (dir, json) => OnFrame?.Invoke(url, dir, json);
         client.OnRedirect += (servers, reason) => OnRedirect?.Invoke(url, servers, reason);

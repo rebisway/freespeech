@@ -14,13 +14,43 @@ Ce guide l'installe sur une machine **vierge** (Debian 12 ou 13, Ubuntu 22.04 ou
 | Service | `freespeech-push.service`, utilisateur `www-data` |
 | Dépôt des fichiers à installer | `~/ftp/push/publish` et `~/ftp/push/deploy` |
 
+## Installation à partir de l'archive téléchargée
+
+Ce parcours fait en une commande ce que décrivent les § 2 à 6 ; le reste du guide détaille chaque étape, pour qui préfère installer à la main ou veut comprendre ce que fait le script. Les deux parcours donnent le même résultat.
+
+1. Télécharger sur la machine, depuis la page des releases du dépôt (https://git.rebisway.com/rebisway/freespeech/releases), l'archive `freespeech-push-<version>.tar.gz` et le fichier `SHA256SUMS`.
+2. Vérifier l'archive : `sha256sum -c --ignore-missing SHA256SUMS` doit répondre `OK`.
+3. Extraire et lancer le script, avec le nom de domaine déjà pointé vers la machine (§ 1) :
+
+```bash
+tar -xzf freespeech-push-<version>.tar.gz
+cd freespeech-push-<version>
+sudo bash install.sh push.exemple.org --email admin@exemple.org
+```
+
+Le script installe les paquets et le runtime, ouvre le pare-feu (SSH, 80, 443), copie le programme dans `/var/www/freespeech_push`, installe le service, écrit `appsettings.Local.json` avec un secret d'administration tiré au hasard, configure nginx, demande le certificat, lance `check` et ne démarre le service que si `check` passe. `--email` est l'adresse que Let's Encrypt garde pour les avis d'expiration : la donner vaut acceptation de l'accord d'abonné de Let's Encrypt. Options : `--contact <texte>` (comment un autre administrateur peut vous joindre, écrit dans `Peer:Contact`), `--no-certificate` (pas de demande de certificat : serveur sur un réseau local, voir la fin du § 5, ou certificat obtenu autrement) et `--no-firewall`.
+
+Lancer le script avec une archive plus récente met le programme à jour : `appsettings.Local.json` n'est jamais réécrit.
+
+Le fichier du compte de service Firebase n'est pas dans l'archive : sans lui, la vérification (`check`) échoue et le service n'est pas démarré. Le déposer dans `/var/www/freespeech_push/secrets/firebase-service-account.json` (propriétaire `www-data`, droits `600`), puis `sudo systemctl start freespeech-push`.
+
 ## 1. Avant de commencer
 
 - Une machine Debian ou Ubuntu avec un utilisateur disposant de `sudo` ; ports **80 et 443** joignables depuis internet.
 - Un nom de domaine dont l'enregistrement DNS (A, et AAAA si la machine a une IPv6) pointe vers la machine.
 - **Firebase** : projet créé, application Android `org.freespeech.mobile`, `google-services.json` dans `sources/freespeech.mobile/` (non versionné), **Firebase Cloud Messaging API (V1)** activée (Paramètres du projet → Cloud Messaging).
   Clé du compte de service : *Paramètres du projet → Comptes de service → Générer une nouvelle clé privée*. **Ne jamais la versionner ni la partager** ; si elle a été exposée, en générer une nouvelle et supprimer l'ancienne.
-- Sur le poste de développement : le SDK .NET 10, le dépôt du projet et `scp`.
+- Sur le poste de développement (celui qui compile) :
+  - le **SDK .NET 10** : sous Windows `winget install Microsoft.DotNet.SDK.10`, sous Ubuntu `sudo apt install -y dotnet-sdk-10.0` (après avoir ajouté le dépôt `ppa:dotnet/backports`, § 2). `dotnet --version` doit afficher `10.x` ;
+  - **Git** (sous Windows `winget install Git.Git`, sous Ubuntu `sudo apt install -y git`) et les **sources du projet** :
+
+    ```bash
+    git clone https://git.rebisway.com/rebisway/freespeech
+    cd freespeech
+    ```
+
+    `git clone` télécharge tout le dépôt dans un dossier `freespeech` ; `cd` s'y place. Toutes les commandes `sources/…` de ce guide se lancent depuis ce dossier, la racine du dépôt. Le même dépôt est publié en miroir sur https://github.com/rebisway/freespeech, à utiliser si le premier ne répond pas. Pour mettre à jour plus tard : `git pull` ;
+  - `scp` et `ssh` (clients OpenSSH, fournis avec Windows 10 et suivants, Linux et macOS).
 - **Ordre** : installer d'abord l'APK récent sur les téléphones, puis mettre à jour les relais.
 
 ## 2. Préparer la machine
@@ -38,6 +68,12 @@ sudo apt install -y nginx certbot python3-certbot-nginx ufw curl
 sudo ufw allow OpenSSH && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
+
+Ce que font ces commandes :
+
+- `apt update && apt upgrade -y` : met à jour la liste des paquets, puis installe les mises à jour de sécurité de la machine ;
+- `nginx` reçoit les connexions HTTPS d'internet et les transmet au serveur ; `certbot` obtient et renouvelle le certificat gratuit de Let's Encrypt, et son module `python3-certbot-nginx` écrit lui-même la partie TLS dans la configuration de nginx ; `ufw` est le pare-feu ; `curl` sert aux vérifications ;
+- `ufw allow OpenSSH` garde l'accès SSH ouvert, d'où l'ordre : activer le pare-feu d'abord couperait la session. `80` sert à la validation du certificat et à la redirection vers HTTPS, `443` au trafic des clients.
 
 Le port 5291 reste local : ne jamais l'ouvrir.
 
@@ -59,6 +95,13 @@ mkdir -p ~/ftp/push/publish ~/ftp/push/deploy ~/ftp/push/secrets
 ```
 
 ## 3. Préparer le paquet (poste de développement)
+
+`dotnet publish` compile le projet et rassemble, dans un dossier, tout ce que la machine doit exécuter :
+
+- `sources/freespeech.push/FreeSpeech.Push.csproj` : le projet à compiler ;
+- `-c Release` : la configuration de production ;
+- `-o sources/deploy/push/publish` : le dossier de sortie. Il contient le programme, ses bibliothèques et `appsettings.json`, jamais `appsettings.Local.json` ;
+- la commande se lance depuis la racine du dépôt ; le dossier de sortie est ignoré par SVN, comme le reste de `sources/deploy/push/`.
 
 ```bash
 dotnet publish sources/freespeech.push/FreeSpeech.Push.csproj -c Release -o sources/deploy/push/publish

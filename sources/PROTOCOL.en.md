@@ -349,7 +349,7 @@ Distinct from the backup: it moves **downloaded files** off the device and leave
   "signing_public_key": "...",
   "servers": [                          // list ORDERED by preference
     { "url": "https://public.freespeech.org", "priority": 0 },
-    { "url": "https://priv.entreprise.local", "priority": 1, "restricted": true }
+    { "url": "https://circle.invalid", "priority": 1, "restricted": true, "circle": "base64" }
   ],
   "enable_push": false,                 // advertised capability, not the token
   "created_at": ...,
@@ -1082,6 +1082,8 @@ p2p catch-up serves them like the others. Group-specific rules:
 A server whose access mode is `allowlist` (§ 10, "Client access control") is called restricted: only the identities its administrator allowed sign up there. It must not be confused with the private status between servers, which forbids calls from another server and which a client cannot see.
 
 Each entry of `servers` in the card carries `restricted`, a boolean absent when false, true for a restricted server. The owner knows the mode of their servers, because the server states it at registration and each time the administrator changes it. They send their card to their contacts when the mode changes. The open servers are listed before the restricted ones, each group in the owner's order of preference, and the `priority` values are renumbered to match. A client that does not know `restricted` ignores the field and follows the order of the list.
+
+A restricted server is not written in the card by its address. At its first need the server draws a 32-byte key, the **circle key**, and gives it to every identity that signs up there (`circle_key` in `registered`, then in `server_state` when the administrator renews it). In place of the address the card carries `circle = base64(HMAC-SHA256(circle key, "freespeech-circle|" + discovery id of the card's owner))`, with `url` set to `https://circle.invalid`, an address that never resolves. A recipient who is a member of the same server computes the same value for each of their restricted servers: a match names a shared server, which they reach at their own address for it. Without a match the entry names an unknown restricted server and is never contacted. The identifier depends on the owner of the card, so two cards of the same server cannot be linked. The contact keeps the identifier as it is and the match is computed at each send, so a server added later recognises every contact already imported at once. After a renewal the client keeps the old key for 30 days to recognise the cards already sent, and the owner sends their card again to their contacts with the identifier made from the new key. A server whose key the client does not know yet is written by its address. The servers in the state of a group follow the same rule.
 
 A restricted server on which I am not allowed is never contacted: no connection, no refusal at the administrator, no waiting marker. A card that wrongly marks a server as restricted only hinders its author.
 

@@ -95,6 +95,7 @@ Ce document liste ce que font les applications mobile (Android) et de bureau (Wi
 | Serveur privé : utiliser une invitation, ou demander l'accès (avec un code de vérification à donner à l'administrateur) | oui | oui |
 | Le serveur peut conseiller un déplacement quand il est plein (3 fois par jour au plus) | oui | oui |
 | Bandeau « Limite du serveur » quand le volume quotidien est atteint | oui | oui |
+| Un serveur privé n'apparaît pas par son adresse dans la fiche de contact : un identifiant que seuls ses membres reconnaissent | oui | oui |
 | Serveur restreint commun avec un contact : seul chemin utilisé par défaut ; réglage par contact « Si le serveur privé ne répond pas » (attendre, me demander, utiliser un serveur ouvert) ; « Envoyer par un serveur ouvert » dans « Envois en cours » | oui | oui |
 
 ## Notifications et réveil

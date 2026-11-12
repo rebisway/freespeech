@@ -15,11 +15,39 @@ keeps in memory only who is online and a few waiting markers. The only files wor
 | Service | `freespeech-relay.service`, user `www-data` |
 | Deposit folder for the files to install | `~/ftp/relay/publish` and `~/ftp/relay/deploy` (in the home of the administering user) |
 
+## Installing from the downloaded archive
+
+This path does in one command what § 2 to 6 describe; the rest of the guide details every step, for those who prefer to install by hand or want to understand what the script does. Both paths give the same result.
+
+1. Download to the machine, from the releases page of the repository (https://git.rebisway.com/rebisway/freespeech/releases), the archive `freespeech-relay-<version>.tar.gz` and the `SHA256SUMS` file.
+2. Check the archive: `sha256sum -c --ignore-missing SHA256SUMS` must answer `OK`.
+3. Extract and run the script, with the domain name already pointing to the machine (§ 1):
+
+```bash
+tar -xzf freespeech-relay-<version>.tar.gz
+cd freespeech-relay-<version>
+sudo bash install.sh fs.example.org --email admin@example.org
+```
+
+The script installs the packages and the runtime, opens the firewall (SSH, 80, 443), copies the program to `/var/www/freespeech_relay`, installs the service, writes `appsettings.Local.json` with a randomly drawn admin secret, configures nginx, requests the certificate, runs `check` and starts the service only if `check` passes. `--email` is the address Let's Encrypt keeps for expiry notices: giving it accepts the Let's Encrypt subscriber agreement. Options: `--contact <text>` (how another administrator can reach you, written in `Peer:Contact`), `--no-certificate` (no certificate request: a server on a local network, see the end of § 5, or a certificate obtained otherwise) and `--no-firewall`.
+
+Running the script with a newer archive updates the program: `appsettings.Local.json` is never rewritten.
+
 ## 1. Before starting
 
-- A Debian or Ubuntu machine with a user that has `sudo` (the "machine" commands are run as that user); ports **80 and 443** reachable from the internet.
+- A Debian or Ubuntu machine with a user that has `sudo` (the "machine" commands are run as that user); ports **80 and 443** reachable from the internet (for a server that stays on the local network, see the end of § 5).
 - A domain name whose DNS record (A, and AAAA if the machine has an IPv6 address) points to the machine. Certbot (§5) fails until the DNS has propagated.
-- On the development computer: the .NET 10 SDK, the project repository and `scp`.
+- On the development computer (the one that builds):
+  - the **.NET 10 SDK**: on Windows `winget install Microsoft.DotNet.SDK.10`, on Ubuntu `sudo apt install -y dotnet-sdk-10.0` (after adding the `ppa:dotnet/backports` repository, § 2). `dotnet --version` must show `10.x`;
+  - **Git** (on Windows `winget install Git.Git`, on Ubuntu `sudo apt install -y git`) and the **project sources**:
+
+    ```bash
+    git clone https://git.rebisway.com/rebisway/freespeech
+    cd freespeech
+    ```
+
+    `git clone` downloads the whole repository into a `freespeech` folder; `cd` moves into it. Every `sources/…` command in this guide is run from that folder, the root of the repository. The same repository is published as a mirror at https://github.com/rebisway/freespeech, to use if the first does not answer. To update later: `git pull`;
+  - `scp` and `ssh` (OpenSSH clients, included in Windows 10 and later, Linux and macOS).
 
 ## 2. Prepare the machine
 
@@ -37,9 +65,15 @@ sudo ufw allow OpenSSH && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp
 sudo ufw enable && sudo ufw status
 ```
 
+What these commands do:
+
+- `apt update && apt upgrade -y` refreshes the package list, then installs the machine's security updates;
+- `nginx` receives the HTTPS connections from the internet and passes them to the relay (§ 5); `certbot` obtains and renews the free Let's Encrypt certificate, and its `python3-certbot-nginx` module writes the TLS part of the nginx configuration itself; `ufw` is the firewall; `curl` is used for the checks;
+- `ufw allow OpenSSH` keeps SSH access open, hence the order: enabling the firewall first would cut the session. `80` is used for the certificate validation and the redirect to HTTPS, `443` for the clients' traffic.
+
 Port 5290 stays local: never open it.
 
-**ASP.NET Core 10 runtime** (`dotnet --list-runtimes` must show `Microsoft.AspNetCore.App 10.x`):
+**ASP.NET Core 10 runtime**: the relay is a .NET program that the machine runs with `dotnet`. It only needs the runtime, not the SDK (`dotnet --list-runtimes` must show `Microsoft.AspNetCore.App 10.x`):
 
 ```bash
 # Ubuntu
@@ -50,13 +84,20 @@ sudo dpkg -i packages-microsoft-prod.deb && sudo apt update && sudo apt install 
 dotnet --list-runtimes
 ```
 
-**Deposit folder** (where the files to install are dropped):
+**Deposit folder** (where the files to install are dropped; `mkdir -p` creates the folders if they do not exist):
 
 ```bash
 mkdir -p ~/ftp/relay/publish ~/ftp/relay/deploy
 ```
 
 ## 3. Publish and copy (development computer)
+
+`dotnet publish` builds the project and gathers, in one folder, everything the machine has to run:
+
+- `sources/freespeech.relay/FreeSpeech.Relay.csproj` is the project to build;
+- `-c Release` is the production configuration;
+- `-o sources/deploy/relay/publish` is the output folder. It holds `FreeSpeech.Relay.dll`, its libraries and `appsettings.json`, never `appsettings.Local.json` (§ 4);
+- `scp -r` copies a folder to the machine over SSH; `user@machine:ftp/relay/publish/` is a path relative to the home folder of `user`. The three copies drop the program, the deployment files (systemd service, nginx example, update scripts and configuration template) and the script of the `fsrelay`, `fspush`, `fsdir` shortcuts.
 
 ```bash
 dotnet publish sources/freespeech.relay/FreeSpeech.Relay.csproj -c Release -o sources/deploy/relay/publish
@@ -106,6 +147,23 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Certbot edits the file (TLS block, http → https redirect) and sets up automatic renewal (`systemctl list-timers | grep certbot`). **Never copy `nginx-freespeech-relay` over it again** after certbot:
 the certificate would be lost; to add a block, edit the file in place. Repair: `sudo certbot --nginx -d fs.example.org --reinstall`. On a blank machine, `/etc/nginx/sites-enabled/default` may stay or be removed.
+
+### On a local network (server not exposed to the internet)
+
+A private server meant for a company, association or family network does not have to be reachable from the internet. The applications do require a **valid** HTTPS certificate, though: they refuse a self-signed one, and Android accepts plain HTTP only towards `127.0.0.1`. The way that works without changing anything in the applications is a real domain name with a certificate obtained by **DNS** validation:
+
+1. At the domain's provider, create the `A` record of `fs.example.org` with the machine's **private** address (for example `192.168.1.20`). Some routers block DNS answers that point to a private address: in that case, declare the name in the router's resolver.
+2. Obtain the certificate by DNS validation, which needs no access from the internet. With the provider's certbot module (for example `python3-certbot-dns-cloudflare`, with a credentials file in mode `600`), renewal is automatic:
+
+```bash
+sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials /root/cloudflare.ini -d fs.example.org
+sudo certbot install --nginx --cert-name fs.example.org
+```
+
+3. In the firewall, open 443 to the local network only (80 is not needed): `sudo ufw allow from 192.168.1.0/24 to any port 443 proto tcp`.
+4. Set the relay to `private` and `access allowlist` (§ 8).
+
+Only the devices on the local network reach the server; the other servers in the contact's list take over (see [HOW_IT_WORKS.en.md](HOW_IT_WORKS.en.md) § 4).
 
 ### If the machine already hosts other web servers
 

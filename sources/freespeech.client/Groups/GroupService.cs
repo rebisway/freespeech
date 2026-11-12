@@ -85,7 +85,7 @@ public class GroupService
         Nickname = _me.Nickname ?? _me.DiscoveryId[..8],
         EncryptionPublicKey = Convert.ToBase64String(_me.EncryptionPublicKey),
         SigningPublicKey = Convert.ToBase64String(_me.SigningPublicKey),
-        Servers = _me.Servers.Select(s => new Contacts.ServerEntry { Url = s.Url, Priority = s.Priority }).ToList(),
+        Servers = Relay.RoutePolicy.CardServers(_me.Servers, _me.DiscoveryId),
     };
 
     // ------------------------------------------------------------------

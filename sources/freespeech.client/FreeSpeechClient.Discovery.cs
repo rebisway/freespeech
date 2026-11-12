@@ -94,7 +94,7 @@ public sealed partial class FreeSpeechClient
         _identityStorage.Save(_identity);
         try
         {
-            var theirs = contact.Servers.OrderBy(s => s.Priority).Select(s => RelayPool.Normalize(s.Url))
+            var theirs = contact.Servers.Where(s => s.Circle == null).OrderBy(s => s.Priority).Select(s => RelayPool.Normalize(s.Url))
                 .Where(u => Uri.TryCreate(u, UriKind.Absolute, out var uri) && (uri.Scheme == "http" || uri.Scheme == "https")).Distinct().ToList();
             var mine = _identity.Servers.Select(s => RelayPool.Normalize(s.Url)).ToHashSet();
             if (theirs.Count == 0 || theirs.Any(mine.Contains)) return;
@@ -115,7 +115,7 @@ public sealed partial class FreeSpeechClient
     {
         var skip = (failed ?? []).Concat(_identity?.Servers.Select(s => s.Url) ?? []).Append(_cliServerUrl).Select(RelayPool.Normalize).ToHashSet();
 
-        var fromContacts = (_confirmedContacts?.All ?? []).SelectMany(c => c.Servers).Select(s => RelayPool.Normalize(s.Url))
+        var fromContacts = (_confirmedContacts?.All ?? []).SelectMany(c => c.Servers).Where(s => s.Circle == null).Select(s => RelayPool.Normalize(s.Url))
             .Where(u => !skip.Contains(u)).Distinct().OrderBy(_ => Random.Shared.Next()).ToList();
         if (fromContacts.Count > 0 || _options.Directories.Count == 0) return fromContacts;
 

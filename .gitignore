@@ -10,3 +10,5 @@ google-services.json
 scripts/phrases.txt
 freespeech.defaults.props
 *.log
+
+sources/mise_a_jour/
