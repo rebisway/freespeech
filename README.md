@@ -102,7 +102,7 @@ The security model is described in full in [ARCHITECTURE.en.md](sources/doc/en/A
 
 ## Getting started
 
-**Use the app.** Join the open test on [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). You can also download the APK from [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) and compare the SHA-256 fingerprint shown on that page with the file you got. In Settings > Servers, `https://fs.rebisway.com` is the reference server, and you can add your own.
+**Use the app.** Get it on [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). You can also download the APK from [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) and compare the SHA-256 fingerprint shown on that page with the file you got. In Settings > Servers, `https://fs.rebisway.com` is the reference server, and you can add your own.
 
 **Run a relay.** [INSTALL_RELAY.en.md](sources/doc/en/INSTALL_RELAY.en.md) goes step by step through Ubuntu 24, nginx, systemd and the certificate. The administration commands are in [cli-relay.en.md](sources/doc/en/cli-relay.en.md).
 

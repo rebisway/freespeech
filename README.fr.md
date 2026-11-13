@@ -102,7 +102,7 @@ Le modèle de sécurité est décrit en détail dans [ARCHITECTURE.fr.md](source
 
 ## Pour commencer
 
-**Utiliser l'application.** Rejoignez le test ouvert sur [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). Vous pouvez aussi télécharger l'APK sur [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) et comparez l'empreinte SHA-256 affichée sur cette page avec celle de votre fichier. Dans Réglages > Serveurs, `https://fs.rebisway.com` est le serveur de référence, et vous pouvez ajouter le vôtre.
+**Utiliser l'application.** Installez-la depuis [Google Play](https://play.google.com/store/apps/details?id=org.freespeech.mobile). Vous pouvez aussi télécharger l'APK sur [freespeech.rebisway.com/download](https://freespeech.rebisway.com/download/) et comparez l'empreinte SHA-256 affichée sur cette page avec celle de votre fichier. Dans Réglages > Serveurs, `https://fs.rebisway.com` est le serveur de référence, et vous pouvez ajouter le vôtre.
 
 **Héberger un relais.** [INSTALL_RELAY.fr.md](sources/doc/fr/INSTALL_RELAY.fr.md) détaille pas à pas Ubuntu 24, nginx, systemd et le certificat. Les commandes d'administration sont dans [cli-relay.fr.md](sources/doc/fr/cli-relay.fr.md).
 
