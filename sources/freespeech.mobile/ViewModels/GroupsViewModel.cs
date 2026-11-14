@@ -35,7 +35,7 @@ public partial class GroupsViewModel : ListViewModelBase
 	{
 		if (_service.State != AppState.Ready) return;
 		// Synced in place: clearing the list made every picture blink out while the page was being left.
-		var rows = _service.Client.GetConversations().Where(c => c.IsGroup).OrderBy(c => c.Title, StringComparer.CurrentCultureIgnoreCase)
+		var rows = _service.Client.GetConversations().Where(c => c.IsGroup && !c.IsArchived).OrderBy(c => c.Title, StringComparer.CurrentCultureIgnoreCase)
 			.Select(g => new GroupRow(g.Conversation.HistoryKey, g.Title, g.Photo, g.Conversation.Group is { } group ? _service.Client.Groups.GroupDescription(group) ?? "" : "")).ToList();
 		for (var i = 0; i < rows.Count; i++)
 		{

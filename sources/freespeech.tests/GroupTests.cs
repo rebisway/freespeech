@@ -511,6 +511,21 @@ public class GroupTests : IDisposable
     }
 
     [Fact]
+    public async Task Leave_bySoleRemainingMember_succeeds()
+    {
+        var (_, p) = Cluster_("a", "b");
+        var (a, b) = (p[0], p[1]);
+        await a.Svc.CreateAsync("g", [b.Svc.Me]);
+        await b.Svc.LeaveAsync(b.Rec);
+        Assert.False(b.Rec.Active);
+
+        await a.Svc.LeaveAsync(a.Rec);
+
+        Assert.False(a.Rec.Active);
+        a.Svc.Forget(a.Rec);
+    }
+
+    [Fact]
     public async Task Leave_byTheOnlyModerator_promotesSomeoneElse()
     {
         var (_, p) = Cluster_("a", "b", "c");
